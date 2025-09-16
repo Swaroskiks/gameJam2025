@@ -3,7 +3,7 @@ import sys
 from src.settings import WIDTH, HEIGHT, FPS
 from src.menu import menu_loop
 from src.game import game_loop
-from src.credits import credits_loop   # ⬅️ ajout
+from src.credits import credits_loop   
 
 def main():
     pygame.init()
@@ -17,7 +17,7 @@ def main():
         if choice == "jouer":
             game_loop(screen, clock)
         elif choice in ("crédits", "credits"):
-            credits_loop(screen, clock)   # ⬅️ ouvre la page crédits, ESC/Retour → menu
+            credits_loop(screen, clock)
         elif choice in ("options",):
             pass
         elif choice in ("quit", "quitter"):

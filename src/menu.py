@@ -33,11 +33,11 @@ def menu_loop(screen, clock):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
-                sys.exit()   # ✅ ferme direct la fenêtre
+                sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 for rect, text in buttons:
                     if rect.collidepoint(event.pos):
-                        if text.lower() == "quitter":  # ✅ ferme direct si bouton Quitter
+                        if text.lower() == "quitter":
                             pygame.quit()
                             sys.exit()
                         return text.lower()
@@ -48,9 +48,9 @@ def menu_loop(screen, clock):
         for rect, text in buttons:
             button_surface = pygame.Surface((rect.width, rect.height), pygame.SRCALPHA)
             if rect.collidepoint(mouse_pos):
-                button_surface.fill((200, 0, 0, 180))  # rouge semi-transparent
+                button_surface.fill((200, 0, 0, 180))
             else:
-                button_surface.fill((0, 0, 0, 150))    # noir semi-transparent
+                button_surface.fill((0, 0, 0, 150))
             screen.blit(button_surface, rect.topleft)
             draw_text(screen, text, font, WHITE, rect)
 
