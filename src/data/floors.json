@@ -1,0 +1,129 @@
+{
+  "description": "Configuration des étages du building avec fonds et objets positionnés",
+  "min_floor": 90,
+  "max_floor": 98,
+  "elevator_position_x": 64,
+  "floor_height": 150,
+  "default_bg_key": "floor_default",
+  "floors": {
+    "98": {
+      "name": "Direction",
+      "bg_key": "floor_98",
+      "rooms": ["office_director", "meeting_room"],
+      "objects": [
+        {
+          "id": "papers_98",
+          "kind": "papers",
+          "x": 350,
+          "y": 0,
+          "props": {"task_id": "organize_papers"}
+        },
+        {
+          "id": "plant_98",
+          "kind": "plant",
+          "x": 500,
+          "y": 0,
+          "props": {"task_id": "water_plant", "thirst": 0.8}
+        },
+        {
+          "id": "npc_boss",
+          "kind": "npc",
+          "x": 250,
+          "y": 0,
+          "props": {"name": "M. Johnson", "dialogue_key": "boss_morning"}
+        }
+      ]
+    },
+    "97": {
+      "name": "Comptabilité",
+      "bg_key": "floor_97",
+      "rooms": ["office_accounting", "office_small"],
+      "objects": [
+        {
+          "id": "printer_97",
+          "kind": "printer",
+          "x": 400,
+          "y": 0,
+          "props": {"task_id": "fix_printer", "jammed": true}
+        },
+        {
+          "id": "npc_alex",
+          "kind": "npc",
+          "x": 200,
+          "y": 0,
+          "props": {"name": "Alex", "dialogue_key": "alex_morning"}
+        }
+      ]
+    },
+    "96": {
+      "name": "Open Space",
+      "bg_key": "floor_96",
+      "rooms": ["hallway", "office_open"],
+      "objects": [
+        {
+          "id": "lightbulb_96",
+          "kind": "lightbulb",
+          "x": 450,
+          "y": 0,
+          "props": {"task_id": "change_lightbulb"}
+        },
+        {
+          "id": "npc_maya",
+          "kind": "npc",
+          "x": 300,
+          "y": 0,
+          "props": {"name": "Maya", "dialogue_key": "maya_morning"}
+        }
+      ]
+    },
+    "95": {
+      "name": "Ressources Humaines",
+      "bg_key": "floor_95",
+      "rooms": ["office_hr", "archive_room"],
+      "objects": [
+        {
+          "id": "plant_95",
+          "kind": "plant",
+          "x": 180,
+          "y": 0,
+          "props": {"thirst": 0.3}
+        }
+      ]
+    },
+    "90": {
+      "name": "Lobby",
+      "bg_key": "floor_90",
+      "rooms": ["lobby", "reception"],
+      "objects": [
+        {
+          "id": "reception_90",
+          "kind": "reception",
+          "x": 350,
+          "y": 0,
+          "props": {"task_id": "badge_checkin"}
+        },
+        {
+          "id": "npc_guard",
+          "kind": "npc",
+          "x": 200,
+          "y": 0,
+          "props": {"name": "Garde", "dialogue_key": "guard_morning"}
+        },
+        {
+          "id": "plant_lobby1",
+          "kind": "plant",
+          "x": 150,
+          "y": 0,
+          "props": {"thirst": 0.6}
+        },
+        {
+          "id": "plant_lobby2",
+          "kind": "plant",
+          "x": 500,
+          "y": 0,
+          "props": {"thirst": 0.4}
+        }
+      ]
+    }
+  }
+}

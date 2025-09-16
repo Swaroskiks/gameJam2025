@@ -1,0 +1,228 @@
+{
+  "description": "Configuration des étages du building",
+  "min_floor": 90,
+  "max_floor": 98,
+  "elevator_position_x": 64,
+  "floor_height": 120,
+  "floors": {
+    "98": {
+      "name": "Direction",
+      "bg_key": "floor_98",
+      "rooms": ["office_director", "meeting_room"],
+      "objects": [
+        {
+          "id": "papers_98",
+          "kind": "papers",
+          "x": 300,
+          "y": 50,
+          "props": {"task_id": "organize_papers"}
+        },
+        {
+          "id": "plant_98",
+          "kind": "plant",
+          "x": 450,
+          "y": 30,
+          "props": {"task_id": "water_plant", "thirst": 0.8}
+        },
+        {
+          "id": "npc_boss",
+          "kind": "npc",
+          "x": 200,
+          "y": 60,
+          "props": {"name": "M. Johnson", "dialogue_key": "boss_intro"}
+        },
+        {
+          "id": "deco_painting",
+          "kind": "decoration",
+          "x": 500,
+          "y": 20,
+          "props": {"sprite": "painting_office"}
+        }
+      ],
+    },
+    "97": {
+      "name": "Comptabilité",
+      "bg_key": "floor_97",
+      "rooms": ["office_accounting", "office_small"],
+      "interactables": [
+        {
+          "id": "printer_97",
+          "type": "printer",
+          "x": 350,
+          "y": 40,
+          "task_id": "fix_printer"
+        }
+      ],
+      "npcs": [
+        {
+          "id": "alex",
+          "name": "Alex",
+          "x": 250,
+          "y": 70,
+          "dialogue_id": "alex_morning"
+        }
+      ]
+    },
+    "96": {
+      "name": "Open Space",
+      "rooms": ["hallway", "office_open"],
+      "interactables": [
+        {
+          "id": "lightbulb_96",
+          "type": "lightbulb",
+          "x": 400,
+          "y": 20,
+          "task_id": "change_lightbulb"
+        }
+      ],
+      "npcs": [
+        {
+          "id": "maya",
+          "name": "Maya",
+          "x": 300,
+          "y": 80,
+          "dialogue_id": "maya_morning"
+        }
+      ]
+    },
+    "95": {
+      "name": "Ressources Humaines",
+      "rooms": ["office_hr", "archive_room"],
+      "interactables": [
+        {
+          "id": "filing_95",
+          "type": "filing_cabinet",
+          "x": 280,
+          "y": 45,
+          "task_id": "organize_files"
+        }
+      ],
+      "npcs": [
+        {
+          "id": "sarah",
+          "name": "Sarah",
+          "x": 200,
+          "y": 75,
+          "dialogue_id": "sarah_morning"
+        }
+      ]
+    },
+    "94": {
+      "name": "IT",
+      "rooms": ["server_room", "office_it"],
+      "interactables": [
+        {
+          "id": "computer_94",
+          "type": "computer",
+          "x": 320,
+          "y": 55,
+          "task_id": "update_system"
+        }
+      ],
+      "npcs": [
+        {
+          "id": "tech_guy",
+          "name": "Mike",
+          "x": 380,
+          "y": 65,
+          "dialogue_id": "mike_morning"
+        }
+      ]
+    },
+    "93": {
+      "name": "Marketing",
+      "rooms": ["office_marketing", "presentation_room"],
+      "interactables": [
+        {
+          "id": "presentation_93",
+          "type": "projector",
+          "x": 360,
+          "y": 35,
+          "task_id": "setup_presentation"
+        }
+      ],
+      "npcs": [
+        {
+          "id": "lisa",
+          "name": "Lisa",
+          "x": 220,
+          "y": 85,
+          "dialogue_id": "lisa_morning"
+        }
+      ]
+    },
+    "92": {
+      "name": "Ventes",
+      "rooms": ["office_sales", "conference_room"],
+      "interactables": [
+        {
+          "id": "phone_92",
+          "type": "phone",
+          "x": 270,
+          "y": 60,
+          "task_id": "answer_calls"
+        }
+      ],
+      "npcs": [
+        {
+          "id": "john",
+          "name": "John",
+          "x": 340,
+          "y": 70,
+          "dialogue_id": "john_morning"
+        }
+      ]
+    },
+    "91": {
+      "name": "Support Client",
+      "rooms": ["office_support", "break_room"],
+      "interactables": [
+        {
+          "id": "coffee_91",
+          "type": "coffee_machine",
+          "x": 400,
+          "y": 25,
+          "task_id": "make_coffee"
+        }
+      ],
+      "npcs": [
+        {
+          "id": "emma",
+          "name": "Emma",
+          "x": 180,
+          "y": 90,
+          "dialogue_id": "emma_morning"
+        }
+      ]
+    },
+    "90": {
+      "name": "Lobby",
+      "rooms": ["lobby", "reception"],
+      "interactables": [
+        {
+          "id": "reception_90",
+          "type": "reception_desk",
+          "x": 200,
+          "y": 70,
+          "task_id": "check_badge"
+        }
+      ],
+      "npcs": [
+        {
+          "id": "guard",
+          "name": "Gardien",
+          "x": 150,
+          "y": 80,
+          "dialogue_id": "guard_morning"
+        },
+        {
+          "id": "receptionist",
+          "name": "Julie",
+          "x": 220,
+          "y": 75,
+          "dialogue_id": "receptionist_morning"
+        }
+      ]
+    }
+  }
+}

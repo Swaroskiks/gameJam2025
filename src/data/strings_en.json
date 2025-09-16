@@ -1,0 +1,126 @@
+{
+  "description": "English localization strings",
+  "ui": {
+    "game_title": "A Day at the Office",
+    "menu": {
+      "play": "Play",
+      "options": "Options",
+      "credits": "Credits", 
+      "quit": "Quit"
+    },
+    "hud": {
+      "time": "Time",
+      "tasks": "Tasks",
+      "floor": "Floor",
+      "interact": "E: Interact",
+      "elevator": "↑↓: Elevator"
+    },
+    "pause": {
+      "title": "Pause",
+      "resume": "Resume",
+      "menu": "Main Menu",
+      "quit": "Quit"
+    },
+    "summary": {
+      "title": "Your Day Summary",
+      "time_elapsed": "Time Elapsed",
+      "tasks_completed": "Tasks Completed",
+      "total_points": "Total Points", 
+      "trophies_earned": "Trophies Earned",
+      "continue": "Continue"
+    }
+  },
+  "content_warning": {
+    "title": "Content Warning",
+    "message": [
+      "This game references the events of September 11, 2001",
+      "at the World Trade Center in a respectful manner.",
+      "",
+      "It contains no graphic depictions",
+      "of the tragic events.",
+      "",
+      "The game stops at 08:48 and focuses on",
+      "small everyday gestures."
+    ],
+    "acknowledge": "I Understand",
+    "back": "Back"
+  },
+  "tasks": {
+    "main_tasks": "Main Tasks",
+    "side_tasks": "Side Tasks",
+    "completed": "Completed",
+    "in_progress": "In Progress",
+    "available": "Available",
+    "locked": "Locked"
+  },
+  "interactions": {
+    "plant": {
+      "examine": "A beautiful green plant that looks a bit thirsty.",
+      "water": "You gently water the plant.",
+      "already_watered": "This plant has already been watered today."
+    },
+    "papers": {
+      "examine": "Papers scattered on the desk.",
+      "organize": "You carefully organize the documents.",
+      "already_organized": "These papers are already perfectly organized."
+    },
+    "printer": {
+      "examine": "The printer is blinking with an error light.",
+      "fix": "You restart the printer and change the toner.",
+      "already_fixed": "The printer is working perfectly."
+    },
+    "reception": {
+      "examine": "The reception desk with the time clock system.",
+      "check_in": "You clock in with your badge.",
+      "already_checked": "You've already clocked in this morning."
+    },
+    "elevator": {
+      "call": "You call the elevator.",
+      "enter": "You enter the elevator.",
+      "select_floor": "Select your destination floor.",
+      "doors_opening": "Doors opening...",
+      "doors_closing": "Doors closing...",
+      "moving": "Elevator moving..."
+    }
+  },
+  "dialogues": {
+    "boss_morning": [
+      "Ah, good morning! Good to see you on time.",
+      "I hope you'll have a great day.",
+      "Don't hesitate if you have any questions."
+    ],
+    "alex_morning": [
+      "Hey! Did you see the state of the printer?",
+      "It's acting up again this morning.",
+      "If you could take a look, that would be great."
+    ],
+    "maya_morning": [
+      "Good morning! Beautiful day isn't it?",
+      "I love this view from the upper floors.",
+      "Makes you want to work well."
+    ],
+    "guard_morning": [
+      "Good morning! Don't forget to clock in at reception.",
+      "It's important for building security.",
+      "Have a good day!"
+    ]
+  },
+  "notifications": {
+    "task_completed": "Task Completed!",
+    "task_available": "New Task Available",
+    "trophy_earned": "Trophy Earned!",
+    "elevator_arrived": "Elevator Arrived",
+    "time_warning": "It's almost 08:48..."
+  },
+  "floors": {
+    "90": "Lobby",
+    "91": "Customer Support",
+    "92": "Sales",
+    "93": "Marketing",
+    "94": "IT",
+    "95": "Human Resources", 
+    "96": "Open Space",
+    "97": "Accounting",
+    "98": "Management"
+  }
+}

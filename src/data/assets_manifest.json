@@ -1,0 +1,209 @@
+{
+  "version": 1,
+  "description": "Manifest des assets pour A Day at the Office",
+  "images": {
+    "player_idle": {
+      "path": "sprites/player_idle.png",
+      "frame_w": 96,
+      "frame_h": 144,
+      "description": "Joueur au repos"
+    },
+    "elevator": {
+      "path": "sprites/elevator.png",
+      "frame_w": 80,
+      "frame_h": 140,
+      "description": "Cabine d'ascenseur"
+    },
+    "elevator_doors": {
+      "path": "sprites/elevator_doors.png",
+      "frame_w": 80,
+      "frame_h": 140,
+      "description": "Portes d'ascenseur"
+    },
+    "ui_panel": {
+      "path": "ui/panel.png",
+      "frame_w": 200,
+      "frame_h": 100,
+      "description": "Panneau UI générique"
+    },
+    "ui_task_icon": {
+      "path": "ui/task_icon.png",
+      "frame_w": 32,
+      "frame_h": 32,
+      "description": "Icône des tâches cliquable"
+    },
+    "office_bg": {
+      "path": "images/background.jpg",
+      "description": "Arrière-plan bureau (existant)"
+    },
+    "menu_bg": {
+      "path": "images/background_.jpg", 
+      "description": "Arrière-plan menu (existant)"
+    },
+    "npc_generic": {
+      "path": "sprites/npc_generic.png",
+      "frame_w": 32,
+      "frame_h": 48,
+      "description": "NPC générique"
+    },
+    "interactable_plant": {
+      "path": "sprites/plant.png",
+      "frame_w": 24,
+      "frame_h": 32,
+      "description": "Plante à arroser"
+    },
+    "interactable_papers": {
+      "path": "sprites/papers.png",
+      "frame_w": 16,
+      "frame_h": 16,
+      "description": "Papiers à ramasser"
+    },
+    "interactable_printer": {
+      "path": "sprites/printer.png",
+      "frame_w": 48,
+      "frame_h": 32,
+      "description": "Imprimante"
+    }
+  },
+  "spritesheets": {
+    "player_walk": {
+      "path": "sprites/player_walk.png",
+      "frame_w": 32,
+      "frame_h": 48,
+      "fps": 8,
+      "frames": 4,
+      "description": "Animation marche du joueur"
+    },
+    "elevator_animation": {
+      "path": "sprites/elevator_anim.png",
+      "frame_w": 80,
+      "frame_h": 140,
+      "fps": 2,
+      "frames": 2,
+      "description": "Animation ascenseur"
+    }
+  },
+  "tilesets": {
+    "office_tiles": {
+      "path": "tilesets/office.png",
+      "tile_w": 48,
+      "tile_h": 48,
+      "description": "Tuiles de bureau"
+    },
+    "building_structure": {
+      "path": "tilesets/building.png",
+      "tile_w": 48,
+      "tile_h": 48,
+      "description": "Structure du bâtiment"
+    }
+  },
+  "backgrounds": {
+    "sky": {
+      "path": "backgrounds/sky.png",
+      "description": "Ciel en arrière-plan"
+    },
+    "city": {
+      "path": "backgrounds/city.png",
+      "description": "Vue de la ville"
+    },
+    "floor_90": {
+      "path": "backgrounds/floor_90.png",
+      "description": "Fond étage 90 - Lobby"
+    },
+    "floor_95": {
+      "path": "backgrounds/floor_95.png",
+      "description": "Fond étage 95 - Accueil"
+    },
+    "floor_96": {
+      "path": "backgrounds/floor_96.png",
+      "description": "Fond étage 96 - Bureaux"
+    },
+    "floor_97": {
+      "path": "backgrounds/floor_97.png",
+      "description": "Fond étage 97 - Bureaux"
+    },
+    "floor_98": {
+      "path": "backgrounds/floor_98.png",
+      "description": "Fond étage 98 - Direction"
+    },
+    "floor_default": {
+      "path": "backgrounds/floor_default.png",
+      "description": "Fond d'étage par défaut"
+    }
+  },
+  "fonts": {
+    "ui_font": {
+      "path": "fonts/Pixellari.ttf",
+      "size": 18,
+      "description": "Police UI principale (existante)"
+    },
+    "title_font": {
+      "path": "fonts/Pixellari.ttf",
+      "size": 36,
+      "description": "Police pour titres (existante)"
+    },
+    "body_font": {
+      "path": "fonts/Pixellari.ttf",
+      "size": 14,
+      "description": "Police pour texte courant (existante)"
+    }
+  },
+  "audio": {
+    "sfx": {
+      "elevator_ding": {
+        "path": "sfx/elevator_ding.wav",
+        "volume": 0.7,
+        "description": "Son ding d'ascenseur"
+      },
+      "elevator_move": {
+        "path": "sfx/elevator_move.wav",
+        "volume": 0.5,
+        "description": "Son mouvement d'ascenseur"
+      },
+      "printer_sound": {
+        "path": "sfx/printer.wav",
+        "volume": 0.6,
+        "description": "Son d'imprimante"
+      },
+      "paper_pickup": {
+        "path": "sfx/paper_pickup.wav",
+        "volume": 0.4,
+        "description": "Son ramasser papier"
+      },
+      "water_plant": {
+        "path": "sfx/water_plant.wav",
+        "volume": 0.5,
+        "description": "Son arroser plante"
+      },
+      "footsteps": {
+        "path": "sfx/footsteps.wav",
+        "volume": 0.3,
+        "description": "Bruits de pas"
+      },
+      "ui_click": {
+        "path": "sfx/ui_click.wav",
+        "volume": 0.6,
+        "description": "Clic UI"
+      },
+      "task_complete": {
+        "path": "sfx/task_complete.wav",
+        "volume": 0.8,
+        "description": "Tâche terminée"
+      }
+    },
+    "music": {
+      "ambient_office": {
+        "path": "music/ambient_office.ogg",
+        "volume": 0.3,
+        "loop": true,
+        "description": "Ambiance bureau"
+      },
+      "menu_theme": {
+        "path": "music/menu_theme.ogg",
+        "volume": 0.4,
+        "loop": true,
+        "description": "Musique de menu"
+      }
+    }
+  }
+}

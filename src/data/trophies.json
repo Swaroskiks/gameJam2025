@@ -1,0 +1,194 @@
+{
+  "description": "Système de trophées et récompenses",
+  "trophies": [
+    {
+      "id": "main_verte",
+      "name": "Main Verte",
+      "description": "Vous avez pris soin de la plante de direction.",
+      "icon": "🌱",
+      "condition": {
+        "type": "task_completed",
+        "task_id": "water_plant"
+      },
+      "rarity": "common",
+      "points": 10
+    },
+    {
+      "id": "ranger_pro",
+      "name": "Ranger Pro",
+      "description": "Vous avez remis de l'ordre dans les papiers.",
+      "icon": "📄",
+      "condition": {
+        "type": "task_completed",
+        "task_id": "organize_papers"
+      },
+      "rarity": "common",
+      "points": 8
+    },
+    {
+      "id": "technicien_sauveur",
+      "name": "Technicien Sauveur",
+      "description": "Vous avez ressuscité l'imprimante récalcitrante.",
+      "icon": "🖨️",
+      "condition": {
+        "type": "task_completed",
+        "task_id": "fix_printer"
+      },
+      "rarity": "common",
+      "points": 12
+    },
+    {
+      "id": "ponctuel",
+      "name": "Ponctuel",
+      "description": "Vous avez pointé à l'heure à la réception.",
+      "icon": "✅",
+      "condition": {
+        "type": "task_completed",
+        "task_id": "check_badge"
+      },
+      "rarity": "common",
+      "points": 5
+    },
+    {
+      "id": "toujours_a_lecoute",
+      "name": "Toujours à l'Écoute",
+      "description": "Vous avez parlé à au moins 3 collègues.",
+      "icon": "👂",
+      "condition": {
+        "type": "tasks_count",
+        "task_type": "dialogue",
+        "min_count": 3
+      },
+      "rarity": "uncommon",
+      "points": 15
+    },
+    {
+      "id": "employe_modele",
+      "name": "Employé Modèle",
+      "description": "Vous avez terminé toutes les tâches principales.",
+      "icon": "⭐",
+      "condition": {
+        "type": "all_main_tasks"
+      },
+      "rarity": "rare",
+      "points": 25
+    },
+    {
+      "id": "perfectionniste",
+      "name": "Perfectionniste",
+      "description": "Vous avez terminé TOUTES les tâches disponibles.",
+      "icon": "💎",
+      "condition": {
+        "type": "all_tasks"
+      },
+      "rarity": "legendary",
+      "points": 50
+    },
+    {
+      "id": "explorateur",
+      "name": "Explorateur",
+      "description": "Vous avez visité tous les étages du building.",
+      "icon": "🏢",
+      "condition": {
+        "type": "floors_visited",
+        "min_floors": 9
+      },
+      "rarity": "uncommon",
+      "points": 12
+    },
+    {
+      "id": "rapide_comme_eclair",
+      "name": "Rapide comme l'Éclair",
+      "description": "Vous avez terminé les tâches principales en moins de 10 minutes.",
+      "icon": "⚡",
+      "condition": {
+        "type": "time_limit",
+        "max_minutes": 10,
+        "tasks": "main_tasks"
+      },
+      "rarity": "rare",
+      "points": 30
+    },
+    {
+      "id": "sociable",
+      "name": "Sociable",
+      "description": "Vous avez parlé à tous les NPCs disponibles.",
+      "icon": "🗣️",
+      "condition": {
+        "type": "all_npcs_talked"
+      },
+      "rarity": "uncommon",
+      "points": 18
+    },
+    {
+      "id": "ascenseur_master",
+      "name": "Maître Ascenseur",
+      "description": "Vous avez utilisé l'ascenseur plus de 20 fois.",
+      "icon": "🛗",
+      "condition": {
+        "type": "elevator_uses",
+        "min_uses": 20
+      },
+      "rarity": "common",
+      "points": 8
+    },
+    {
+      "id": "efficace",
+      "name": "Efficace",
+      "description": "Vous avez terminé 3 tâches sans changer d'étage.",
+      "icon": "🎯",
+      "condition": {
+        "type": "tasks_same_floor",
+        "min_tasks": 3
+      },
+      "rarity": "uncommon",
+      "points": 15
+    },
+    {
+      "id": "derniere_minute",
+      "name": "Dernière Minute",
+      "description": "Vous avez terminé une tâche dans les 2 dernières minutes.",
+      "icon": "⏰",
+      "condition": {
+        "type": "task_in_final_minutes",
+        "final_minutes": 2
+      },
+      "rarity": "rare",
+      "points": 20
+    },
+    {
+      "id": "methodique",
+      "name": "Méthodique",
+      "description": "Vous avez terminé les tâches dans l'ordre des étages.",
+      "icon": "📋",
+      "condition": {
+        "type": "tasks_in_floor_order"
+      },
+      "rarity": "uncommon",
+      "points": 16
+    },
+    {
+      "id": "collegue_ideal",
+      "name": "Collègue Idéal",
+      "description": "Vous avez aidé quelqu'un à chaque étage visité.",
+      "icon": "🤝",
+      "condition": {
+        "type": "help_per_floor"
+      },
+      "rarity": "rare",
+      "points": 25
+    }
+  ],
+  "rarity_colors": {
+    "common": "#FFFFFF",
+    "uncommon": "#1EFF00", 
+    "rare": "#0099FF",
+    "legendary": "#FF6600"
+  },
+  "rarity_names": {
+    "common": "Commun",
+    "uncommon": "Peu commun",
+    "rare": "Rare", 
+    "legendary": "Légendaire"
+  }
+}

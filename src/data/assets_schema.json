@@ -1,0 +1,233 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Assets Manifest Schema",
+  "description": "Schéma de validation pour le manifest des assets",
+  "type": "object",
+  "required": ["version"],
+  "properties": {
+    "version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Version du format de manifest"
+    },
+    "description": {
+      "type": "string",
+      "description": "Description du manifest"
+    },
+    "images": {
+      "type": "object",
+      "patternProperties": {
+        "^[a-zA-Z_][a-zA-Z0-9_]*$": {
+          "type": "object",
+          "required": ["path"],
+          "properties": {
+            "path": {
+              "type": "string",
+              "description": "Chemin relatif vers le fichier image"
+            },
+            "frame_w": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Largeur d'une frame"
+            },
+            "frame_h": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Hauteur d'une frame"
+            },
+            "description": {
+              "type": "string",
+              "description": "Description de l'asset"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "spritesheets": {
+      "type": "object",
+      "patternProperties": {
+        "^[a-zA-Z_][a-zA-Z0-9_]*$": {
+          "type": "object",
+          "required": ["path", "frame_w", "frame_h", "fps"],
+          "properties": {
+            "path": {
+              "type": "string",
+              "description": "Chemin relatif vers le fichier spritesheet"
+            },
+            "frame_w": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Largeur d'une frame"
+            },
+            "frame_h": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Hauteur d'une frame"
+            },
+            "fps": {
+              "type": "number",
+              "minimum": 0.1,
+              "description": "Images par seconde"
+            },
+            "frames": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Nombre de frames dans l'animation"
+            },
+            "description": {
+              "type": "string",
+              "description": "Description de l'asset"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "tilesets": {
+      "type": "object",
+      "patternProperties": {
+        "^[a-zA-Z_][a-zA-Z0-9_]*$": {
+          "type": "object",
+          "required": ["path", "tile_w", "tile_h"],
+          "properties": {
+            "path": {
+              "type": "string",
+              "description": "Chemin relatif vers le fichier tileset"
+            },
+            "tile_w": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Largeur d'une tuile"
+            },
+            "tile_h": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Hauteur d'une tuile"
+            },
+            "description": {
+              "type": "string",
+              "description": "Description de l'asset"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "backgrounds": {
+      "type": "object",
+      "patternProperties": {
+        "^[a-zA-Z_][a-zA-Z0-9_]*$": {
+          "type": "object",
+          "required": ["path"],
+          "properties": {
+            "path": {
+              "type": "string",
+              "description": "Chemin relatif vers le fichier background"
+            },
+            "description": {
+              "type": "string",
+              "description": "Description de l'asset"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "fonts": {
+      "type": "object",
+      "patternProperties": {
+        "^[a-zA-Z_][a-zA-Z0-9_]*$": {
+          "type": "object",
+          "required": ["path", "size"],
+          "properties": {
+            "path": {
+              "type": "string",
+              "description": "Chemin relatif vers le fichier font"
+            },
+            "size": {
+              "type": "integer",
+              "minimum": 8,
+              "description": "Taille de la police"
+            },
+            "description": {
+              "type": "string",
+              "description": "Description de l'asset"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "audio": {
+      "type": "object",
+      "properties": {
+        "sfx": {
+          "type": "object",
+          "patternProperties": {
+            "^[a-zA-Z_][a-zA-Z0-9_]*$": {
+              "type": "object",
+              "required": ["path"],
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "description": "Chemin relatif vers le fichier audio"
+                },
+                "volume": {
+                  "type": "number",
+                  "minimum": 0.0,
+                  "maximum": 1.0,
+                  "description": "Volume par défaut"
+                },
+                "description": {
+                  "type": "string",
+                  "description": "Description de l'asset"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        "music": {
+          "type": "object",
+          "patternProperties": {
+            "^[a-zA-Z_][a-zA-Z0-9_]*$": {
+              "type": "object",
+              "required": ["path"],
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "description": "Chemin relatif vers le fichier audio"
+                },
+                "volume": {
+                  "type": "number",
+                  "minimum": 0.0,
+                  "maximum": 1.0,
+                  "description": "Volume par défaut"
+                },
+                "loop": {
+                  "type": "boolean",
+                  "description": "Doit-il boucler"
+                },
+                "description": {
+                  "type": "string",
+                  "description": "Description de l'asset"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

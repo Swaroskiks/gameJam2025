@@ -1,0 +1,126 @@
+{
+  "description": "Chaînes de localisation française",
+  "ui": {
+    "game_title": "A Day at the Office",
+    "menu": {
+      "play": "Jouer",
+      "options": "Options", 
+      "credits": "Crédits",
+      "quit": "Quitter"
+    },
+    "hud": {
+      "time": "Heure",
+      "tasks": "Tâches",
+      "floor": "Étage",
+      "interact": "E : Interagir",
+      "elevator": "↑↓ : Ascenseur"
+    },
+    "pause": {
+      "title": "Pause",
+      "resume": "Reprendre",
+      "menu": "Menu principal",
+      "quit": "Quitter"
+    },
+    "summary": {
+      "title": "Résumé de votre journée",
+      "time_elapsed": "Temps écoulé",
+      "tasks_completed": "Tâches terminées",
+      "total_points": "Points totaux",
+      "trophies_earned": "Trophées obtenus",
+      "continue": "Continuer"
+    }
+  },
+  "content_warning": {
+    "title": "Avertissement de contenu",
+    "message": [
+      "Ce jeu évoque les événements du 11 septembre 2001",
+      "dans le World Trade Center de manière respectueuse.",
+      "",
+      "Il ne contient aucune représentation graphique",
+      "des événements tragiques.",
+      "",
+      "Le jeu s'arrête à 08:48 et se concentre sur",
+      "les petits gestes du quotidien."
+    ],
+    "acknowledge": "J'ai compris",
+    "back": "Retour"
+  },
+  "tasks": {
+    "main_tasks": "Tâches principales",
+    "side_tasks": "Tâches annexes",
+    "completed": "Terminé",
+    "in_progress": "En cours",
+    "available": "Disponible",
+    "locked": "Verrouillé"
+  },
+  "interactions": {
+    "plant": {
+      "examine": "Une belle plante verte qui a l'air un peu assoiffée.",
+      "water": "Vous arrosez délicatement la plante.",
+      "already_watered": "Cette plante a déjà été arrosée aujourd'hui."
+    },
+    "papers": {
+      "examine": "Des papiers éparpillés sur le bureau.",
+      "organize": "Vous rangez soigneusement les documents.",
+      "already_organized": "Ces papiers sont déjà parfaitement classés."
+    },
+    "printer": {
+      "examine": "L'imprimante clignote avec un voyant d'erreur.",
+      "fix": "Vous redémarrez l'imprimante et changez le toner.",
+      "already_fixed": "L'imprimante fonctionne parfaitement."
+    },
+    "reception": {
+      "examine": "Le bureau de la réception avec le système de pointage.",
+      "check_in": "Vous pointez votre badge à l'accueil.",
+      "already_checked": "Vous avez déjà pointé ce matin."
+    },
+    "elevator": {
+      "call": "Vous appelez l'ascenseur.",
+      "enter": "Vous entrez dans l'ascenseur.",
+      "select_floor": "Sélectionnez votre étage de destination.",
+      "doors_opening": "Les portes s'ouvrent...",
+      "doors_closing": "Les portes se ferment...",
+      "moving": "L'ascenseur se déplace..."
+    }
+  },
+  "dialogues": {
+    "boss_morning": [
+      "Ah, bonjour ! Content de vous voir à l'heure.",
+      "J'espère que vous passerez une bonne journée.",
+      "N'hésitez pas si vous avez des questions."
+    ],
+    "alex_morning": [
+      "Salut ! Tu as vu l'état de l'imprimante ?",
+      "Elle fait encore des siennes ce matin.",
+      "Si tu pouvais y jeter un œil, ce serait génial."
+    ],
+    "maya_morning": [
+      "Bonjour ! Belle journée n'est-ce pas ?",
+      "J'adore cette vue depuis les étages élevés.",
+      "Ça donne envie de bien travailler."
+    ],
+    "guard_morning": [
+      "Bonjour ! N'oubliez pas de pointer à l'accueil.",
+      "C'est important pour la sécurité du bâtiment.",
+      "Bonne journée !"
+    ]
+  },
+  "notifications": {
+    "task_completed": "Tâche terminée !",
+    "task_available": "Nouvelle tâche disponible",
+    "trophy_earned": "Trophée obtenu !",
+    "elevator_arrived": "Ascenseur arrivé",
+    "time_warning": "Il est bientôt 08:48..."
+  },
+  "floors": {
+    "90": "Lobby",
+    "91": "Support Client", 
+    "92": "Ventes",
+    "93": "Marketing",
+    "94": "IT",
+    "95": "Ressources Humaines",
+    "96": "Open Space",
+    "97": "Comptabilité",
+    "98": "Direction"
+  }
+}

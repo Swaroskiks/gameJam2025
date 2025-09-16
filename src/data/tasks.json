@@ -1,0 +1,163 @@
+{
+  "description": "Définition des tâches du jeu",
+  "main_tasks": [
+    {
+      "id": "water_plant",
+      "title": "Arroser la plante",
+      "description": "La plante du bureau de direction a l'air assoiffée.",
+      "type": "interaction",
+      "floor": 98,
+      "interactable_id": "plant_98",
+      "reward_points": 10,
+      "required": true,
+      "dependencies": [],
+      "completion_message": "La plante vous remercie d'un frémissement de feuilles."
+    },
+    {
+      "id": "organize_papers",
+      "title": "Ranger les papiers",
+      "description": "Des documents traînent sur le bureau. Il faut les classer.",
+      "type": "interaction", 
+      "floor": 98,
+      "interactable_id": "papers_98",
+      "reward_points": 8,
+      "required": true,
+      "dependencies": [],
+      "completion_message": "Les papiers sont maintenant parfaitement classés."
+    },
+    {
+      "id": "fix_printer",
+      "title": "Relancer l'imprimante",
+      "description": "L'imprimante de la comptabilité fait des siennes.",
+      "type": "interaction",
+      "floor": 97,
+      "interactable_id": "printer_97", 
+      "reward_points": 12,
+      "required": true,
+      "dependencies": [],
+      "completion_message": "L'imprimante ronronne à nouveau de satisfaction."
+    },
+    {
+      "id": "check_badge",
+      "title": "Pointer à l'accueil",
+      "description": "N'oubliez pas de vous signaler à la réception.",
+      "type": "interaction",
+      "floor": 90,
+      "interactable_id": "reception_90",
+      "reward_points": 5,
+      "required": true,
+      "dependencies": [],
+      "completion_message": "Votre présence est maintenant enregistrée."
+    }
+  ],
+  "side_tasks": [
+    {
+      "id": "change_lightbulb",
+      "title": "Changer l'ampoule",
+      "description": "L'ampoule du couloir clignote dangereusement.",
+      "type": "interaction",
+      "floor": 96,
+      "interactable_id": "lightbulb_96",
+      "reward_points": 6,
+      "required": false,
+      "dependencies": [],
+      "completion_message": "La lumière brille à nouveau de mille feux."
+    },
+    {
+      "id": "organize_files",
+      "title": "Classer les dossiers",
+      "description": "Les dossiers RH sont dans un désordre artistique.",
+      "type": "interaction",
+      "floor": 95,
+      "interactable_id": "filing_95",
+      "reward_points": 7,
+      "required": false,
+      "dependencies": [],
+      "completion_message": "Les dossiers respirent l'ordre et la méthode."
+    },
+    {
+      "id": "update_system",
+      "title": "Mettre à jour le système",
+      "description": "Le serveur IT demande une mise à jour urgente.",
+      "type": "interaction",
+      "floor": 94,
+      "interactable_id": "computer_94",
+      "reward_points": 9,
+      "required": false,
+      "dependencies": [],
+      "completion_message": "Le système est maintenant à jour et sécurisé."
+    },
+    {
+      "id": "setup_presentation",
+      "title": "Préparer la présentation",
+      "description": "Le projecteur marketing a besoin d'être configuré.",
+      "type": "interaction",
+      "floor": 93,
+      "interactable_id": "presentation_93",
+      "reward_points": 8,
+      "required": false,
+      "dependencies": [],
+      "completion_message": "La présentation est prête pour impressionner."
+    },
+    {
+      "id": "answer_calls",
+      "title": "Répondre au téléphone",
+      "description": "Le téléphone des ventes sonne dans le vide.",
+      "type": "interaction",
+      "floor": 92,
+      "interactable_id": "phone_92",
+      "reward_points": 6,
+      "required": false,
+      "dependencies": [],
+      "completion_message": "Les clients sont maintenant satisfaits."
+    },
+    {
+      "id": "make_coffee",
+      "title": "Préparer le café",
+      "description": "La machine à café du support client est vide.",
+      "type": "interaction",
+      "floor": 91,
+      "interactable_id": "coffee_91",
+      "reward_points": 4,
+      "required": false,
+      "dependencies": [],
+      "completion_message": "L'arôme du café frais emplit la pièce."
+    },
+    {
+      "id": "talk_to_boss",
+      "title": "Parler au patron",
+      "description": "M. Johnson souhaite vous voir.",
+      "type": "dialogue",
+      "floor": 98,
+      "npc_id": "boss",
+      "reward_points": 5,
+      "required": false,
+      "dependencies": ["organize_papers", "water_plant"],
+      "completion_message": "M. Johnson semble satisfait de votre travail."
+    },
+    {
+      "id": "chat_with_alex",
+      "title": "Discuter avec Alex",
+      "description": "Alex de la compta a l'air d'avoir quelque chose à dire.",
+      "type": "dialogue",
+      "floor": 97,
+      "npc_id": "alex",
+      "reward_points": 3,
+      "required": false,
+      "dependencies": [],
+      "completion_message": "Alex vous remercie de l'avoir écouté."
+    },
+    {
+      "id": "help_maya",
+      "title": "Aider Maya",
+      "description": "Maya semble avoir besoin d'un coup de main.",
+      "type": "dialogue",
+      "floor": 96,
+      "npc_id": "maya",
+      "reward_points": 4,
+      "required": false,
+      "dependencies": [],
+      "completion_message": "Maya apprécie votre aide précieuse."
+    }
+  ]
+}
