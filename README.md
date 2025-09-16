@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # -gameJam2025
 
 Mécanique du cheval :
@@ -112,4 +113,6 @@ Le jeu respecte le thème car le joueur incarne un personnage secondaire : le de
 
 
 
+=======
+>>>>>>> e490363acc787a1071f9a6f36edb78db637d6145
 
