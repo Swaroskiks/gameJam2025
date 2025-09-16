@@ -265,7 +265,18 @@ class GameplayScene(Scene):
             player: Le joueur
         """
         player_pos = player.get_position()
+        current_floor = player.current_floor
         
+        # Chercher des objets du nouveau système sur l'étage actuel
+        if self.building:
+            floor = self.building.get_floor(current_floor)
+            if floor:
+                nearby_object = self._find_nearby_floor_object(player_pos, floor.objects)
+                if nearby_object:
+                    self._interact_with_floor_object(nearby_object)
+                    return
+        
+        # Fallback vers le système legacy
         # Chercher des NPCs proches
         nearby_npcs = self.entity_manager.get_nearby_npcs(player_pos)
         if nearby_npcs:
@@ -273,7 +284,7 @@ class GameplayScene(Scene):
             self._interact_with_npc(npc)
             return
         
-        # Chercher des objets interactifs
+        # Chercher des objets interactifs legacy
         nearby_objects = self.entity_manager.get_nearby_interactables(player_pos)
         if nearby_objects:
             obj = nearby_objects[0]  # Prendre le premier
@@ -282,6 +293,97 @@ class GameplayScene(Scene):
         
         # Aucune interaction disponible
         self.notification_manager.add_notification("Rien à faire ici.", 2.0)
+    
+    def _find_nearby_floor_object(self, player_pos, objects_list):
+        """
+        Trouve un objet proche du joueur dans la liste d'objets de l'étage.
+        
+        Args:
+            player_pos: Position du joueur (x, y)
+            objects_list: Liste des objets de l'étage
+            
+        Returns:
+            Objet proche ou None
+        """
+        world_x = 120  # Offset de la zone de jeu
+        player_x = player_pos[0]
+        
+        for obj_data in objects_list:
+            obj_x = world_x + obj_data.get('x', 0)
+            
+            # Calculer la distance horizontale (plus simple et plus fiable)
+            distance = abs(player_x - obj_x)
+            
+            # Zone d'interaction élargie
+            if distance < 100:  # Distance d'interaction plus généreuse
+                return obj_data
+        
+        return None
+    
+    def _interact_with_floor_object(self, obj_data):
+        """
+        Interagit avec un objet du nouveau système.
+        
+        Args:
+            obj_data: Données de l'objet depuis floors.json
+        """
+        kind = obj_data.get('kind', 'unknown')
+        obj_id = obj_data.get('id', 'unknown')
+        props = obj_data.get('props', {})
+        
+        if kind == "npc":
+            # Interaction avec NPC
+            name = props.get('name', 'Inconnu')
+            dialogue_key = props.get('dialogue_key', '')
+            
+            if dialogue_key:
+                # Démarrer le dialogue
+                dialogue_started = self.dialogue_system.start_dialogue(dialogue_key, name)
+                if dialogue_started:
+                    self.notification_manager.add_notification(f"Conversation avec {name}", 2.0)
+                else:
+                    self.notification_manager.add_notification(f"Bonjour {name} !", 2.0)
+            else:
+                self.notification_manager.add_notification(f"Vous parlez à {name}", 2.0)
+                
+        elif kind in ["plant", "papers", "printer", "reception"]:
+            # Interaction avec objet
+            task_id = props.get('task_id', '')
+            
+            if task_id and self.task_manager:
+                # Vérifier si la tâche est disponible
+                task = self.task_manager.get_task(task_id)
+                if task and self.task_manager.is_task_available(task_id):
+                    success = self.task_manager.complete_task(task_id)
+                    if success:
+                        self.notification_manager.add_notification(f"Tâche terminée : {task.title}", 3.0)
+                        
+                        # Messages spécifiques selon le type
+                        if kind == "plant":
+                            self.notification_manager.add_notification("Plante arrosée !", 2.0)
+                        elif kind == "papers":
+                            self.notification_manager.add_notification("Papiers rangés !", 2.0)
+                        elif kind == "printer":
+                            self.notification_manager.add_notification("Imprimante réparée !", 2.0)
+                        elif kind == "reception":
+                            self.notification_manager.add_notification("Badge récupéré !", 2.0)
+                    else:
+                        self.notification_manager.add_notification("Tâche déjà terminée.", 2.0)
+                else:
+                    self.notification_manager.add_notification("Cette tâche n'est pas encore disponible.", 2.0)
+            else:
+                # Interaction simple sans tâche
+                messages = {
+                    "plant": "Vous regardez la plante.",
+                    "papers": "Des papiers éparpillés.",
+                    "printer": "L'imprimante ronronne.",
+                    "reception": "Le bureau d'accueil."
+                }
+                message = messages.get(kind, f"Vous examinez {kind}.")
+                self.notification_manager.add_notification(message, 2.0)
+        else:
+            # Objet inconnu
+            self.notification_manager.add_notification(f"Vous examinez {obj_id}.", 2.0)
     
     def _interact_with_npc(self, npc):
         """
@@ -410,8 +512,12 @@ class GameplayScene(Scene):
     
     def draw(self, screen):
         """Dessine la scène."""
-        # Fond
-        screen.fill((100, 150, 200))  # Ciel bleu simple
+        # Fond dégradé plus agréable
+        for y in range(HEIGHT):
+            # Dégradé du gris clair vers gris foncé
+            color_value = int(220 - (y / HEIGHT) * 80)  # 220 -> 140
+            color = (color_value, color_value, color_value)
+            pygame.draw.line(screen, color, (0, y), (WIDTH, y))
         
         # Dessiner le monde (simplifié pour l'instant)
         self._draw_world(screen)
@@ -488,19 +594,25 @@ class GameplayScene(Scene):
             # Bordure de l'étage
             pygame.draw.rect(screen, (100, 100, 100), floor_rect, 2)
             
-            # Numéro d'étage
-            font = pygame.font.SysFont(None, 24)
-            floor_text = f"Étage {floor_num} - {floor.name}"
-            text_surface = font.render(floor_text, True, (0, 0, 0))
-            screen.blit(text_surface, (10, screen_y + 10))
+            # Numéro d'étage (seulement si c'est l'étage actuel)
+            if floor_num == current_floor:
+                font = pygame.font.SysFont(None, 28)
+                floor_text = f"Étage {floor_num} - {floor.name}"
+                text_surface = font.render(floor_text, True, (255, 255, 255))
+                # Fond semi-transparent pour le texte
+                text_bg = pygame.Surface((text_surface.get_width() + 10, text_surface.get_height() + 4))
+                text_bg.fill((0, 0, 0))
+                text_bg.set_alpha(150)
+                screen.blit(text_bg, (5, screen_y + 5))
+                screen.blit(text_surface, (10, screen_y + 7))
             
             # 2. Dessiner l'ascenseur (même taille que l'étage)
             if self.elevator:
                 elevator_sprite = asset_manager.get_image("elevator")
                 
-                # L'ascenseur prend toute la hauteur de l'étage
-                elevator_height = floor_height - 10  # Petite marge
-                elevator_width = 80  # Largeur fixe pour l'ascenseur
+                # L'ascenseur doit être bien visible et proportionnel
+                elevator_width = 60  # Largeur raisonnable
+                elevator_height = floor_height - 30  # Hauteur qui tient dans l'étage
                 
                 # Redimensionner en gardant les proportions si nécessaire
                 if elevator_sprite.get_height() > 0:
@@ -538,7 +650,8 @@ class GameplayScene(Scene):
                 if player:
                     player_sprite = asset_manager.get_image("player_idle")
                     player_x = player.x - player_sprite.get_width() // 2
-                    player_y = screen_y + floor_height - player_sprite.get_height() - 15
+                    # Positionner le joueur au sol (bas de l'étage)
+                    player_y = screen_y + floor_height - player_sprite.get_height() - 5
                     screen.blit(player_sprite, (player_x, player_y))
             
             # 5. Dessiner les entités legacy (compatibilité) - sur tous les étages
@@ -588,10 +701,10 @@ class GameplayScene(Scene):
             # Les objets sont posés au sol (bas de l'étage)
             if kind == "npc":
                 # NPCs debout sur le sol
-                final_y = screen_y + floor_height - obj_sprite.get_height() - 15
+                final_y = screen_y + floor_height - obj_sprite.get_height() - 5
             else:
-                # Objets posés sur le sol ou sur des surfaces
-                final_y = screen_y + floor_height - obj_sprite.get_height() - 10
+                # Objets posés sur le sol
+                final_y = screen_y + floor_height - obj_sprite.get_height() - 5
             
             # Effets spéciaux selon les props
             if kind in ["plant"] and props.get("thirst", 0) > 0.7:
@@ -606,6 +719,10 @@ class GameplayScene(Scene):
                 screen.blit(tinted_sprite, (final_x, final_y))
             else:
                 screen.blit(obj_sprite, (final_x, final_y))
+            
+            # Debug visuel : zone d'interaction (temporaire)
+            if kind != "decoration":  # Seulement pour les objets interactifs
+                pygame.draw.circle(screen, (255, 0, 0, 50), (int(screen_obj_x), int(final_y + obj_sprite.get_height()//2)), 100, 2)
     
     def _get_sprite_key_for_kind(self, kind: str) -> str:
         """
@@ -710,8 +827,33 @@ class GameplayScene(Scene):
             return
         
         player_pos = player.get_position()
+        current_floor = player.current_floor
         
-        # Vérifier les interactions possibles
+        # Vérifier les objets du nouveau système en priorité
+        if self.building:
+            floor = self.building.get_floor(current_floor)
+            if floor:
+                nearby_object = self._find_nearby_floor_object(player_pos, floor.objects)
+                if nearby_object:
+                    kind = nearby_object.get('kind', 'objet')
+                    props = nearby_object.get('props', {})
+                    
+                    if kind == "npc":
+                        name = props.get('name', 'Personne')
+                        self.hud.show_interaction_hint(f"E : Parler à {name}")
+                        return
+                    else:
+                        action_names = {
+                            "plant": "Arroser",
+                            "papers": "Ranger", 
+                            "printer": "Utiliser",
+                            "reception": "Utiliser"
+                        }
+                        action = action_names.get(kind, "Examiner")
+                        self.hud.show_interaction_hint(f"E : {action} {kind}")
+                        return
+        
+        # Fallback vers le système legacy
         nearby_npcs = self.entity_manager.get_nearby_npcs(player_pos)
         nearby_objects = self.entity_manager.get_nearby_interactables(player_pos)
         

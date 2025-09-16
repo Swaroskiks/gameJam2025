@@ -10,14 +10,14 @@
     },
     "elevator": {
       "path": "sprites/elevator.png",
-      "frame_w": 80,
-      "frame_h": 140,
+      "frame_w": 64,
+      "frame_h": 120,
       "description": "Cabine d'ascenseur"
     },
     "elevator_doors": {
       "path": "sprites/elevator_doors.png",
-      "frame_w": 80,
-      "frame_h": 140,
+      "frame_w": 64,
+      "frame_h": 120,
       "description": "Portes d'ascenseur"
     },
     "ui_panel": {
@@ -42,42 +42,42 @@
     },
     "npc_generic": {
       "path": "sprites/npc_generic.png",
-      "frame_w": 32,
-      "frame_h": 48,
+      "frame_w": 96,
+      "frame_h": 144,
       "description": "NPC générique"
     },
     "interactable_plant": {
       "path": "sprites/plant.png",
-      "frame_w": 24,
-      "frame_h": 32,
+      "frame_w": 48,
+      "frame_h": 64,
       "description": "Plante à arroser"
     },
     "interactable_papers": {
       "path": "sprites/papers.png",
-      "frame_w": 16,
-      "frame_h": 16,
+      "frame_w": 32,
+      "frame_h": 32,
       "description": "Papiers à ramasser"
     },
     "interactable_printer": {
       "path": "sprites/printer.png",
-      "frame_w": 48,
-      "frame_h": 32,
+      "frame_w": 96,
+      "frame_h": 64,
       "description": "Imprimante"
     }
   },
   "spritesheets": {
     "player_walk": {
       "path": "sprites/player_walk.png",
-      "frame_w": 32,
-      "frame_h": 48,
+      "frame_w": 96,
+      "frame_h": 144,
       "fps": 8,
       "frames": 4,
       "description": "Animation marche du joueur"
     },
     "elevator_animation": {
       "path": "sprites/elevator_anim.png",
-      "frame_w": 80,
-      "frame_h": 140,
+      "frame_w": 64,
+      "frame_h": 120,
       "fps": 2,
       "frames": 2,
       "description": "Animation ascenseur"
