@@ -12,8 +12,6 @@ from src.world.world_loader import WorldLoader
 from src.ui.overlay import HUD, NotificationManager
 from src.ui.dialogue import DialogueSystem
 from src.core.utils import load_json_safe
-from src.core.event_bus import event_bus
-from src.world.tasks import TaskStatus
 
 logger = logging.getLogger(__name__)
 
@@ -40,17 +38,7 @@ class GameplayScene(Scene):
         self.elevator = None
         self.entity_manager = None
         self.task_manager = None
-        self.flags = {}
-        self.dialogue_dsl = {}
-        self._intro_lock_active = True
-        self._time_events_fired = set()
-        self._object_progress = {}
-        self._printer_requirement = 2
         
-        # Événement narratif étage supérieur
-        self._top_floor_event_shown = False
-        self._top_floor_proximity_time = 0.0
-
         # État de l'interface
         self.paused = False
         
@@ -65,8 +53,10 @@ class GameplayScene(Scene):
         """Appelé en entrant dans la scène."""
         super().enter(**kwargs)
         
-        # Utiliser l'horloge globale fournie par l'app
-        self.game_clock = self.scene_manager.context.get("game_clock")
+        # Créer l'horloge de jeu pour cette session
+        from src.core.timer import GameClock
+        from src.settings import START_TIME, END_TIME, GAME_SECONDS_PER_REAL_SECOND
+        self.game_clock = GameClock(START_TIME, END_TIME, GAME_SECONDS_PER_REAL_SECOND)
         
         # Charger le monde
         if not self._load_world():
@@ -76,14 +66,12 @@ class GameplayScene(Scene):
         
         # Charger les chaînes de localisation
         self._load_strings()
-        # Charger dialogues DSL si présent
-        self._load_dialogues_dsl()
         
         # Initialiser l'UI
         self._setup_ui()
         
-        # Démarrer l'horloge de jeu (si pas déjà en route)
-        if self.game_clock and not self.game_clock.is_running:
+        # Démarrer l'horloge de jeu
+        if self.game_clock:
             self.game_clock.start()
         
         # Charger l'étage initial
@@ -92,9 +80,7 @@ class GameplayScene(Scene):
             if player:
                 initial_floor = player.current_floor
                 self.world_loader.change_player_floor(initial_floor)
-                # Intro: pas de tâches actives explicitement avant de parler au boss
-                # On laisse le TaskManager charger, mais on n'affiche rien tant que _intro_lock_active
-                
+        
         logger.info("Gameplay started")
     
     def _load_world(self) -> bool:
@@ -188,7 +174,8 @@ class GameplayScene(Scene):
                 # Changer d'étage vers le bas avec la flèche
                 self._handle_arrow_floor_change(-1)
                 return
-
+            # La sélection 0-9 n'est plus utilisée pour l'ascenseur
+        
         # Pour l'instant, gérer les entrées directement
         # TODO: Intégrer avec l'InputManager quand disponible
         pass
@@ -215,9 +202,6 @@ class GameplayScene(Scene):
         
         # Vérifier les conditions de fin
         self._check_game_end_conditions()
-
-        # Événements temporels
-        self._process_timeline_events()
     
     def _update_camera_for_floor(self, floor_number: int) -> None:
         """
@@ -257,9 +241,6 @@ class GameplayScene(Scene):
                         player.current_floor = self.elevator.current_floor
                         logger.info(f"Player moved to floor {self.elevator.current_floor}")
         
-        # Avancer l'horloge globale ici si jamais l'app n'est pas le pilote (sécurité)
-        if self.game_clock:
-            self.game_clock.tick(dt)
         # Plus besoin de mise à jour caméra avec vue 3 étages fixe
     
     def _update_ui_systems(self, dt):
@@ -328,19 +309,19 @@ class GameplayScene(Scene):
         Returns:
             Objet proche ou None
         """
-        world_x = 120  # Offset de la zone de jeu
         player_x = player_pos[0]
         
-        nearest = None
-        nearest_dist = 1e9
-        threshold = 64  # plus tolérant pour fiabilité, surtout au 1er étage
         for obj_data in objects_list:
-            obj_x = world_x + obj_data.get('x', 0)
-            d = abs(player_x - obj_x)
-            if d < threshold and d < nearest_dist:
-                nearest = obj_data
-                nearest_dist = d
-        return nearest
+            obj_x = obj_data.get('x', 0)
+            
+            # Calculer la distance horizontale (plus simple et plus fiable)
+            distance = abs(player_x - obj_x)
+            
+            # Zone d'interaction élargie
+            if distance < 100:  # Distance d'interaction plus généreuse
+                return obj_data
+        
+        return None
     
     def _interact_with_floor_object(self, obj_data):
         """
@@ -357,16 +338,12 @@ class GameplayScene(Scene):
             # Interaction avec NPC
             name = props.get('name', 'Inconnu')
             dialogue_key = props.get('dialogue_key', '')
-            dsl_key = props.get('dsl_key', dialogue_key)
             
             if dialogue_key:
                 # Démarrer le dialogue
                 dialogue_started = self.dialogue_system.start_dialogue(dialogue_key, name)
                 if dialogue_started:
                     self.notification_manager.add_notification(f"Conversation avec {name}", 2.0)
-                    # Event + effets DSL légers
-                    event_bus.emit("DIALOGUE_SEEN", {"id": dialogue_key})
-                    self._apply_dialogue_effects(dsl_key)
                 else:
                     self.notification_manager.add_notification(f"Bonjour {name} !", 2.0)
             else:
@@ -376,46 +353,6 @@ class GameplayScene(Scene):
             # Interaction avec objet
             task_id = props.get('task_id', '')
             
-            # Cas spécial imprimante: mini-puzzle simple par appuis successifs
-            if kind == "printer":
-                obj_key = obj_id
-                progress = self._object_progress.get(obj_key, 0)
-                requirement = self._printer_requirement
-                progress += 1
-                self._object_progress[obj_key] = progress
-                if progress < requirement:
-                    self.notification_manager.add_notification("Vous tirez le papier coincé...", 1.5)
-                    return
-                else:
-                    # Progression atteinte, réinitialiser pour ce puzzle
-                    self._object_progress[obj_key] = 0
-                    # Effet sonore (si dispo)
-                    try:
-                        from src.core.assets import asset_manager
-                        sfx = asset_manager.get_sound("printer_sound")
-                        if sfx:
-                            sfx.play()
-                    except Exception:
-                        pass
-                    # Tâche liée si présente
-                    if task_id and self.task_manager:
-                        task = self.task_manager.get_task(task_id)
-                        if task and self.task_manager.is_task_available(task_id):
-                            success = self.task_manager.complete_task(task_id)
-                            if success:
-                                self.notification_manager.add_notification("Imprimante relancée", 2.0)
-                                self.notification_manager.add_notification(f"Tâche terminée : {task.title}", 3.0)
-                        else:
-                            # Comptabiliser même si non assignée
-                            self.task_manager.complete_task_unassigned_if_match(obj_id)
-                            self.notification_manager.add_notification("Imprimante relancée", 2.0)
-                            self.notification_manager.add_notification("Action utile enregistrée", 2.0)
-                    else:
-                        self.notification_manager.add_notification("Imprimante relancée", 2.0)
-                    # Émettre événement
-                    event_bus.emit("OBJECT_INTERACTED", {"id": obj_id, "kind": kind})
-                    return
-
             if task_id and self.task_manager:
                 # Vérifier si la tâche est disponible
                 task = self.task_manager.get_task(task_id)
@@ -436,14 +373,7 @@ class GameplayScene(Scene):
                     else:
                         self.notification_manager.add_notification("Tâche déjà terminée.", 2.0)
                 else:
-                    # Compter l'action même si non assignée
-                    completed_id = self.task_manager.complete_task_unassigned_if_match(obj_id)
-                    if completed_id:
-                        done_task = self.task_manager.get_task(completed_id)
-                        if done_task:
-                            self.notification_manager.add_notification(f"Tâche terminée : {done_task.title}", 3.0)
-                    else:
-                        self.notification_manager.add_notification("Action utile enregistrée.", 2.0)
+                    self.notification_manager.add_notification("Cette tâche n'est pas encore disponible.", 2.0)
             else:
                 # Interaction simple sans tâche
                 messages = {
@@ -457,87 +387,6 @@ class GameplayScene(Scene):
         else:
             # Objet inconnu
             self.notification_manager.add_notification(f"Vous examinez {obj_id}.", 2.0)
-
-        # Événement d'objet interacté
-        event_bus.emit("OBJECT_INTERACTED", {"id": obj_id, "kind": kind})
-
-    def _load_dialogues_dsl(self) -> None:
-        try:
-            dialogue_path = DATA_PATH / "dialogues.json"
-            data = load_json_safe(dialogue_path)
-            if isinstance(data, dict):
-                self.dialogue_dsl = data
-        except Exception:
-            self.dialogue_dsl = {}
-
-    def _apply_dialogue_effects(self, dsl_key: str) -> None:
-        entry = self.dialogue_dsl.get(dsl_key)
-        if not isinstance(entry, dict):
-            return
-        # Top-level effects
-        for eff in entry.get("effects", []):
-            self._apply_effect(eff)
-        # First node effects if simple start exists
-        nodes = entry.get("nodes", {})
-        # Try to find a node whose conditions are met
-        matched_node = None
-        # Priority: explicit start node if no conds elsewhere
-        for node_id, node in nodes.items():
-            conds = node.get("cond") or []
-            if self._conditions_met(conds):
-                matched_node = node
-                break
-        if not matched_node:
-            start_id = entry.get("start")
-            if start_id and start_id in nodes:
-                matched_node = nodes[start_id]
-        if matched_node:
-            for eff in matched_node.get("effects", []):
-                self._apply_effect(eff)
-
-    def _apply_effect(self, eff: dict) -> None:
-        if not isinstance(eff, dict):
-            return
-        if "set_flag" in eff:
-            self.flags[eff["set_flag"]] = True
-            if eff["set_flag"] == "met_boss":
-                # Lever le verrou d'intro
-                self._intro_lock_active = False
-        if "discover_task" in eff and self.task_manager:
-            if self.task_manager.discover_task(eff["discover_task"]):
-                self.notification_manager.add_notification("Tâche découverte", 2.0)
-        if "offer_task" in eff and self.task_manager:
-            task_id = eff["offer_task"]
-            task = self.task_manager.get_task(task_id)
-            if task:
-                self.task_manager.task_status[task_id] = TaskStatus.AVAILABLE
-                self.task_manager.available_tasks.add(task_id)
-                self.notification_manager.add_notification("Nouvel objectif disponible", 2.0)
-        if "complete_task" in eff and self.task_manager:
-            self.task_manager.complete_task(eff["complete_task"])
-        if "give_points" in eff and self.task_manager:
-            self.task_manager.add_points(int(eff["give_points"]))
-
-    def _conditions_met(self, conds: list) -> bool:
-        """Évalue une liste de conditions DSL contre l'état actuel."""
-        if not conds:
-            return True
-        for c in conds:
-            if not isinstance(c, dict):
-                continue
-            if "flag_is_true" in c:
-                if not self.flags.get(c["flag_is_true"], False):
-                    return False
-            if "flag_is_false" in c:
-                if self.flags.get(c["flag_is_false"], False):
-                    return False
-            if "task_completed" in c and self.task_manager:
-                if not self.task_manager.is_task_completed(c["task_completed"]):
-                    return False
-            if "task_available" in c and self.task_manager:
-                if not self.task_manager.is_task_available(c["task_available"]):
-                    return False
-        return True
     
     def _interact_with_npc(self, npc):
         """
@@ -598,7 +447,7 @@ class GameplayScene(Scene):
         
         # Vérifier si le joueur est proche de l'ascenseur (zone plus large)
         distance = abs(player.x - elevator_x)
-        if distance < 48:  # Un peu plus tolérant
+        if distance < 60:  # Zone d'interaction plus large
             if self.elevator.current_floor == player.current_floor:
                 # L'ascenseur est déjà à cet étage
                 self.notification_manager.add_notification("Entrez dans l'ascenseur et choisissez un étage (0-9).", 3.0)
@@ -626,7 +475,8 @@ class GameplayScene(Scene):
                 elevator_x = 30 + 40  # Centre de l'ascenseur
                 distance = abs(player.x - elevator_x)
                 
-                if distance < 48:  # Zone d'interaction
+                if distance < 60:  # Zone d'interaction
+                    # Ne nécessite plus que l'ascenseur soit au même étage
                     self._change_player_floor(floor_number)
                 else:
                     self.notification_manager.add_notification("Approchez-vous de l'ascenseur.", 2.0)
@@ -643,24 +493,22 @@ class GameplayScene(Scene):
         success = self.world_loader.change_player_floor(new_floor)
         if success:
             self.notification_manager.add_notification(f"Arrivé à l'étage {new_floor}", 2.0)
-            event_bus.emit("ENTER_FLOOR", {"floor": new_floor})
         else:
             self.notification_manager.add_notification("Erreur lors du changement d'étage.", 2.0)
     
     def _check_game_end_conditions(self):
         """Vérifie les conditions de fin de jeu."""
-        if self.game_clock and self.game_clock.is_deadline():
-            logger.info("Game deadline reached, going to summary")
-            self.switch_to("summary")
+        # TODO: Fix 'bool' object is not callable error
+        # if self.game_clock and self.game_clock.is_deadline():
+        #     # Temps écoulé - aller au résumé
+        #     logger.info("Game deadline reached, going to summary")
+        #     self.switch_to("summary")
+        pass
     
     def draw(self, screen):
         """Dessine la scène."""
-        # Fond dégradé plus agréable
-        for y in range(HEIGHT):
-            # Dégradé du gris clair vers gris foncé
-            color_value = int(220 - (y / HEIGHT) * 80)  # 220 -> 140
-            color = (color_value, color_value, color_value)
-            pygame.draw.line(screen, color, (0, y), (WIDTH, y))
+        # Fond noir
+        screen.fill((0, 0, 0))
         
         # Dessiner le monde (simplifié pour l'instant)
         self._draw_world(screen)
@@ -682,7 +530,7 @@ class GameplayScene(Scene):
             return
         
         # Configuration vue multi-étages (3 étages visibles)
-        floor_height = HEIGHT // 3  # Chaque étage prend 1/3 de l'écran
+        floor_height = HEIGHT // 3  # Chaque étage prend exactement 1/3 de l'écran
         world_width = WIDTH - 150  # Largeur de la zone de jeu
         world_x = 120  # Position X de début de la zone de jeu
         
@@ -719,23 +567,32 @@ class GameplayScene(Scene):
             if not floor:
                 continue
             
-            # Position Y à l'écran : étage du haut = Y=0, étage du bas = Y=400
+            # Position Y à l'écran : étages collés sans espace
             screen_y = i * floor_height
             
-            # 1. Dessiner le fond d'étage
-            floor_rect = pygame.Rect(world_x, screen_y, world_width, floor_height - 10)
-            
-            if floor.background_surface:
-                # Utiliser le fond personnalisé
-                bg_scaled = pygame.transform.scale(floor.background_surface, (world_width, floor_height - 10))
-                screen.blit(bg_scaled, (world_x, screen_y))
+            # 1. Dessiner le sprite d'étage complet (couvre toute la largeur, inclut ascenseur)
+            floor_sprite = self._get_floor_sprite(floor_num)
+            if floor_sprite:
+                # Redimensionner pour couvrir exactement la hauteur d'étage sans espaces
+                # Calculer le ratio pour maintenir les proportions
+                sprite_ratio = floor_sprite.get_width() / floor_sprite.get_height()
+                screen_ratio = WIDTH / floor_height
+                
+                # Forcer la hauteur exacte pour éviter les espaces
+                scaled_height = floor_height
+                scaled_width = int(floor_height * sprite_ratio)
+                
+                # Redimensionner le sprite
+                floor_scaled = pygame.transform.scale(floor_sprite, (scaled_width, scaled_height))
+                
+                # Aligner à gauche (comme l'ascenseur) - la droite peut s'étendre indéfiniment
+                x_offset = 0
+                screen.blit(floor_scaled, (x_offset, screen_y))
             else:
-                # Fond par défaut
+                # Fallback : fond par défaut
+                floor_rect = pygame.Rect(0, screen_y, WIDTH, floor_height)
                 color = (240, 240, 240) if floor_num == current_floor else (200, 200, 200)
                 pygame.draw.rect(screen, color, floor_rect)
-            
-            # Bordure de l'étage
-            pygame.draw.rect(screen, (100, 100, 100), floor_rect, 2)
             
             # Numéro d'étage (seulement si c'est l'étage actuel)
             if floor_num == current_floor:
@@ -749,45 +606,11 @@ class GameplayScene(Scene):
                 screen.blit(text_bg, (5, screen_y + 5))
                 screen.blit(text_surface, (10, screen_y + 7))
             
-            # 2. Dessiner l'ascenseur (même taille que l'étage)
-            if self.elevator:
-                elevator_sprite = asset_manager.get_image("elevator")
-                
-                # L'ascenseur doit être bien visible et proportionnel
-                elevator_width = 60  # Largeur raisonnable
-                elevator_height = floor_height - 30  # Hauteur qui tient dans l'étage
-                
-                # Redimensionner en gardant les proportions si nécessaire
-                if elevator_sprite.get_height() > 0:
-                    ratio = min(elevator_width / elevator_sprite.get_width(), 
-                              elevator_height / elevator_sprite.get_height())
-                    final_width = int(elevator_sprite.get_width() * ratio)
-                    final_height = int(elevator_sprite.get_height() * ratio)
-                else:
-                    final_width, final_height = elevator_width, elevator_height
-                
-                elevator_resized = pygame.transform.scale(elevator_sprite, (final_width, final_height))
-                
-                # Positionner l'ascenseur à gauche
-                elevator_x = 30  # Position fixe à gauche
-                elevator_y = screen_y + (floor_height - final_height) // 2
-                screen.blit(elevator_resized, (elevator_x, elevator_y))
-                
-                # Indicateur si l'ascenseur est à cet étage
-                if self.elevator.current_floor == floor_num:
-                    # Porte ouverte/fermée
-                    if hasattr(self.elevator, 'doors_open') and self.elevator.doors_open:
-                        pygame.draw.rect(screen, (0, 255, 0), 
-                                       (elevator_x - 5, elevator_y, 5, final_height))
-                    else:
-                        pygame.draw.rect(screen, (255, 255, 0), 
-                                       (elevator_x - 5, elevator_y, 5, final_height))
-            
-            # 3. Dessiner les objets de l'étage (nouveau système)
+            # 2. Dessiner les objets de l'étage (nouveau système)
             for obj_data in floor.objects:
-                self._draw_floor_object(screen, obj_data, world_x, screen_y, floor_height)
+                self._draw_floor_object(screen, obj_data, screen_y, floor_height)
             
-            # 4. Dessiner le joueur s'il est sur cet étage
+            # 3. Dessiner le joueur s'il est sur cet étage
             if floor_num == current_floor and self.entity_manager:
                 player = self.entity_manager.get_player()
                 if player:
@@ -797,7 +620,7 @@ class GameplayScene(Scene):
                     player_y = screen_y + floor_height - player_sprite.get_height() - 5
                     screen.blit(player_sprite, (player_x, player_y))
             
-            # 5. Dessiner les entités legacy (compatibilité) - sur tous les étages
+            # 4. Dessiner les entités legacy (compatibilité) - sur tous les étages
             if self.entity_manager:
                 # NPCs legacy
                 for npc in self.entity_manager.npcs.values():
@@ -812,14 +635,13 @@ class GameplayScene(Scene):
                     if getattr(obj, 'current_floor', current_floor) == floor_num:
                         self._draw_legacy_object(screen, obj, screen_y, floor_height)
     
-    def _draw_floor_object(self, screen, obj_data: dict, world_x: int, screen_y: int, floor_height: int) -> None:
+    def _draw_floor_object(self, screen, obj_data: dict, screen_y: int, floor_height: int) -> None:
         """
         Dessine un objet positionné sur un étage.
         
         Args:
             screen: Surface de rendu
             obj_data: Données de l'objet depuis floors.json
-            world_x: Position X de début de la zone de jeu
             screen_y: Position Y de l'étage à l'écran
             floor_height: Hauteur d'un étage
         """
@@ -831,7 +653,8 @@ class GameplayScene(Scene):
         props = obj_data.get("props", {})
         
         # Calculer la position à l'écran (objets posés au sol)
-        screen_obj_x = world_x + obj_x
+        # Les objets sont maintenant positionnés par rapport à la largeur complète de l'écran
+        screen_obj_x = obj_x
         
         # Choisir le sprite selon le kind
         sprite_key = self._get_sprite_key_for_kind(kind)
@@ -862,7 +685,42 @@ class GameplayScene(Scene):
                 screen.blit(tinted_sprite, (final_x, final_y))
             else:
                 screen.blit(obj_sprite, (final_x, final_y))
-
+            
+            # Debug visuel : zone d'interaction (temporaire)
+            if kind != "decoration":  # Seulement pour les objets interactifs
+                pygame.draw.circle(screen, (255, 0, 0, 50), (int(screen_obj_x), int(final_y + obj_sprite.get_height()//2)), 100, 2)
+    
+    def _get_floor_sprite(self, floor_num: int):
+        """
+        Récupère le sprite d'étage pour un numéro d'étage donné.
+        
+        Args:
+            floor_num: Numéro d'étage
+            
+        Returns:
+            Surface du sprite d'étage ou None si non trouvé
+        """
+        from src.core.assets import asset_manager
+        
+        # Utiliser le nouveau sprite d'étage complet qui inclut l'ascenseur
+        try:
+            # Utiliser get_background pour les sprites d'étage
+            if hasattr(asset_manager, 'get_background'):
+                return asset_manager.get_background("floor_complete")
+            else:
+                return asset_manager.get_image("floor_complete")
+        except:
+            pass
+        
+        # Fallback vers le sprite par défaut
+        try:
+            if hasattr(asset_manager, 'get_background'):
+                return asset_manager.get_background("floor_default")
+            else:
+                return asset_manager.get_image("floor_default")
+        except:
+            return None
+    
     def _get_sprite_key_for_kind(self, kind: str) -> str:
         """
         Retourne la clé de sprite pour un type d'objet donné.
@@ -931,12 +789,7 @@ class GameplayScene(Scene):
             self.hud.draw_clock(screen, current_time, progress)
             
             # Tâches
-            if self._intro_lock_active:
-                available_tasks = []
-            else:
-                all_available = self.task_manager.get_available_tasks()
-                # Ne montrer que les tâches principales et celles offertes
-                available_tasks = [t for t in all_available if t.required or (hasattr(self.task_manager, 'offered_tasks') and t.id in self.task_manager.offered_tasks)]
+            available_tasks = self.task_manager.get_available_tasks()
             task_statuses = {task.id: self.task_manager.get_task_status(task.id) 
                            for task in self.task_manager.tasks.values()}
             self.hud.draw_tasks(screen, available_tasks, task_statuses)
@@ -1012,7 +865,8 @@ class GameplayScene(Scene):
             if self.elevator:
                 elevator_x = 30 + 40  # Centre de l'ascenseur
                 distance = abs(player.x - elevator_x)
-                if distance < 48:
+                if distance < 60:
+                    # Utiliser les flèches pour changer d'étage
                     self.hud.show_interaction_hint("↑/↓ : Changer d'étage")
                 else:
                     self.hud.hide_interaction_hint()
@@ -1020,7 +874,7 @@ class GameplayScene(Scene):
     def _handle_arrow_floor_change(self, direction: int) -> None:
         """
         Change d'un étage dans la direction donnée si le joueur est près de l'ascenseur.
-
+        
         Args:
             direction: +1 pour monter, -1 pour descendre
         """
@@ -1054,25 +908,6 @@ class GameplayScene(Scene):
         else:
             # Déjà au bord
             self.notification_manager.add_notification("Pas d'autre étage dans cette direction.", 1.5)
-
-    def _process_timeline_events(self) -> None:
-        """Émet des événements temporels clés et applique des effets simples."""
-        if not self.game_clock:
-            return
-        t = self.game_clock.get_time_str()
-        schedule = [
-            "08:31", "08:33", "08:35", "08:37", "08:40", "08:42", "08:45", "08:47"
-        ]
-        for ts in schedule:
-            if t >= ts and ts not in self._time_events_fired:
-                self._time_events_fired.add(ts)
-                event_bus.emit("TIME_REACHED", {"time": ts})
-                # Effets notables
-                if ts == "08:31":
-                    self.notification_manager.add_notification("La machine à café bourdonne au loin...", 2.5)
-                if ts == "08:37":
-                    self._printer_requirement = 3
-                    self.notification_manager.add_notification("La panne imprimante s'aggrave.", 2.5)
     
     
     def exit(self):
