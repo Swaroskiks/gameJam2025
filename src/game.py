@@ -2,8 +2,8 @@ import pygame
 from src.settings import WIDTH, HEIGHT, FPS, BLACK, WHITE
 
 def game_loop(screen, clock):
-    player = pygame.Rect(WIDTH // 2 - 20, HEIGHT // 2 - 20, 40, 40)
-    speed = 5
+    player = pygame.Rect(WIDTH - 20, HEIGHT - 20, 40, 40)
+    speed = 10
     running = True
 
     while running:

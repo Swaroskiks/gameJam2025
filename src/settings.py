@@ -26,14 +26,14 @@ MAX_FLOOR = 98
 ELEVATOR_POSITION_X = 64
 
 # Dimensions des entités
-PLAYER_WIDTH = 48
-PLAYER_HEIGHT = 72
+PLAYER_WIDTH = 144
+PLAYER_HEIGHT = 216
 TILE_SIZE = 48
 
 # Constantes de physique et mouvement
 WORLD_PX_PER_METER = 100  # Conversion pixels/mètres
-WALK_SPEED_MPS = 2.0     # Vitesse de marche en mètres/seconde
-PLAYER_TARGET_HEIGHT_RATIO = 0.8  # Ratio de hauteur cible du joueur
+WALK_SPEED_MPS = 3.0     # Vitesse de marche en mètres/seconde
+PLAYER_TARGET_HEIGHT_RATIO = 0  # Ratio de hauteur cible du joueur
 
 # Configuration des assets
 ASSETS_PATH = Path("assets")

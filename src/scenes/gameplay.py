@@ -928,11 +928,8 @@ class GameplayScene(Scene):
                 player = self.entity_manager.get_player()
                 if player:
                     player_sprite = asset_manager.get_image("player_idle")
-                    # Appliquer l'auto-scale nearest-neighbor
-                    if getattr(player, "render_scale", 1.0) != 1.0:
-                        w = int(player_sprite.get_width() * player.render_scale)
-                        h = int(player_sprite.get_height() * player.render_scale)
-                        player_sprite = pygame.transform.scale(player_sprite, (w, h))
+                    # Utiliser la taille définie dans le manifest (pas de redimensionnement automatique)
+                    # Le sprite est déjà redimensionné par l'AssetManager selon assets_manifest.json
                     player_x = player.x - player_sprite.get_width() // 2
                     # Positionner le joueur au sol avec baseline cohérente
                     baseline_y = screen_y + floor_height - 1

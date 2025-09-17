@@ -17,7 +17,7 @@ class Camera:
     l'effet de "rester sur place" lors des déplacements d'ascenseur.
     """
     
-    def __init__(self, initial_y: float = 0.0, speed: float = 200.0):
+    def __init__(self, initial_y: float = 500.0, speed: float = 200.0):
         """
         Initialise la caméra.
         
