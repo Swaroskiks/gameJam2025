@@ -436,25 +436,28 @@ class GameplayScene(Scene):
             dialogue_key = props.get('dialogue_key', '')
             npc_id = props.get('npc_id', obj_id)
 
-            # **C'est CE PNJ runtime qui bouge ET qui aura la bulle**
+            # ➊ Prendre d'abord le PNJ runtime classique
             npc_obj = self._get_runtime_npc(npc_id)
+            
+            # ➋ Sinon, tenter le PNJ fixe enregistré par le manager
+            if not npc_obj and hasattr(self.npc_movement_manager, "static_npcs"):
+                npc_obj = self.npc_movement_manager.static_npcs.get(npc_id)
+
             if not npc_obj:
                 self.notification_manager.add_notification("...il n'y a personne ici.", 1.5)
                 return
 
+            # Tâche du boss / dialogue JSON en BULLES
             if self.task_manager:
                 task = self.task_manager.get_task_for_npc(npc_id)
                 if task and self.task_manager.is_task_available(task.id):
                     if self.task_manager.complete_task(task.id):
                         self.notification_manager.add_notification(f"Tâche terminée : {task.title}", 3.0)
-                        self.speech_bubbles.add_bubble("Merci ! Tâche accomplie.", npc_obj, 2.5, (200, 255, 200))
+                        self.speech_bubbles.add_bubble("Parfait. On compte sur toi.", npc_obj, 2.5, (200, 255, 200))
                         self._play_sound("ui_click")
                         return
-                    else:
-                        self.speech_bubbles.add_bubble("Déjà fait !", npc_obj, 2.0, (255, 200, 200))
-                        return
 
-            # Dialogues "normaux" depuis ton JSON
+            # Bulle depuis strings_fr.json (boss_reed → lines)
             key = dialogue_key or self._infer_dialogue_key_from_name(name)
             if key and "dialogues" in self.strings and key in self.strings["dialogues"]:
                 self.speech_bubbles.speak_from_dict(self.strings, ["dialogues", key], npc_obj, color=(200, 200, 255))
@@ -869,6 +872,18 @@ class GameplayScene(Scene):
                     screen.blit(npc_sprite, (npc_x, npc_y))
                     
                     # Ancre pour les bulles (au sommet de la tête, centré)
+                    npc._bubble_anchor_x = npc_x + npc_sprite.get_width() // 2
+                    npc._bubble_anchor_y = npc_y
+            
+            # 5b. Dessiner les PNJ FIXES (boss, réception, etc.)
+            for npc in getattr(self.npc_movement_manager, "static_npcs", {}).values():
+                if hasattr(npc, 'current_floor') and npc.current_floor == floor_num:
+                    sprite_key = getattr(npc, 'sprite_key', 'npc_generic')
+                    npc_sprite = asset_manager.get_image(sprite_key)
+                    npc_x = npc.x - npc_sprite.get_width() // 2
+                    baseline_y = screen_y + floor_height - 1
+                    npc_y = baseline_y - npc_sprite.get_height()
+                    screen.blit(npc_sprite, (npc_x, npc_y))
                     npc._bubble_anchor_x = npc_x + npc_sprite.get_width() // 2
                     npc._bubble_anchor_y = npc_y
     

@@ -120,6 +120,7 @@ class NPCMovementManager:
             "boss_reed",  # Le boss reste à son bureau
             "receptionist_95",  # La réceptionniste reste à l'accueil
         }
+        self.static_npcs: Dict[str, object] = {}  # Registre des PNJ fixes pour le rendu
         
         logger.info("NPCMovementManager initialized")
     
@@ -129,7 +130,9 @@ class NPCMovementManager:
         
         # Vérifier si le NPC doit être fixe
         if npc_id in self.fixed_npcs:
-            logger.debug(f"NPC {npc_id} is fixed, no movement")
+            # Garder une référence pour le rendu & l'ancre bulle
+            self.static_npcs[npc_id] = npc
+            logger.debug(f"NPC {npc_id} registered as STATIC")
             return
         
         # Créer le gestionnaire de mouvement
