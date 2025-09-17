@@ -453,7 +453,7 @@ def create_elevator_call_trigger(trigger_id: str, elevator_x: int,
     condition = TriggerCondition(
         trigger_type=TriggerType.INTERACT_NEAR,
         center_pos=(elevator_x, 300),  # Centre vertical approximatif
-        radius=60.0
+        radius=40.0
     )
     
     return Trigger(trigger_id, condition, callback, repeatable=True)

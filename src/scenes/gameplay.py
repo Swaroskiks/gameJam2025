@@ -39,6 +39,10 @@ class GameplayScene(Scene):
         self.entity_manager = None
         self.task_manager = None
         
+        # Événement narratif étage supérieur
+        self._top_floor_event_shown = False
+        self._top_floor_proximity_time = 0.0
+        
         # État de l'interface
         self.paused = False
         
@@ -53,10 +57,8 @@ class GameplayScene(Scene):
         """Appelé en entrant dans la scène."""
         super().enter(**kwargs)
         
-        # Créer l'horloge de jeu pour cette session
-        from src.core.timer import GameClock
-        from src.settings import START_TIME, END_TIME, GAME_SECONDS_PER_REAL_SECOND
-        self.game_clock = GameClock(START_TIME, END_TIME, GAME_SECONDS_PER_REAL_SECOND)
+        # Utiliser l'horloge globale fournie par l'app
+        self.game_clock = self.scene_manager.context.get("game_clock")
         
         # Charger le monde
         if not self._load_world():
@@ -70,8 +72,8 @@ class GameplayScene(Scene):
         # Initialiser l'UI
         self._setup_ui()
         
-        # Démarrer l'horloge de jeu
-        if self.game_clock:
+        # Démarrer l'horloge de jeu (si pas déjà en route)
+        if self.game_clock and not self.game_clock.is_running:
             self.game_clock.start()
         
         # Charger l'étage initial
@@ -237,6 +239,9 @@ class GameplayScene(Scene):
                         player.current_floor = self.elevator.current_floor
                         logger.info(f"Player moved to floor {self.elevator.current_floor}")
         
+        # Avancer l'horloge globale ici si jamais l'app n'est pas le pilote (sécurité)
+        if self.game_clock:
+            self.game_clock.tick(dt)
         # Plus besoin de mise à jour caméra avec vue 3 étages fixe
     
     def _update_ui_systems(self, dt):
@@ -308,17 +313,16 @@ class GameplayScene(Scene):
         world_x = 120  # Offset de la zone de jeu
         player_x = player_pos[0]
         
+        nearest = None
+        nearest_dist = 1e9
+        threshold = 64  # plus tolérant pour fiabilité, surtout au 1er étage
         for obj_data in objects_list:
             obj_x = world_x + obj_data.get('x', 0)
-            
-            # Calculer la distance horizontale (plus simple et plus fiable)
-            distance = abs(player_x - obj_x)
-            
-            # Zone d'interaction élargie
-            if distance < 100:  # Distance d'interaction plus généreuse
-                return obj_data
-        
-        return None
+            d = abs(player_x - obj_x)
+            if d < threshold and d < nearest_dist:
+                nearest = obj_data
+                nearest_dist = d
+        return nearest
     
     def _interact_with_floor_object(self, obj_data):
         """
@@ -444,7 +448,7 @@ class GameplayScene(Scene):
         
         # Vérifier si le joueur est proche de l'ascenseur (zone plus large)
         distance = abs(player.x - elevator_x)
-        if distance < 60:  # Zone d'interaction plus large
+        if distance < 48:  # Un peu plus tolérant
             if self.elevator.current_floor == player.current_floor:
                 # L'ascenseur est déjà à cet étage
                 self.notification_manager.add_notification("Entrez dans l'ascenseur et choisissez un étage (0-9).", 3.0)
@@ -472,7 +476,7 @@ class GameplayScene(Scene):
                 elevator_x = 30 + 40  # Centre de l'ascenseur
                 distance = abs(player.x - elevator_x)
                 
-                if distance < 60:  # Zone d'interaction
+                if distance < 48:  # Un peu plus tolérant
                     if self.elevator.current_floor == player.current_floor:
                         # Le joueur peut utiliser l'ascenseur
                         self.elevator.go_to(floor_number)
@@ -503,12 +507,9 @@ class GameplayScene(Scene):
     
     def _check_game_end_conditions(self):
         """Vérifie les conditions de fin de jeu."""
-        # TODO: Fix 'bool' object is not callable error
-        # if self.game_clock and self.game_clock.is_deadline():
-        #     # Temps écoulé - aller au résumé
-        #     logger.info("Game deadline reached, going to summary")
-        #     self.switch_to("summary")
-        pass
+        if self.game_clock and self.game_clock.is_deadline():
+            logger.info("Game deadline reached, going to summary")
+            self.switch_to("summary")
     
     def draw(self, screen):
         """Dessine la scène."""
@@ -720,9 +721,7 @@ class GameplayScene(Scene):
             else:
                 screen.blit(obj_sprite, (final_x, final_y))
             
-            # Debug visuel : zone d'interaction (temporaire)
-            if kind != "decoration":  # Seulement pour les objets interactifs
-                pygame.draw.circle(screen, (255, 0, 0, 50), (int(screen_obj_x), int(final_y + obj_sprite.get_height()//2)), 100, 2)
+            # Debug visuel supprimé (les cercles ne sont plus affichés)
     
     def _get_sprite_key_for_kind(self, kind: str) -> str:
         """
@@ -868,13 +867,53 @@ class GameplayScene(Scene):
             if self.elevator:
                 elevator_x = 30 + 40  # Centre de l'ascenseur
                 distance = abs(player.x - elevator_x)
-                if distance < 60:
+                if distance < 48:
                     if self.elevator.current_floor == player.current_floor:
                         self.hud.show_interaction_hint("0-9 : Choisir étage")
                     else:
                         self.hud.show_interaction_hint("C : Appeler ascenseur")
                 else:
                     self.hud.hide_interaction_hint()
+
+        # Mettre à jour l'événement narratif de l'étage supérieur
+        self._update_top_floor_event(0.0)
+
+    def _update_top_floor_event(self, dt: float) -> None:
+        """Déclenche un court événement d'observation au dernier étage, discrètement.
+        Nécessite de rester proche d'une zone pendant un bref instant.
+        """
+        if not self.entity_manager or not self.building or self._top_floor_event_shown:
+            return
+        from src.settings import MAX_FLOOR, WIDTH
+        player = self.entity_manager.get_player()
+        if not player:
+            return
+        if player.current_floor != MAX_FLOOR:
+            # Réinitialiser le timer si on quitte l'étage
+            self._top_floor_proximity_time = 0.0
+            return
+        # Définir une petite zone à l'extrémité droite de l'étage (proche fenêtre)
+        world_width = WIDTH - 150
+        world_x = 120
+        zone_center_x = world_x + world_width - 80
+        near = abs(player.x - zone_center_x) < 36
+        if near:
+            self._top_floor_proximity_time += max(dt, 1/60)
+        else:
+            self._top_floor_proximity_time = 0.0
+        if self._top_floor_proximity_time >= 1.2:
+            # Afficher un avertissement contenu et un court dialogue auto
+            if self.notification_manager:
+                self.notification_manager.add_notification("Avertissement: thème sensible.", 3.0)
+            if self.dialogue_system and not self.dialogue_system.is_active():
+                from src.ui.dialogue import create_conversation
+                lines = [
+                    ("On dirait qu'il s'est passé quelque chose de grave...", ""),
+                    ("Le bureau est silencieux. Des regards fuyants.", ""),
+                    ("Ce n'est pas mon histoire. Je reste témoin.", "")
+                ]
+                self.dialogue_system.start_custom_dialogue(create_conversation(lines, auto_continue=True))
+            self._top_floor_event_shown = True
     
     
     def exit(self):

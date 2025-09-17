@@ -88,6 +88,8 @@ class SceneManager:
         self.scenes: Dict[str, Scene] = {}
         self.current_scene: Optional[Scene] = None
         self.scene_stack: list[str] = []  # Pour gérer pause/resume
+        # Contexte partagé accessible aux scènes (ex: horloge globale)
+        self.context: Dict[str, Any] = {}
         
     def register_scene(self, name: str, scene_class: Type[Scene]) -> None:
         """
