@@ -243,13 +243,14 @@ class WorldLoader:
             # Définir l'étage initial: bureau du boss (dernier étage)
             boss_floor = self.building.get_max_floor()
             player.set_floor(boss_floor)
-            # Appliquer la géométrie d'étage (auto-scale, vitesse)
-            try:
-                floor = self.building.get_floor(boss_floor)
-                if floor is not None:
-                    player.apply_floor_geometry(getattr(floor, "geometry", {}), asset_manager)
-            except Exception:
-                pass
+            # Désactiver l'auto-scale pour éviter les problèmes de positionnement
+            # Le joueur utilisera la taille définie dans assets_manifest.json
+            # try:
+            #     floor = self.building.get_floor(boss_floor)
+            #     if floor is not None:
+            #         player.apply_floor_geometry(getattr(floor, "geometry", {}), asset_manager)
+            # except Exception:
+            #     pass
             
             logger.info(f"Player created at ({start_x}, {start_y}) on floor {boss_floor}")
     
@@ -326,12 +327,13 @@ class WorldLoader:
             player = self.entity_manager.get_player()
             player.set_floor(new_floor)
             # Adapter la géométrie d'étage
-            try:
-                floor = self.building.get_floor(new_floor)
-                if floor is not None:
-                    player.apply_floor_geometry(getattr(floor, "geometry", {}), asset_manager)
-            except Exception:
-                pass
+            # Désactiver l'auto-scale pour éviter les problèmes de positionnement
+            # try:
+            #     floor = self.building.get_floor(new_floor)
+            #     if floor is not None:
+            #         player.apply_floor_geometry(getattr(floor, "geometry", {}), asset_manager)
+            # except Exception:
+            #     pass
             
             # Marquer l'étage comme visité
             self.building.visit_floor(new_floor)

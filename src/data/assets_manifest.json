@@ -4,8 +4,8 @@
   "images": {
     "player_idle": {
       "path": "sprites/player_idle.png",
-      "frame_w": 128,
-      "frame_h": 192,
+      "frame_w": 384,
+      "frame_h": 576,
       "description": "Joueur au repos"
     },
     "elevator": {
@@ -42,68 +42,68 @@
     },
     "npc_generic": {
       "path": "sprites/npc_generic.png",
-      "frame_w": 128,
-      "frame_h": 192,
+      "frame_w": 192,
+      "frame_h": 288,
       "description": "NPC générique"
     },
     "employee_1": {
       "path": "sprites/employee_1.png",
-      "frame_w": 32,
-      "frame_h": 48,
+      "frame_w": 56,
+      "frame_h": 84,
       "description": "Employé 1"
     },
     "employee_2": {
       "path": "sprites/employee_2.png",
-      "frame_w": 32,
-      "frame_h": 48,
+      "frame_w": 56,
+      "frame_h": 84,
       "description": "Employé 2"
     },
     "employee_3": {
       "path": "sprites/employee_3.png",
-      "frame_w": 32,
-      "frame_h": 48,
+      "frame_w": 56,
+      "frame_h": 84,
       "description": "Employé 3"
     },
     "employee_4": {
       "path": "sprites/employee_4.png",
-      "frame_w": 32,
-      "frame_h": 48,
+      "frame_w": 56,
+      "frame_h": 84,
       "description": "Employé 4"
     },
     "employee_5": {
       "path": "sprites/employee_5.png",
-      "frame_w": 32,
-      "frame_h": 48,
+      "frame_w": 56,
+      "frame_h": 84,
       "description": "Employé 5"
     },
     "employee_6": {
       "path": "sprites/employee_6.png",
-      "frame_w": 32,
-      "frame_h": 48,
+      "frame_w": 56,
+      "frame_h": 84,
       "description": "Employé 6"
     },
     "employee_7": {
       "path": "sprites/employee_7.png",
-      "frame_w": 32,
-      "frame_h": 48,
+      "frame_w": 56,
+      "frame_h": 84,
       "description": "Employé 7"
     },
     "employee_8": {
       "path": "sprites/employee_8.png",
-      "frame_w": 32,
-      "frame_h": 48,
+      "frame_w": 56,
+      "frame_h": 84,
       "description": "Employé 8"
     },
     "employee_9": {
       "path": "sprites/employee_9.png",
-      "frame_w": 32,
-      "frame_h": 48,
+      "frame_w": 56,
+      "frame_h": 84,
       "description": "Employé 9"
     },
     "boss": {
       "path": "sprites/boss.png",
-      "frame_w": 96,
-      "frame_h": 144,
+      "frame_w": 160,
+      "frame_h": 240,
       "description": "Boss Reed"
     },
     "water_dispenser": {
@@ -156,44 +156,44 @@
     },
     "interactable_plant": {
       "path": "sprites/plant.png",
-      "frame_w": 48,
-      "frame_h": 64,
+      "frame_w": 72,
+      "frame_h": 96,
       "description": "Plante à arroser"
     },
     "interactable_papers": {
       "path": "sprites/papers.png",
-      "frame_w": 32,
-      "frame_h": 32,
+      "frame_w": 48,
+      "frame_h": 48,
       "description": "Papiers à ramasser"
     },
     "interactable_printer": {
       "path": "sprites/printer.png",
-      "frame_w": 96,
-      "frame_h": 64,
+      "frame_w": 180,
+      "frame_h": 120,
       "description": "Imprimante"
     },
     "coffee": {
       "path": "sprites/coffee.png",
-      "frame_w": 48,
-      "frame_h": 64,
+      "frame_w": 60,
+      "frame_h": 80,
       "description": "Machine à café"
     },
     "water": {
       "path": "sprites/water.png",
-      "frame_w": 32,
-      "frame_h": 48,
+      "frame_w": 36,
+      "frame_h": 54,
       "description": "Arrosoir"
     },
     "receptionist": {
       "path": "sprites/receptionist.png",
-      "frame_w": 48,
-      "frame_h": 72,
+      "frame_w": 72,
+      "frame_h": 108,
       "description": "Réceptionniste"
     },
     "desk": {
-      "path": "sprites/desk.jpg",
-      "frame_w": 96,
-      "frame_h": 48,
+      "path": "sprites/desk.png",
+      "frame_w": 144,
+      "frame_h": 72,
       "description": "Bureau"
     },
     "supply_closet": {
@@ -248,8 +248,8 @@
   "spritesheets": {
     "player_walk": {
       "path": "sprites/player_walk.png",
-      "frame_w": 128,
-      "frame_h": 192,
+      "frame_w": 384,
+      "frame_h": 576,
       "fps": 8,
       "frames": 4,
       "description": "Animation marche du joueur"
