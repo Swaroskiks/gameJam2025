@@ -26,7 +26,7 @@ def menu_loop(screen, clock):
         )
         buttons.append((rect, text))
 
-    background = pygame.image.load("assets/images/background_.jpg").convert()
+    background = pygame.image.load("assets/images/wtc.png").convert()
     background = pygame.transform.scale(background, (WIDTH, HEIGHT))
 
     while True:
