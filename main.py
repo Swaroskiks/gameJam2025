@@ -29,7 +29,7 @@ from src.settings import WIDTH, HEIGHT, FPS, GAME_TITLE
 
 
 def main():
-    """Point d'entrée principal du jeu"""
+    """Point d'entrée principal du jeu."""
     logger.info("Starting A Day at the Office")
     
     # Utiliser le nouveau système uniquement

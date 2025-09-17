@@ -16,6 +16,10 @@ from src.core.utils import load_json_safe
 from src.core.event_bus import event_bus, TIME_TICK, TIME_REACHED
 from src.settings import DATA_PATH
 
+import os
+import time
+import moviepy as mpy
+
 logger = logging.getLogger(__name__)
 
 
@@ -514,13 +518,62 @@ class GameplayScene(Scene):
     
     def _check_game_end_conditions(self):
         """Vérifie les conditions de fin de jeu."""
-        # TODO: Fix 'bool' object is not callable error
-        # if self.game_clock and self.game_clock.is_deadline():
-        #     # Temps écoulé - aller au résumé
-        #     logger.info("Game deadline reached, going to summary")
-        #     self.switch_to("summary")
-        pass
+        if self.game_clock and self.game_clock.is_deadline():
+            logger.info("Game deadline reached, shaking then fade up then playing final video then going to summary")
+            screen = pygame.display.get_surface()
+            if screen:
+                self.shake_screen(screen, duration=1.5, intensity=15)
+                self._fade_up(screen, duration_ms=1200, color=(0, 0, 0))
+                self.play_final_video(screen)
+            self.switch_to("summary")
     
+    def _fade_up(self, screen, duration_ms=900, color=(0, 0, 0)):
+        """Transition fade up (noir qui monte du bas vers le haut)."""
+        W, H = screen.get_size()
+        clock = pygame.time.Clock()
+        t0 = pygame.time.get_ticks()
+        running = True
+        while running:
+            t = (pygame.time.get_ticks() - t0) / duration_ms
+            if t >= 1.0:
+                t = 1.0
+                running = False
+            h = int(H * t)
+            overlay = pygame.Surface((W, h))
+            overlay.fill(color)
+            screen.blit(overlay, (0, H - h))
+            pygame.display.flip()
+            clock.tick(60)
+
+    def shake_screen(self, screen, duration=0.7, intensity=12):
+        """Effet de tremblement sur tout l'écran avant la vidéo de fin."""
+        clock = pygame.time.Clock()
+        start = time.time()
+        original = screen.copy()
+        while time.time() - start < duration:
+            offset_x = int((pygame.time.get_ticks() % intensity) - intensity // 2)
+            offset_y = int((pygame.time.get_ticks() * 1.5 % intensity) - intensity // 2)
+            screen.fill((0, 0, 0))
+            screen.blit(original, (offset_x, offset_y))
+            pygame.display.flip()
+            clock.tick(60)
+
+    def play_final_video(self, screen):
+        """Joue la vidéo finale avant le résumé."""
+        video_path = os.path.join("assets", "final.mp4")
+        clip = mpy.VideoFileClip(video_path)
+        for frame in clip.iter_frames(fps=24, dtype="uint8"):
+            surf = pygame.surfarray.make_surface(frame.swapaxes(0, 1))
+            surf = pygame.transform.scale(surf, (WIDTH, HEIGHT))
+            screen.blit(surf, (0, 0))
+            pygame.display.flip()
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    return
+            time.sleep(1 / 24)
+        clip.close()
+
     def draw(self, screen):
         """Dessine la scène."""
         # Fond noir
