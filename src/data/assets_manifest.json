@@ -42,8 +42,8 @@
     },
     "npc_generic": {
       "path": "sprites/npc_generic.png",
-      "frame_w": 96,
-      "frame_h": 144,
+      "frame_w": 128,
+      "frame_h": 192,
       "description": "NPC générique"
     },
     "employee_1": {

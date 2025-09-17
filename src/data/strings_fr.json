@@ -111,6 +111,11 @@
       "Bonjour ! N'oubliez pas de pointer à l'accueil.",
       "C'est important pour la sécurité du bâtiment.",
       "Bonne journée !"
+    ],
+    "assistant": [
+      "Bonjour ! Comment puis-je vous aider aujourd'hui ?",
+      "Le boss vous attend dans son bureau.",
+      "N'hésitez pas si vous avez besoin d'assistance."
     ]
   },
   "notifications": {

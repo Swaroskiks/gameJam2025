@@ -292,9 +292,9 @@ class AssetManager:
                 
                 # Redimensionner selon le manifest en préservant les proportions
                 if asset_info and ("frame_w" in asset_info and "frame_h" in asset_info):
-                    # Calculer la taille cible d'une frame
-                    target_frame_w = asset_info["frame_w"] * ASSET_SCALE
-                    target_frame_h = asset_info["frame_h"] * ASSET_SCALE
+                    # Calculer la taille cible d'une frame (utiliser les valeurs du manifest directement)
+                    target_frame_w = asset_info["frame_w"]
+                    target_frame_h = asset_info["frame_h"]
                     frames = asset_info.get("frames", 1)
                     
                     # Calculer les dimensions originales d'une frame

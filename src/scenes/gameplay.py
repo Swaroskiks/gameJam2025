@@ -69,6 +69,9 @@ class GameplayScene(Scene):
         # Données de localisation
         self.strings = {}
         
+        # Map des PNJ runtime (source unique de vérité)
+        self.runtime_npcs = {}  # id -> objet PNJ runtime (celui que déplace NPCMovement)
+        
         logger.info("GameplayScene initialized")
     
     def enter(self, **kwargs):
@@ -325,7 +328,22 @@ class GameplayScene(Scene):
         player_pos = player.get_position()
         current_floor = player.current_floor
         
-        # Chercher des objets du nouveau système sur l'étage actuel
+        # 1) D'abord vérifier s'il y a un PNJ runtime proche
+        npc = self._find_nearby_runtime_npc(player, max_dist_px=50)
+        if npc:
+            # Trouver l'objet d'étage correspondant pour récupérer les données
+            if self.building:
+                floor = self.building.get_floor(current_floor)
+                if floor:
+                    for obj_data in floor.objects:
+                        if obj_data.get('kind') == 'npc':
+                            props = obj_data.get('props', {})
+                            npc_id = props.get('npc_id', obj_data.get('id'))
+                            if npc_id == npc.id:
+                                self._interact_with_floor_object(obj_data)
+                                return
+        
+        # 2) Sinon chercher des objets du nouveau système sur l'étage actuel
         if self.building:
             floor = self.building.get_floor(current_floor)
             if floor:
@@ -334,14 +352,7 @@ class GameplayScene(Scene):
                     self._interact_with_floor_object(nearby_object)
                     return
         
-        # Fallback vers le système legacy
-        # Chercher des NPCs proches
-        nearby_npcs = self.entity_manager.get_nearby_npcs(player_pos)
-        if nearby_npcs:
-            npc = nearby_npcs[0]  # Prendre le premier
-            self._interact_with_npc(npc)
-            return
-        
+        # 3) Fallback vers le système legacy
         # Chercher des objets interactifs legacy
         nearby_objects = self.entity_manager.get_nearby_interactables(player_pos)
         if nearby_objects:
@@ -365,17 +376,42 @@ class GameplayScene(Scene):
         """
         player_x = player_pos[0]
         
+        # 1) ignorer les "npc" (ils servent de spawner, pas d'objet interactif)
         for obj_data in objects_list:
+            if obj_data.get('kind') == 'npc':
+                continue
             obj_x = obj_data.get('x', 0)
-            
-            # Calculer la distance horizontale (plus simple et plus fiable)
-            distance = abs(player_x - obj_x)
-            
-            # Zone d'interaction réduite
-            if distance < 50:  # Distance d'interaction plus précise
+            if abs(player_x - obj_x) < 50:
                 return obj_data
-        
         return None
+    
+    def _find_nearby_runtime_npc(self, player, max_dist_px=50):
+        """
+        Trouve le PNJ runtime le plus proche du joueur sur le même étage.
+        
+        Args:
+            player: Le joueur
+            max_dist_px: Distance maximale en pixels
+            
+        Returns:
+            PNJ runtime le plus proche ou None
+        """
+        if not hasattr(self, "runtime_npcs"):
+            return None
+        
+        floor = player.current_floor
+        best = None
+        best_d = 1e9
+        
+        for npc in self.runtime_npcs.values():
+            if getattr(npc, "current_floor", None) != floor:
+                continue
+            d = abs(player.x - getattr(npc, "x", 0))
+            if d < best_d and d <= max_dist_px:
+                best = npc
+                best_d = d
+        
+        return best
     
     def _interact_with_floor_object(self, obj_data):
         """
@@ -396,57 +432,47 @@ class GameplayScene(Scene):
             player_pos = (400, 300)
         
         if kind == "npc":
-            # Interaction avec NPC
             name = props.get('name', 'Inconnu')
             dialogue_key = props.get('dialogue_key', '')
             npc_id = props.get('npc_id', obj_id)
-            
-            # Vérifier si ce NPC a une tâche associée
+
+            # **C'est CE PNJ runtime qui bouge ET qui aura la bulle**
+            npc_obj = self._get_runtime_npc(npc_id)
+            if not npc_obj:
+                self.notification_manager.add_notification("...il n'y a personne ici.", 1.5)
+                return
+
             if self.task_manager:
                 task = self.task_manager.get_task_for_npc(npc_id)
                 if task and self.task_manager.is_task_available(task.id):
-                    # Compléter la tâche
-                    success = self.task_manager.complete_task(task.id)
-                    if success:
+                    if self.task_manager.complete_task(task.id):
                         self.notification_manager.add_notification(f"Tâche terminée : {task.title}", 3.0)
-                        # Trouver l'objet NPC correspondant pour attacher la bulle
-                        npc_obj = self._find_npc_object(obj_id)
-                        if npc_obj:
-                            self.speech_bubbles.add_bubble(f"Merci ! Tâche accomplie.", npc_obj, 2.5, (200, 255, 200))
+                        self.speech_bubbles.add_bubble("Merci ! Tâche accomplie.", npc_obj, 2.5, (200, 255, 200))
                         self._play_sound("ui_click")
+                        return
                     else:
-                        npc_obj = self._find_npc_object(obj_id)
-                        if npc_obj:
-                            self.speech_bubbles.add_bubble("Déjà fait !", npc_obj, 2.0, (255, 200, 200))
-                else:
-                    # --- Interaction normale avec bulles (utilise le JSON) ---
-                    npc_obj = self._find_npc_object(obj_id)
-                    if npc_obj:
-                        # 1) choisir la clé de dialogue
-                        key = dialogue_key or self._infer_dialogue_key_from_name(name)
+                        self.speech_bubbles.add_bubble("Déjà fait !", npc_obj, 2.0, (255, 200, 200))
+                        return
 
-                        # 2) si la clé existe dans le JSON -> bulles depuis JSON (str ou list[str])
-                        if key and "dialogues" in self.strings and key in self.strings["dialogues"]:
-                            self.speech_bubbles.speak_from_dict(
-                                self.strings,
-                                ["dialogues", key],
-                                npc_obj,
-                                color=(200, 200, 255)
-                            )
-                        else:
-                            # 3) sinon: phrase aléatoire "normale" (et pas "Bonjour" forcé)
-                            phrase = random.choice(self.speech_bubbles.random_phrases)
-                            self.speech_bubbles.add_bubble(phrase, npc_obj, 3.0, (200, 200, 255))
+            # Dialogues "normaux" depuis ton JSON
+            key = dialogue_key or self._infer_dialogue_key_from_name(name)
+            if key and "dialogues" in self.strings and key in self.strings["dialogues"]:
+                self.speech_bubbles.speak_from_dict(self.strings, ["dialogues", key], npc_obj, color=(200, 200, 255))
+            else:
+                phrase = random.choice(self.speech_bubbles.random_phrases)
+                self.speech_bubbles.add_bubble(phrase, npc_obj, 3.0, (200, 200, 255))
+            return
                 
         elif kind in ["plant", "papers", "printer", "reception", "coffee", "water", "receptionist", "desk"]:
             # Interaction avec objet
-            task_id = props.get('task_id', '')
+            # Utiliser l'ID de l'objet pour trouver la tâche associée
+            interactable_id = obj_id
             
-            if task_id and self.task_manager:
-                # Vérifier si la tâche est disponible
-                task = self.task_manager.get_task(task_id)
-                if task and self.task_manager.is_task_available(task_id):
-                    success = self.task_manager.complete_task(task_id)
+            if interactable_id and self.task_manager:
+                # Vérifier si la tâche est disponible pour cet objet
+                task = self.task_manager.get_task_for_interactable(interactable_id)
+                if task and self.task_manager.is_task_available(task.id):
+                    success = self.task_manager.complete_task(task.id)
                     if success:
                         self.notification_manager.add_notification(f"Tâche terminée : {task.title}", 3.0)
                         
@@ -822,24 +848,8 @@ class GameplayScene(Scene):
                     player._bubble_anchor_x = player_x + player_sprite.get_width() // 2
                     player._bubble_anchor_y = player_y
             
-            # 4. Dessiner les entités legacy (compatibilité) - sur tous les étages
+            # 4. Dessiner les objets interactifs legacy (compatibilité) - sur tous les étages
             if self.entity_manager:
-                # NPCs legacy
-                for npc in self.entity_manager.npcs.values():
-                    if getattr(npc, 'current_floor', current_floor) == floor_num:
-                        # Utiliser le sprite_key du NPC ou npc_generic par défaut
-                        sprite_key = getattr(npc, 'sprite_key', 'npc_generic')
-                        npc_sprite = asset_manager.get_image(sprite_key)
-                        npc_x = npc.x - npc_sprite.get_width() // 2
-                        # Positionner le NPC au sol avec baseline cohérente
-                        baseline_y = screen_y + floor_height - 1
-                        npc_y = baseline_y - npc_sprite.get_height()
-                        screen.blit(npc_sprite, (npc_x, npc_y))
-                        
-                        # Ancre pour les bulles (au sommet de la tête, centré)
-                        npc._bubble_anchor_x = npc_x + npc_sprite.get_width() // 2
-                        npc._bubble_anchor_y = npc_y
-                
                 # Objets interactifs legacy
                 for obj in self.entity_manager.interactables.values():
                     if getattr(obj, 'current_floor', current_floor) == floor_num:
@@ -875,6 +885,10 @@ class GameplayScene(Scene):
         from src.core.assets import asset_manager
         
         kind = obj_data.get("kind", "unknown")
+        # IMPORTANT : ne JAMAIS dessiner les PNJ ici, ils sont rendus par le manager de mouvement
+        if kind == "npc":
+            return
+        
         obj_x = obj_data.get("x", 0)
         obj_y = obj_data.get("y", 0)
         props = obj_data.get("props", {})
@@ -893,7 +907,7 @@ class GameplayScene(Scene):
             baseline_y = screen_y + floor_height - 1
             
             # Positionnement uniforme selon le type d'objet
-            if kind in ["npc", "plant", "printer", "desk", "coffee"]:
+            if kind in ["plant", "printer", "desk", "coffee"]:
                 # Objets volumineux posés sur le sol
                 final_y = baseline_y - obj_sprite.get_height()
             elif kind in ["papers", "water"]:
@@ -920,15 +934,6 @@ class GameplayScene(Scene):
             # Ancre pour les bulles (au sommet de l'objet)
             obj_data['_bubble_anchor_x'] = final_x + obj_sprite.get_width() // 2
             obj_data['_bubble_anchor_y'] = final_y
-            
-            # Pour les NPCs, aussi mettre à jour les données dans le building
-            if kind == "npc" and self.building:
-                for floor_num, floor in self.building.floors.items():
-                    for floor_obj in floor.objects:
-                        if floor_obj.get('id') == obj_data.get('id'):
-                            floor_obj['_bubble_anchor_x'] = obj_data['_bubble_anchor_x']
-                            floor_obj['_bubble_anchor_y'] = obj_data['_bubble_anchor_y']
-                            break
             
             # Debug visuel désactivé pour le joueur
             # pygame.draw.circle(screen, (255, 0, 0, 50), (int(screen_obj_x), int(final_y + obj_sprite.get_height()//2)), 50, 2)
@@ -1081,29 +1086,29 @@ class GameplayScene(Scene):
         player_pos = player.get_position()
         current_floor = player.current_floor
         
-        # Vérifier les objets du nouveau système en priorité
+        # D'abord PNJ runtime
+        npc = self._find_nearby_runtime_npc(player, max_dist_px=50)
+        if npc:
+            name = getattr(npc, "name", "Personne")
+            self.hud.show_interaction_hint(f"E : Parler à {name}")
+            return
+        
+        # Sinon objets d'étage (déjà filtrés)
         if self.building:
             floor = self.building.get_floor(current_floor)
             if floor:
                 nearby_object = self._find_nearby_floor_object(player_pos, floor.objects)
                 if nearby_object:
                     kind = nearby_object.get('kind', 'objet')
-                    props = nearby_object.get('props', {})
-                    
-                    if kind == "npc":
-                        name = props.get('name', 'Personne')
-                        self.hud.show_interaction_hint(f"E : Parler à {name}")
-                        return
-                    else:
-                        action_names = {
-                            "plant": "Arroser",
-                            "papers": "Ranger", 
-                            "printer": "Utiliser",
-                            "reception": "Utiliser"
-                        }
-                        action = action_names.get(kind, "Examiner")
-                        self.hud.show_interaction_hint(f"E : {action} {kind}")
-                        return
+                    action_names = {
+                        "plant": "Arroser",
+                        "papers": "Ranger", 
+                        "printer": "Utiliser",
+                        "reception": "Utiliser"
+                    }
+                    action = action_names.get(kind, "Examiner")
+                    self.hud.show_interaction_hint(f"E : {action} {kind}")
+                    return
         
         # Fallback vers le système legacy
         nearby_npcs = self.entity_manager.get_nearby_npcs(player_pos)
@@ -1217,26 +1222,35 @@ class GameplayScene(Scene):
 
     def _setup_npc_movement(self) -> None:
         """Configure le mouvement des NPCs."""
-        if not self.building or not self.entity_manager:
+        self.runtime_npcs.clear()
+        if not self.building:
             return
         
-        # Ajouter tous les NPCs du système legacy au mouvement
-        for npc in self.entity_manager.npcs.values():
-            self.npc_movement_manager.add_npc(npc, WIDTH - 200)
+        # Largeur jouable (paramètre de NPCMovement)
+        floor_width = WIDTH
         
-        # Ajouter les NPCs du nouveau système (depuis floors.json)
         for floor_num, floor in self.building.floors.items():
-            for obj_data in floor.objects:
-                if obj_data.get('kind') == 'npc':
-                    # Créer un objet NPC temporaire pour le mouvement
-                    npc_obj = type('NPC', (), {
-                        'id': obj_data.get('id', 'unknown'),
-                        'x': obj_data.get('x', 300),
-                        'y': obj_data.get('y', 0),
-                        'current_floor': floor_num,
-                        'name': obj_data.get('props', {}).get('name', 'Unknown')
-                    })()
-                    self.npc_movement_manager.add_npc(npc_obj, WIDTH - 200)
+            for obj in floor.objects:
+                if obj.get("kind") == "npc":
+                    props = obj.get("props", {})
+                    npc_id = props.get("npc_id", obj.get("id"))
+                    if not npc_id:
+                        continue
+                    
+                    # Crée un petit objet PNJ runtime
+                    npc = type("RuntimeNPC", (), {})()
+                    npc.id = npc_id
+                    npc.name = props.get("name", "NPC")
+                    npc.x = float(obj.get("x", 200))
+                    npc.y = 0.0  # on ne s'en sert pas, on blitte sur baseline
+                    npc.current_floor = floor_num
+                    npc.sprite_key = props.get("sprite_key", "npc_generic")
+                    
+                    # Enregistre
+                    self.runtime_npcs[npc_id] = npc
+                    
+                    # Active le mouvement
+                    self.npc_movement_manager.add_npc(npc, floor_width=floor_width)
         
         logger.info("NPC movement system configured")
 
@@ -1273,40 +1287,9 @@ class GameplayScene(Scene):
             return "guard_morning"
         return None
 
-    def _find_npc_object(self, npc_id: str):
-        """Trouve l'objet NPC correspondant à un ID."""
-        # Chercher dans le système legacy
-        if self.entity_manager:
-            for npc in self.entity_manager.npcs.values():
-                if hasattr(npc, 'id') and npc.id == npc_id:
-                    return npc
-        
-        # Chercher dans le système de mouvement
-        for movement in self.npc_movement_manager.npc_movements.values():
-            npc = movement.npc
-            if hasattr(npc, 'id') and npc.id == npc_id:
-                return npc
-        
-        # Chercher dans les objets des étages (NPCs fixes comme le boss)
-        if self.building:
-            for floor_num, floor in self.building.floors.items():
-                for obj_data in floor.objects:
-                    if obj_data.get('kind') == 'npc' and obj_data.get('id') == npc_id:
-                        # Créer un objet NPC temporaire avec les bonnes propriétés
-                        npc_obj = type('NPC', (), {
-                            'id': obj_data.get('id', 'unknown'),
-                            'x': obj_data.get('x', 300),
-                            'y': obj_data.get('y', 0),
-                            'current_floor': floor_num,
-                            'name': obj_data.get('props', {}).get('name', 'Unknown'),
-                            'sprite_key': obj_data.get('props', {}).get('sprite_key', 'npc_generic'),
-                            '_bubble_anchor_x': obj_data.get('_bubble_anchor_x', obj_data.get('x', 300)),
-                            '_bubble_anchor_y': obj_data.get('_bubble_anchor_y', obj_data.get('y', 0)),
-                            'props': obj_data.get('props', {})
-                        })()
-                        return npc_obj
-        
-        return None
+    def _get_runtime_npc(self, npc_id: str):
+        """Récupère le PNJ runtime correspondant à un ID."""
+        return self.runtime_npcs.get(npc_id)
 
     # === Adapters: DSL Effects ===
     def _play_sound(self, sound_key: str) -> None:

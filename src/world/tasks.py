@@ -179,9 +179,14 @@ class TaskManager:
         self.tasks[task.id] = task
         
         # Déterminer le statut initial
-        if self._are_dependencies_met(task) and (task.required or task.id in self.offered_tasks):
-            self.task_status[task.id] = TaskStatus.AVAILABLE
-            self.available_tasks.add(task.id)
+        # Les tâches principales sont toujours disponibles si leurs dépendances sont remplies
+        # Les tâches annexes sont disponibles si leurs dépendances sont remplies ET qu'elles n'ont pas de dépendances OU qu'elles sont offertes
+        if self._are_dependencies_met(task):
+            if task.required or task.id in self.offered_tasks or not task.dependencies:
+                self.task_status[task.id] = TaskStatus.AVAILABLE
+                self.available_tasks.add(task.id)
+            else:
+                self.task_status[task.id] = TaskStatus.LOCKED
         else:
             self.task_status[task.id] = TaskStatus.LOCKED
         

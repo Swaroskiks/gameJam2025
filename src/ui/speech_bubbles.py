@@ -240,6 +240,10 @@ class SpeechBubbleManager:
         duration: Optional[float] = None,
         color: Tuple[int, int, int] = (255, 255, 255),
     ):
+        # Éliminer l'ancienne bulle du même NPC avant d'ajouter la nouvelle
+        if npc_reference is not None:
+            self.bubbles = [b for b in self.bubbles if b.npc_reference is not npc_reference]
+        
         bubble = SpeechBubble(text_or_list, npc_reference, duration, color)
         self.bubbles.append(bubble)
         sample = text_or_list[0] if isinstance(text_or_list, list) and text_or_list else text_or_list

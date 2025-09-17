@@ -42,7 +42,7 @@ DATA_PATH = Path("src/data")
 
 # Configuration de développement
 DEV_MODE = os.getenv("DEV_MODE", "True").lower() == "true"
-ASSET_SCALE = int(os.getenv("ASSET_SCALE", "2"))
+ASSET_SCALE = int(os.getenv("ASSET_SCALE", "1"))
 FALLBACK_FONT_SIZE = int(os.getenv("FALLBACK_FONT_SIZE", "16"))
 
 # Couleurs additionnelles
