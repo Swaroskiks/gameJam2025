@@ -309,11 +309,10 @@ class GameplayScene(Scene):
         Returns:
             Objet proche ou None
         """
-        world_x = 120  # Offset de la zone de jeu
         player_x = player_pos[0]
         
         for obj_data in objects_list:
-            obj_x = world_x + obj_data.get('x', 0)
+            obj_x = obj_data.get('x', 0)
             
             # Calculer la distance horizontale (plus simple et plus fiable)
             distance = abs(player_x - obj_x)
@@ -508,12 +507,8 @@ class GameplayScene(Scene):
     
     def draw(self, screen):
         """Dessine la scène."""
-        # Fond dégradé plus agréable
-        for y in range(HEIGHT):
-            # Dégradé du gris clair vers gris foncé
-            color_value = int(220 - (y / HEIGHT) * 80)  # 220 -> 140
-            color = (color_value, color_value, color_value)
-            pygame.draw.line(screen, color, (0, y), (WIDTH, y))
+        # Fond noir
+        screen.fill((0, 0, 0))
         
         # Dessiner le monde (simplifié pour l'instant)
         self._draw_world(screen)
@@ -535,7 +530,7 @@ class GameplayScene(Scene):
             return
         
         # Configuration vue multi-étages (3 étages visibles)
-        floor_height = HEIGHT // 3  # Chaque étage prend 1/3 de l'écran
+        floor_height = HEIGHT // 3  # Chaque étage prend exactement 1/3 de l'écran
         world_width = WIDTH - 150  # Largeur de la zone de jeu
         world_x = 120  # Position X de début de la zone de jeu
         
@@ -572,23 +567,32 @@ class GameplayScene(Scene):
             if not floor:
                 continue
             
-            # Position Y à l'écran : étage du haut = Y=0, étage du bas = Y=400
+            # Position Y à l'écran : étages collés sans espace
             screen_y = i * floor_height
             
-            # 1. Dessiner le fond d'étage
-            floor_rect = pygame.Rect(world_x, screen_y, world_width, floor_height - 10)
-            
-            if floor.background_surface:
-                # Utiliser le fond personnalisé
-                bg_scaled = pygame.transform.scale(floor.background_surface, (world_width, floor_height - 10))
-                screen.blit(bg_scaled, (world_x, screen_y))
+            # 1. Dessiner le sprite d'étage complet (couvre toute la largeur, inclut ascenseur)
+            floor_sprite = self._get_floor_sprite(floor_num)
+            if floor_sprite:
+                # Redimensionner pour couvrir exactement la hauteur d'étage sans espaces
+                # Calculer le ratio pour maintenir les proportions
+                sprite_ratio = floor_sprite.get_width() / floor_sprite.get_height()
+                screen_ratio = WIDTH / floor_height
+                
+                # Forcer la hauteur exacte pour éviter les espaces
+                scaled_height = floor_height
+                scaled_width = int(floor_height * sprite_ratio)
+                
+                # Redimensionner le sprite
+                floor_scaled = pygame.transform.scale(floor_sprite, (scaled_width, scaled_height))
+                
+                # Aligner à gauche (comme l'ascenseur) - la droite peut s'étendre indéfiniment
+                x_offset = 0
+                screen.blit(floor_scaled, (x_offset, screen_y))
             else:
-                # Fond par défaut
+                # Fallback : fond par défaut
+                floor_rect = pygame.Rect(0, screen_y, WIDTH, floor_height)
                 color = (240, 240, 240) if floor_num == current_floor else (200, 200, 200)
                 pygame.draw.rect(screen, color, floor_rect)
-            
-            # Bordure de l'étage
-            pygame.draw.rect(screen, (100, 100, 100), floor_rect, 2)
             
             # Numéro d'étage (seulement si c'est l'étage actuel)
             if floor_num == current_floor:
@@ -602,45 +606,11 @@ class GameplayScene(Scene):
                 screen.blit(text_bg, (5, screen_y + 5))
                 screen.blit(text_surface, (10, screen_y + 7))
             
-            # 2. Dessiner l'ascenseur (même taille que l'étage)
-            if self.elevator:
-                elevator_sprite = asset_manager.get_image("elevator")
-                
-                # L'ascenseur doit être bien visible et proportionnel
-                elevator_width = 60  # Largeur raisonnable
-                elevator_height = floor_height - 30  # Hauteur qui tient dans l'étage
-                
-                # Redimensionner en gardant les proportions si nécessaire
-                if elevator_sprite.get_height() > 0:
-                    ratio = min(elevator_width / elevator_sprite.get_width(), 
-                              elevator_height / elevator_sprite.get_height())
-                    final_width = int(elevator_sprite.get_width() * ratio)
-                    final_height = int(elevator_sprite.get_height() * ratio)
-                else:
-                    final_width, final_height = elevator_width, elevator_height
-                
-                elevator_resized = pygame.transform.scale(elevator_sprite, (final_width, final_height))
-                
-                # Positionner l'ascenseur à gauche
-                elevator_x = 30  # Position fixe à gauche
-                elevator_y = screen_y + (floor_height - final_height) // 2
-                screen.blit(elevator_resized, (elevator_x, elevator_y))
-                
-                # Indicateur si l'ascenseur est à cet étage
-                if self.elevator.current_floor == floor_num:
-                    # Porte ouverte/fermée
-                    if hasattr(self.elevator, 'doors_open') and self.elevator.doors_open:
-                        pygame.draw.rect(screen, (0, 255, 0), 
-                                       (elevator_x - 5, elevator_y, 5, final_height))
-                    else:
-                        pygame.draw.rect(screen, (255, 255, 0), 
-                                       (elevator_x - 5, elevator_y, 5, final_height))
-            
-            # 3. Dessiner les objets de l'étage (nouveau système)
+            # 2. Dessiner les objets de l'étage (nouveau système)
             for obj_data in floor.objects:
-                self._draw_floor_object(screen, obj_data, world_x, screen_y, floor_height)
+                self._draw_floor_object(screen, obj_data, screen_y, floor_height)
             
-            # 4. Dessiner le joueur s'il est sur cet étage
+            # 3. Dessiner le joueur s'il est sur cet étage
             if floor_num == current_floor and self.entity_manager:
                 player = self.entity_manager.get_player()
                 if player:
@@ -650,7 +620,7 @@ class GameplayScene(Scene):
                     player_y = screen_y + floor_height - player_sprite.get_height() - 5
                     screen.blit(player_sprite, (player_x, player_y))
             
-            # 5. Dessiner les entités legacy (compatibilité) - sur tous les étages
+            # 4. Dessiner les entités legacy (compatibilité) - sur tous les étages
             if self.entity_manager:
                 # NPCs legacy
                 for npc in self.entity_manager.npcs.values():
@@ -665,14 +635,13 @@ class GameplayScene(Scene):
                     if getattr(obj, 'current_floor', current_floor) == floor_num:
                         self._draw_legacy_object(screen, obj, screen_y, floor_height)
     
-    def _draw_floor_object(self, screen, obj_data: dict, world_x: int, screen_y: int, floor_height: int) -> None:
+    def _draw_floor_object(self, screen, obj_data: dict, screen_y: int, floor_height: int) -> None:
         """
         Dessine un objet positionné sur un étage.
         
         Args:
             screen: Surface de rendu
             obj_data: Données de l'objet depuis floors.json
-            world_x: Position X de début de la zone de jeu
             screen_y: Position Y de l'étage à l'écran
             floor_height: Hauteur d'un étage
         """
@@ -684,7 +653,8 @@ class GameplayScene(Scene):
         props = obj_data.get("props", {})
         
         # Calculer la position à l'écran (objets posés au sol)
-        screen_obj_x = world_x + obj_x
+        # Les objets sont maintenant positionnés par rapport à la largeur complète de l'écran
+        screen_obj_x = obj_x
         
         # Choisir le sprite selon le kind
         sprite_key = self._get_sprite_key_for_kind(kind)
@@ -719,6 +689,37 @@ class GameplayScene(Scene):
             # Debug visuel : zone d'interaction (temporaire)
             if kind != "decoration":  # Seulement pour les objets interactifs
                 pygame.draw.circle(screen, (255, 0, 0, 50), (int(screen_obj_x), int(final_y + obj_sprite.get_height()//2)), 100, 2)
+    
+    def _get_floor_sprite(self, floor_num: int):
+        """
+        Récupère le sprite d'étage pour un numéro d'étage donné.
+        
+        Args:
+            floor_num: Numéro d'étage
+            
+        Returns:
+            Surface du sprite d'étage ou None si non trouvé
+        """
+        from src.core.assets import asset_manager
+        
+        # Utiliser le nouveau sprite d'étage complet qui inclut l'ascenseur
+        try:
+            # Utiliser get_background pour les sprites d'étage
+            if hasattr(asset_manager, 'get_background'):
+                return asset_manager.get_background("floor_complete")
+            else:
+                return asset_manager.get_image("floor_complete")
+        except:
+            pass
+        
+        # Fallback vers le sprite par défaut
+        try:
+            if hasattr(asset_manager, 'get_background'):
+                return asset_manager.get_background("floor_default")
+            else:
+                return asset_manager.get_image("floor_default")
+        except:
+            return None
     
     def _get_sprite_key_for_kind(self, kind: str) -> str:
         """

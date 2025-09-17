@@ -129,6 +129,10 @@
     "floor_default": {
       "path": "backgrounds/floor_default.png",
       "description": "Fond d'étage par défaut"
+    },
+    "floor_complete": {
+      "path": "backgrounds/floor.jpg",
+      "description": "Sprite d'étage complet avec ascenseur intégré"
     }
   },
   "fonts": {
