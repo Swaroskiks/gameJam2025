@@ -4,8 +4,8 @@
   "images": {
     "player_idle": {
       "path": "sprites/player_idle.png",
-      "frame_w": 96,
-      "frame_h": 144,
+      "frame_w": 128,
+      "frame_h": 192,
       "description": "Joueur au repos"
     },
     "elevator": {
@@ -46,6 +46,66 @@
       "frame_h": 144,
       "description": "NPC générique"
     },
+    "employee_1": {
+      "path": "sprites/employee_1.png",
+      "frame_w": 32,
+      "frame_h": 48,
+      "description": "Employé 1"
+    },
+    "employee_2": {
+      "path": "sprites/employee_2.png",
+      "frame_w": 32,
+      "frame_h": 48,
+      "description": "Employé 2"
+    },
+    "employee_3": {
+      "path": "sprites/employee_3.png",
+      "frame_w": 32,
+      "frame_h": 48,
+      "description": "Employé 3"
+    },
+    "employee_4": {
+      "path": "sprites/employee_4.png",
+      "frame_w": 32,
+      "frame_h": 48,
+      "description": "Employé 4"
+    },
+    "employee_5": {
+      "path": "sprites/employee_5.png",
+      "frame_w": 32,
+      "frame_h": 48,
+      "description": "Employé 5"
+    },
+    "employee_6": {
+      "path": "sprites/employee_6.png",
+      "frame_w": 32,
+      "frame_h": 48,
+      "description": "Employé 6"
+    },
+    "employee_7": {
+      "path": "sprites/employee_7.png",
+      "frame_w": 32,
+      "frame_h": 48,
+      "description": "Employé 7"
+    },
+    "employee_8": {
+      "path": "sprites/employee_8.png",
+      "frame_w": 32,
+      "frame_h": 48,
+      "description": "Employé 8"
+    },
+    "employee_9": {
+      "path": "sprites/employee_9.png",
+      "frame_w": 32,
+      "frame_h": 48,
+      "description": "Employé 9"
+    },
+    "boss": {
+      "path": "sprites/boss.png",
+      "frame_w": 96,
+      "frame_h": 144,
+      "description": "Boss Reed"
+    },
     "interactable_plant": {
       "path": "sprites/plant.png",
       "frame_w": 48,
@@ -68,8 +128,8 @@
   "spritesheets": {
     "player_walk": {
       "path": "sprites/player_walk.png",
-      "frame_w": 96,
-      "frame_h": 144,
+      "frame_w": 128,
+      "frame_h": 192,
       "fps": 8,
       "frames": 4,
       "description": "Animation marche du joueur"

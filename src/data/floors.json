@@ -30,7 +30,7 @@
           "kind": "npc",
           "x": 250,
           "y": 0,
-          "props": {"name": "Boss Reed", "dialogue_key": "boss_reed"}
+          "props": {"name": "Boss Reed", "dialogue_key": "boss_reed", "sprite_key": "boss"}
         }
       ]
     },

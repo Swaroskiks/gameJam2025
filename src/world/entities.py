@@ -218,12 +218,13 @@ class GameNPC:
     NPC avec qui le joueur peut interagir dans le jeu.
     """
     
-    def __init__(self, npc_id: str, name: str, x: float, y: float, dialogue_id: str):
+    def __init__(self, npc_id: str, name: str, x: float, y: float, dialogue_id: str, sprite_key: str = "npc_generic"):
         self.id = npc_id
         self.name = name
         self.x = x
         self.y = y
         self.dialogue_id = dialogue_id
+        self.sprite_key = sprite_key
         
         # État
         self.talked_to = False
@@ -253,7 +254,7 @@ class GameNPC:
         """Configure les animations du NPC."""
         try:
             # Animation idle par défaut
-            self.animation_manager.add_animation("idle", "npc_generic", loop=True, auto_start=True)
+            self.animation_manager.add_animation("idle", self.sprite_key, loop=True, auto_start=True)
             self.animation_manager.set_default_animation("idle")
             self.animation_manager.play_animation("idle")
         except Exception as e:
