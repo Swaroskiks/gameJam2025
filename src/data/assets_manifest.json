@@ -123,6 +123,30 @@
       "frame_w": 96,
       "frame_h": 64,
       "description": "Imprimante"
+    },
+    "coffee": {
+      "path": "sprites/coffee.png",
+      "frame_w": 48,
+      "frame_h": 64,
+      "description": "Machine à café"
+    },
+    "water": {
+      "path": "sprites/water.png",
+      "frame_w": 32,
+      "frame_h": 48,
+      "description": "Arrosoir"
+    },
+    "receptionist": {
+      "path": "sprites/receptionist.png",
+      "frame_w": 48,
+      "frame_h": 72,
+      "description": "Réceptionniste"
+    },
+    "desk": {
+      "path": "sprites/desk.jpg",
+      "frame_w": 96,
+      "frame_h": 48,
+      "description": "Bureau"
     }
   },
   "spritesheets": {
@@ -230,9 +254,14 @@
         "description": "Son d'imprimante"
       },
       "paper_pickup": {
-        "path": "sfx/paper_pickup.wav",
+        "path": "sfx/keyboard_typing.wav",
         "volume": 0.4,
         "description": "Son ramasser papier"
+      },
+      "coffee_sip": {
+        "path": "sfx/coffee_sip.wav",
+        "volume": 0.5,
+        "description": "Son boire café"
       },
       "water_plant": {
         "path": "sfx/water_plant.wav",

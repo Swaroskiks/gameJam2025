@@ -31,6 +31,20 @@
           "x": 250,
           "y": 0,
           "props": {"name": "Boss Reed", "dialogue_key": "boss_reed", "sprite_key": "boss"}
+        },
+        {
+          "id": "assistant_sarah",
+          "kind": "npc",
+          "x": 450,
+          "y": 0,
+          "props": {"name": "Sarah", "dialogue_key": "assistant", "sprite_key": "employee_2"}
+        },
+        {
+          "id": "desk_98",
+          "kind": "desk",
+          "x": 600,
+          "y": 0,
+          "props": {"task_id": "desk_organization"}
         }
       ]
     },
@@ -51,7 +65,28 @@
           "kind": "npc",
           "x": 200,
           "y": 0,
-          "props": {"name": "Alex", "dialogue_key": "alex"}
+          "props": {"name": "Alex", "dialogue_key": "alex", "sprite_key": "employee_1"}
+        },
+        {
+          "id": "marie_accounting",
+          "kind": "npc",
+          "x": 300,
+          "y": 0,
+          "props": {"name": "Marie", "dialogue_key": "marie", "sprite_key": "employee_3"}
+        },
+        {
+          "id": "coffee_machine_97",
+          "kind": "coffee",
+          "x": 550,
+          "y": 0,
+          "props": {"task_id": "coffee_break"}
+        },
+        {
+          "id": "thomas_dev",
+          "kind": "npc",
+          "x": 650,
+          "y": 0,
+          "props": {"name": "Thomas", "dialogue_key": "thomas", "sprite_key": "employee_4"}
         }
       ]
     },
@@ -72,7 +107,21 @@
           "kind": "npc",
           "x": 300,
           "y": 0,
-          "props": {"name": "Maya", "dialogue_key": "maya_morning"}
+          "props": {"name": "Maya", "dialogue_key": "maya_morning", "sprite_key": "employee_5"}
+        },
+        {
+          "id": "water_96",
+          "kind": "water",
+          "x": 500,
+          "y": 0,
+          "props": {"task_id": "water_plants"}
+        },
+        {
+          "id": "julien_hr",
+          "kind": "npc",
+          "x": 650,
+          "y": 0,
+          "props": {"name": "Julien", "dialogue_key": "julien", "sprite_key": "employee_6"}
         }
       ]
     },
@@ -87,6 +136,27 @@
           "x": 180,
           "y": 0,
           "props": {"thirst": 0.3}
+        },
+        {
+          "id": "receptionist_95",
+          "kind": "receptionist",
+          "x": 350,
+          "y": 0,
+          "props": {"task_id": "reception_duty"}
+        },
+        {
+          "id": "claire_rh",
+          "kind": "npc",
+          "x": 500,
+          "y": 0,
+          "props": {"name": "Claire", "dialogue_key": "claire", "sprite_key": "employee_7"}
+        },
+        {
+          "id": "paul_manager",
+          "kind": "npc",
+          "x": 650,
+          "y": 0,
+          "props": {"name": "Paul", "dialogue_key": "paul", "sprite_key": "employee_8"}
         }
       ]
     },

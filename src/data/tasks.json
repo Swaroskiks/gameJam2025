@@ -94,6 +94,114 @@
       "dependencies": [],
       "completion_message": "Vous avez parlé à Alex.",
       "allow_unassigned_completion": true
+    },
+    {
+      "id": "coffee_break",
+      "title": "Pause café",
+      "description": "Prendre un café pour se réveiller.",
+      "type": "interaction",
+      "floor": 97,
+      "interactable_id": "coffee_machine_97",
+      "reward_points": 2,
+      "dependencies": [],
+      "completion_message": "Un bon café pour bien commencer la journée.",
+      "allow_unassigned_completion": true
+    },
+    {
+      "id": "water_plants",
+      "title": "Arrosoir professionnel",
+      "description": "Arroser toutes les plantes du bureau.",
+      "type": "interaction",
+      "floor": 96,
+      "interactable_id": "water_96",
+      "reward_points": 3,
+      "dependencies": [],
+      "completion_message": "Les plantes sont bien hydratées.",
+      "allow_unassigned_completion": true
+    },
+    {
+      "id": "reception_duty",
+      "title": "Service client",
+      "description": "Aider à l'accueil.",
+      "type": "interaction",
+      "floor": 95,
+      "interactable_id": "receptionist_95",
+      "reward_points": 4,
+      "dependencies": [],
+      "completion_message": "Vous avez aidé l'accueil.",
+      "allow_unassigned_completion": true
+    },
+    {
+      "id": "desk_organization",
+      "title": "Bureau rangé",
+      "description": "Organiser son bureau.",
+      "type": "interaction",
+      "floor": 98,
+      "interactable_id": "desk_98",
+      "reward_points": 2,
+      "dependencies": [],
+      "completion_message": "Votre bureau est impeccable.",
+      "allow_unassigned_completion": true
+    },
+    {
+      "id": "coffee_round",
+      "title": "Tournée café",
+      "description": "Apporter un café à 3 collègues différents.",
+      "type": "collection",
+      "reward_points": 8,
+      "dependencies": ["coffee_break"],
+      "completion_message": "Vos collègues apprécient votre geste !",
+      "allow_unassigned_completion": true
+    },
+    {
+      "id": "floor_inspection",
+      "title": "Inspection complète",
+      "description": "Visiter tous les étages du building.",
+      "type": "exploration",
+      "reward_points": 6,
+      "dependencies": [],
+      "completion_message": "Vous connaissez maintenant tout le building.",
+      "allow_unassigned_completion": true
+    },
+    {
+      "id": "multi_task_master",
+      "title": "Maître du multitâche",
+      "description": "Terminer 3 tâches en moins de 5 minutes.",
+      "type": "challenge",
+      "reward_points": 15,
+      "dependencies": ["M1"],
+      "completion_message": "Vous êtes un vrai pro de l'efficacité !",
+      "allow_unassigned_completion": true
+    },
+    {
+      "id": "social_butterfly",
+      "title": "Papillon social",
+      "description": "Parler à tous les collègues présents.",
+      "type": "dialogue",
+      "reward_points": 10,
+      "dependencies": [],
+      "completion_message": "Vous connaissez maintenant tout le monde !",
+      "allow_unassigned_completion": true
+    },
+    {
+      "id": "early_bird",
+      "title": "Lève-tôt",
+      "description": "Terminer une tâche avant 8h35.",
+      "type": "timed",
+      "reward_points": 5,
+      "dependencies": [],
+      "completion_message": "Bravo pour votre ponctualité !",
+      "allow_unassigned_completion": true
+    },
+    {
+      "id": "office_cleaner",
+      "title": "Agent d'entretien",
+      "description": "Nettoyer 5 objets différents dans le bureau.",
+      "type": "collection",
+      "reward_points": 12,
+      "dependencies": [],
+      "completion_message": "Le bureau n'a jamais été aussi propre !",
+      "allow_unassigned_completion": true
     }
   ]
 }

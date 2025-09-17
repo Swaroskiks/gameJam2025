@@ -212,8 +212,9 @@ class AssetManager:
                 # Redimensionner selon le manifest en préservant les proportions
                 asset_info = self._get_asset_info("images", key)
                 if asset_info and ("frame_w" in asset_info and "frame_h" in asset_info):
-                    target_w = asset_info["frame_w"] * ASSET_SCALE
-                    target_h = asset_info["frame_h"] * ASSET_SCALE
+                    # Tailles cibles depuis le manifest
+                    target_w = asset_info["frame_w"]
+                    target_h = asset_info["frame_h"]
                     
                     # Calculer le ratio pour préserver les proportions
                     original_w, original_h = surface.get_size()
@@ -223,9 +224,11 @@ class AssetManager:
                     # Utiliser le plus petit ratio pour que l'image tienne dans les dimensions cibles
                     ratio = min(ratio_w, ratio_h)
                     
+                    # Calculer les nouvelles dimensions proportionnelles
                     new_w = int(original_w * ratio)
                     new_h = int(original_h * ratio)
                     
+                    # Redimensionner en préservant les proportions
                     surface = pygame.transform.scale(surface, (new_w, new_h))
                 elif ASSET_SCALE != 1:
                     # Appliquer seulement le facteur d'échelle si pas de taille spécifiée
@@ -423,19 +426,24 @@ class AssetManager:
                 asset_info = self._get_asset_info("audio", key)
                 if asset_info and "volume" in asset_info:
                     sound.set_volume(asset_info["volume"])
+                else:
+                    sound.set_volume(0.7)  # Volume par défaut
                 
                 self.cache[cache_key] = sound
+                logger.info(f"Sound loaded successfully: {key}")
                 return sound
                 
             except Exception as e:
                 logger.error(f"Error loading sound {key}: {e}")
         
+        # Debug : afficher les sons disponibles
+        if DEV_MODE:
+            available_sounds = [k for k in self.discovered_assets.keys() if k.startswith("sfx_")]
+            logger.debug(f"Sound not available: {key} (full_key: {full_key})")
+            logger.debug(f"Available sounds: {available_sounds}")
+        
         # Pas de fallback pour les sons - retourner None
         self.cache[cache_key] = None
-        
-        if DEV_MODE:
-            logger.debug(f"Sound not available: {key}")
-        
         return None
     
     def get_music_path(self, key: str) -> Optional[str]:
