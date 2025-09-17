@@ -166,11 +166,15 @@ class GameplayScene(Scene):
                     if player:
                         self._handle_elevator_call(player)
                 return
-            elif pygame.K_0 <= event.key <= pygame.K_9:
-                # Sélection d'étage
-                floor_number = 90 + (event.key - pygame.K_0)
-                self._handle_floor_selection(floor_number)
+            elif event.key == pygame.K_UP:
+                # Changer d'étage vers le haut avec la flèche
+                self._handle_arrow_floor_change(+1)
                 return
+            elif event.key == pygame.K_DOWN:
+                # Changer d'étage vers le bas avec la flèche
+                self._handle_arrow_floor_change(-1)
+                return
+            # La sélection 0-9 n'est plus utilisée pour l'ascenseur
         
         # Pour l'instant, gérer les entrées directement
         # TODO: Intégrer avec l'InputManager quand disponible
@@ -473,16 +477,8 @@ class GameplayScene(Scene):
                 distance = abs(player.x - elevator_x)
                 
                 if distance < 60:  # Zone d'interaction
-                    if self.elevator.current_floor == player.current_floor:
-                        # Le joueur peut utiliser l'ascenseur
-                        self.elevator.go_to(floor_number)
-                        self.notification_manager.add_notification(f"Direction étage {floor_number}", 2.0)
-                        
-                        # Le joueur change d'étage immédiatement (simulation rapide)
-                        player.current_floor = floor_number
-                        logger.info(f"Player instantly moved to floor {floor_number}")
-                    else:
-                        self.notification_manager.add_notification("Appelez d'abord l'ascenseur (C).", 2.0)
+                    # Ne nécessite plus que l'ascenseur soit au même étage
+                    self._change_player_floor(floor_number)
                 else:
                     self.notification_manager.add_notification("Approchez-vous de l'ascenseur.", 2.0)
         else:
@@ -869,12 +865,48 @@ class GameplayScene(Scene):
                 elevator_x = 30 + 40  # Centre de l'ascenseur
                 distance = abs(player.x - elevator_x)
                 if distance < 60:
-                    if self.elevator.current_floor == player.current_floor:
-                        self.hud.show_interaction_hint("0-9 : Choisir étage")
-                    else:
-                        self.hud.show_interaction_hint("C : Appeler ascenseur")
+                    # Utiliser les flèches pour changer d'étage
+                    self.hud.show_interaction_hint("↑/↓ : Changer d'étage")
                 else:
                     self.hud.hide_interaction_hint()
+
+    def _handle_arrow_floor_change(self, direction: int) -> None:
+        """
+        Change d'un étage dans la direction donnée si le joueur est près de l'ascenseur.
+        
+        Args:
+            direction: +1 pour monter, -1 pour descendre
+        """
+        if not self.building or not self.entity_manager:
+            return
+        player = self.entity_manager.get_player()
+        if not player:
+            return
+        # Vérifier proximité ascenseur
+        elevator_x = 30 + 40
+        if abs(player.x - elevator_x) >= 60:
+            self.notification_manager.add_notification("Approchez-vous de l'ascenseur.", 1.5)
+            return
+
+        # Calculer nouvel étage borné aux étages existants
+        current = player.current_floor
+        all_floors = self.building.get_all_floors()
+        if not all_floors:
+            return
+        if current not in all_floors:
+            current = all_floors[0]
+        try:
+            idx = all_floors.index(current)
+        except ValueError:
+            idx = 0
+        new_idx = max(0, min(len(all_floors) - 1, idx + (1 if direction > 0 else -1)))
+        new_floor = all_floors[new_idx]
+
+        if new_floor != current:
+            self._change_player_floor(new_floor)
+        else:
+            # Déjà au bord
+            self.notification_manager.add_notification("Pas d'autre étage dans cette direction.", 1.5)
     
     
     def exit(self):
