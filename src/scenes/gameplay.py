@@ -50,7 +50,7 @@ class GameplayScene(Scene):
         # Événement narratif étage supérieur
         self._top_floor_event_shown = False
         self._top_floor_proximity_time = 0.0
-        
+
         # État de l'interface
         self.paused = False
         
@@ -180,12 +180,15 @@ class GameplayScene(Scene):
                     if player:
                         self._handle_elevator_call(player)
                 return
-            elif pygame.K_0 <= event.key <= pygame.K_9:
-                # Sélection d'étage
-                floor_number = 90 + (event.key - pygame.K_0)
-                self._handle_floor_selection(floor_number)
+            elif event.key == pygame.K_UP:
+                # Changer d'étage vers le haut avec la flèche
+                self._handle_arrow_floor_change(+1)
                 return
-        
+            elif event.key == pygame.K_DOWN:
+                # Changer d'étage vers le bas avec la flèche
+                self._handle_arrow_floor_change(-1)
+                return
+
         # Pour l'instant, gérer les entrées directement
         # TODO: Intégrer avec l'InputManager quand disponible
         pass
@@ -623,18 +626,8 @@ class GameplayScene(Scene):
                 elevator_x = 30 + 40  # Centre de l'ascenseur
                 distance = abs(player.x - elevator_x)
                 
-                if distance < 48:  # Un peu plus tolérant
-                    if self.elevator.current_floor == player.current_floor:
-                        # Le joueur peut utiliser l'ascenseur
-                        self.elevator.go_to(floor_number)
-                        self.notification_manager.add_notification(f"Direction étage {floor_number}", 2.0)
-                        
-                        # Le joueur change d'étage immédiatement (simulation rapide)
-                        player.current_floor = floor_number
-                        logger.info(f"Player instantly moved to floor {floor_number}")
-                        event_bus.emit("ENTER_FLOOR", {"floor": floor_number})
-                    else:
-                        self.notification_manager.add_notification("Appelez d'abord l'ascenseur (C).", 2.0)
+                if distance < 48:  # Zone d'interaction
+                    self._change_player_floor(floor_number)
                 else:
                     self.notification_manager.add_notification("Approchez-vous de l'ascenseur.", 2.0)
         else:
@@ -869,9 +862,7 @@ class GameplayScene(Scene):
                 screen.blit(tinted_sprite, (final_x, final_y))
             else:
                 screen.blit(obj_sprite, (final_x, final_y))
-            
-            # Debug visuel supprimé (les cercles ne sont plus affichés)
-    
+
     def _get_sprite_key_for_kind(self, kind: str) -> str:
         """
         Retourne la clé de sprite pour un type d'objet donné.
@@ -1022,52 +1013,47 @@ class GameplayScene(Scene):
                 elevator_x = 30 + 40  # Centre de l'ascenseur
                 distance = abs(player.x - elevator_x)
                 if distance < 48:
-                    if self.elevator.current_floor == player.current_floor:
-                        self.hud.show_interaction_hint("0-9 : Choisir étage")
-                    else:
-                        self.hud.show_interaction_hint("C : Appeler ascenseur")
+                    self.hud.show_interaction_hint("↑/↓ : Changer d'étage")
                 else:
                     self.hud.hide_interaction_hint()
 
-        # Mettre à jour l'événement narratif de l'étage supérieur
-        self._update_top_floor_event(0.0)
-
-    def _update_top_floor_event(self, dt: float) -> None:
-        """Déclenche un court événement d'observation au dernier étage, discrètement.
-        Nécessite de rester proche d'une zone pendant un bref instant.
+    def _handle_arrow_floor_change(self, direction: int) -> None:
         """
-        if not self.entity_manager or not self.building or self._top_floor_event_shown:
+        Change d'un étage dans la direction donnée si le joueur est près de l'ascenseur.
+
+        Args:
+            direction: +1 pour monter, -1 pour descendre
+        """
+        if not self.building or not self.entity_manager:
             return
-        from src.settings import MAX_FLOOR, WIDTH
         player = self.entity_manager.get_player()
         if not player:
             return
-        if player.current_floor != MAX_FLOOR:
-            # Réinitialiser le timer si on quitte l'étage
-            self._top_floor_proximity_time = 0.0
+        # Vérifier proximité ascenseur
+        elevator_x = 30 + 40
+        if abs(player.x - elevator_x) >= 60:
+            self.notification_manager.add_notification("Approchez-vous de l'ascenseur.", 1.5)
             return
-        # Définir une petite zone à l'extrémité droite de l'étage (proche fenêtre)
-        world_width = WIDTH - 150
-        world_x = 120
-        zone_center_x = world_x + world_width - 80
-        near = abs(player.x - zone_center_x) < 36
-        if near:
-            self._top_floor_proximity_time += max(dt, 1/60)
+
+        # Calculer nouvel étage borné aux étages existants
+        current = player.current_floor
+        all_floors = self.building.get_all_floors()
+        if not all_floors:
+            return
+        if current not in all_floors:
+            current = all_floors[0]
+        try:
+            idx = all_floors.index(current)
+        except ValueError:
+            idx = 0
+        new_idx = max(0, min(len(all_floors) - 1, idx + (1 if direction > 0 else -1)))
+        new_floor = all_floors[new_idx]
+
+        if new_floor != current:
+            self._change_player_floor(new_floor)
         else:
-            self._top_floor_proximity_time = 0.0
-        if self._top_floor_proximity_time >= 1.2:
-            # Afficher un avertissement contenu et un court dialogue auto
-            if self.notification_manager:
-                self.notification_manager.add_notification("Avertissement: thème sensible.", 3.0)
-            if self.dialogue_system and not self.dialogue_system.is_active():
-                from src.ui.dialogue import create_conversation
-                lines = [
-                    ("On dirait qu'il s'est passé quelque chose de grave...", ""),
-                    ("Le bureau est silencieux. Des regards fuyants.", ""),
-                    ("Ce n'est pas mon histoire. Je reste témoin.", "")
-                ]
-                self.dialogue_system.start_custom_dialogue(create_conversation(lines, auto_continue=True))
-            self._top_floor_event_shown = True
+            # Déjà au bord
+            self.notification_manager.add_notification("Pas d'autre étage dans cette direction.", 1.5)
 
     def _process_timeline_events(self) -> None:
         """Émet des événements temporels clés et applique des effets simples."""

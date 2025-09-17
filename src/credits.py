@@ -8,7 +8,7 @@ def draw_center(surface, text, font, color, y):
     surface.blit(ts, tr)
 
 def credits_loop(screen, clock):
-    bg = pygame.image.load("assets/images/background_.jpg").convert()
+    bg = pygame.image.load("assets/images/wtc.png").convert()
     bg = pygame.transform.scale(bg, (WIDTH, HEIGHT))
 
     font_title = pygame.font.Font("assets/fonts/Pixellari.ttf", 36)

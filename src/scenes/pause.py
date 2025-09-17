@@ -112,7 +112,16 @@ class PauseScene(Scene):
     
     def draw(self, screen):
         """Dessine la scène."""
-        # Overlay semi-transparent sur le jeu
+        # Arrière-plan wtc.png
+        try:
+            wtc_bg = pygame.image.load("assets/images/wtc.png").convert()
+            wtc_bg = pygame.transform.scale(wtc_bg, (WIDTH, HEIGHT))
+            screen.blit(wtc_bg, (0, 0))
+        except:
+            # Fallback vers fond noir
+            screen.fill((0, 0, 0))
+        
+        # Overlay semi-transparent
         overlay = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
         overlay.fill((0, 0, 0, 128))  # Noir semi-transparent
         screen.blit(overlay, (0, 0))
