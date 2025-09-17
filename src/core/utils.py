@@ -8,6 +8,7 @@ import math
 from typing import Tuple, Optional, Any, Dict, List
 import pygame
 from pathlib import Path
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -164,6 +165,24 @@ def load_json_safe(file_path: Path) -> Optional[Dict[str, Any]]:
             return json.load(f)
     except (FileNotFoundError, json.JSONDecodeError, PermissionError) as e:
         logger.error(f"Error loading JSON {file_path}: {e}")
+        return None
+
+
+def parse_hhmm(time_str: str) -> Optional[tuple[int, int]]:
+    """
+    Parse une chaîne HH:MM en tuple (hour, minute).
+    Retourne None si invalide.
+    """
+    try:
+        if not isinstance(time_str, str):
+            return None
+        if not re.match(r"^\d{2}:\d{2}$", time_str):
+            return None
+        hour, minute = map(int, time_str.split(":"))
+        if 0 <= hour <= 23 and 0 <= minute <= 59:
+            return (hour, minute)
+        return None
+    except Exception:
         return None
 
 

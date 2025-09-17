@@ -33,6 +33,8 @@ class GameClock:
         self.current_time = self.start_time
         self.is_running = False
         self.total_real_seconds = 0.0
+        # Dernière minute émise (HH:MM) pour TIME_TICK / TIME_REACHED
+        self._last_minute_emitted: Optional[str] = None
         
         logger.info(f"GameClock initialized: {start_time} -> {end_time} (speed: {speed}x)")
     
@@ -81,6 +83,21 @@ class GameClock:
             self.current_time = self.end_time
             self.stop()
             logger.warning("Deadline reached - GameClock stopped")
+
+        # Émettre un événement à chaque changement de minute in-game
+        try:
+            from src.core.event_bus import event_bus  # import local pour éviter import cycles
+            minute_str = self.current_time.strftime("%H:%M")
+            if minute_str != self._last_minute_emitted:
+                self._last_minute_emitted = minute_str
+                # TIME_TICK toutes les minutes
+                event_bus.emit("TIME_TICK", {"time": minute_str})
+                # TIME_REACHED générique et spécifique
+                event_bus.emit("TIME_REACHED", {"time": minute_str})
+                event_bus.emit(f"TIME_REACHED:{minute_str}", {"time": minute_str})
+        except Exception:
+            # L'EventBus est optionnel; ignorer silencieusement si indisponible
+            pass
     
     def get_time(self) -> datetime:
         """Retourne l'heure actuelle du jeu."""

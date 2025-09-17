@@ -26,6 +26,15 @@ class Floor:
         self.bg_key = safe_get(floor_data, "bg_key", None)
         self.background_surface = None  # Sera chargé par le world_loader
         
+        # Géométrie et contraintes d'échelle
+        self.geometry: Dict[str, Any] = safe_get(floor_data, "geometry", {}) or {}
+        if "floor_play_height_px" not in self.geometry:
+            self.geometry["floor_play_height_px"] = 128
+        if "walkline_y" not in self.geometry:
+            self.geometry["walkline_y"] = 24
+        if "elevator" not in self.geometry:
+            self.geometry["elevator"] = {"x": 64, "door_w": 64, "door_h": 96}
+
         # Listes d'objets (nouveau système)
         self.objects = []
         self.interactables = []  # Conservé pour compatibilité

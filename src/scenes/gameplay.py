@@ -12,6 +12,8 @@ from src.world.world_loader import WorldLoader
 from src.ui.overlay import HUD, NotificationManager
 from src.ui.dialogue import DialogueSystem
 from src.core.utils import load_json_safe
+from src.core.event_bus import event_bus, TIME_TICK, TIME_REACHED
+from src.settings import DATA_PATH
 
 logger = logging.getLogger(__name__)
 
@@ -38,6 +40,10 @@ class GameplayScene(Scene):
         self.elevator = None
         self.entity_manager = None
         self.task_manager = None
+        self.flags = set()
+        self._intro_lock_active = True
+        self._printer_requirement = 2
+        self._subscriptions = []
         
         # État de l'interface
         self.paused = False
@@ -53,10 +59,8 @@ class GameplayScene(Scene):
         """Appelé en entrant dans la scène."""
         super().enter(**kwargs)
         
-        # Créer l'horloge de jeu pour cette session
-        from src.core.timer import GameClock
-        from src.settings import START_TIME, END_TIME, GAME_SECONDS_PER_REAL_SECOND
-        self.game_clock = GameClock(START_TIME, END_TIME, GAME_SECONDS_PER_REAL_SECOND)
+        # Utiliser l'horloge globale fournie par l'app (source de vérité)
+        self.game_clock = self.scene_manager.context.get("game_clock")
         
         # Charger le monde
         if not self._load_world():
@@ -70,9 +74,15 @@ class GameplayScene(Scene):
         # Initialiser l'UI
         self._setup_ui()
         
-        # Démarrer l'horloge de jeu
-        if self.game_clock:
-            self.game_clock.start()
+        # Démarrer l'horloge si nouvellement créée (sinon l'app la gère)
+        if self.game_clock and not self.game_clock.is_running:
+            try:
+                self.game_clock.start()
+            except Exception:
+                pass
+
+        # S'abonner aux événements temporels et timeline
+        self._subscribe_events()
         
         # Charger l'étage initial
         if self.building and self.entity_manager:
@@ -182,9 +192,8 @@ class GameplayScene(Scene):
     
     def _handle_pause(self):
         """Gère la pause du jeu."""
-        # Pour l'instant, retourner au menu au lieu de pause
-        logger.info("Returning to menu (pause not fully implemented)")
-        self.switch_to("menu")
+        # La gestion de la pause est centralisée dans l'app; ne rien faire ici
+        logger.debug("Pause handled by App")
     
     def update(self, dt):
         """Met à jour tous les systèmes."""
@@ -202,6 +211,12 @@ class GameplayScene(Scene):
         
         # Vérifier les conditions de fin
         self._check_game_end_conditions()
+
+        # Traiter les événements de timeline pilotés par l'heure
+        self._process_timeline_events()
+
+        # Hooks interruptions (toasts simples)
+        # Abonnements posés en enter; ici rien de plus
     
     def _update_camera_for_floor(self, floor_number: int) -> None:
         """
@@ -615,6 +630,11 @@ class GameplayScene(Scene):
                 player = self.entity_manager.get_player()
                 if player:
                     player_sprite = asset_manager.get_image("player_idle")
+                    # Appliquer l'auto-scale nearest-neighbor
+                    if getattr(player, "render_scale", 1.0) != 1.0:
+                        w = int(player_sprite.get_width() * player.render_scale)
+                        h = int(player_sprite.get_height() * player.render_scale)
+                        player_sprite = pygame.transform.scale(player_sprite, (w, h))
                     player_x = player.x - player_sprite.get_width() // 2
                     # Positionner le joueur au sol (bas de l'étage)
                     player_y = screen_y + floor_height - player_sprite.get_height() - 5
@@ -914,8 +934,72 @@ class GameplayScene(Scene):
         """Appelé en quittant la scène."""
         super().exit()
         
-        # Arrêter l'horloge
-        if self.game_clock:
-            self.game_clock.stop()
+        # Désabonnements
+        for (evt, handler) in self._subscriptions:
+            try:
+                # Pas de méthode unsubscribe dans EventBus minimal; ignorer
+                pass
+            except Exception:
+                pass
         
         logger.info("Exited GameplayScene")
+
+    # === Adapters: Time & Timeline ===
+    def _subscribe_events(self) -> None:
+        def on_tick(payload):
+            self._on_time_tick(payload)
+        def on_reached(payload):
+            self._on_time_reached(payload)
+        event_bus.subscribe(TIME_TICK, on_tick)
+        event_bus.subscribe(TIME_REACHED, on_reached)
+        self._subscriptions.append((TIME_TICK, on_tick))
+        self._subscriptions.append((TIME_REACHED, on_reached))
+
+        # Abonnement aux événements spécifiques de la timeline
+        def on_printer_escalate(payload):
+            self._printer_requirement = 3
+        event_bus.subscribe("PRINTER_ESCALATE_IF_NOT_FIXED", on_printer_escalate)
+        self._subscriptions.append(("PRINTER_ESCALATE_IF_NOT_FIXED", on_printer_escalate))
+
+    def _on_time_tick(self, payload):
+        # Espace réservé pour interruptions, mise à jour UI, etc.
+        pass
+
+    def _on_time_reached(self, payload):
+        # Pour l'instant, rien ici; la TimelineController émet aussi des événements dédiés
+        pass
+
+    def _process_timeline_events(self):
+        """
+        Hook explicite (tests) pour appliquer des effets en fonction de l'heure.
+        - 08:37: l'imprimante devient plus exigeante si non réglée.
+        """
+        try:
+            if self.game_clock and self.game_clock.get_time_str() >= "08:37":
+                self._printer_requirement = 3
+        except Exception:
+            pass
+
+    # === Adapters: DSL Effects ===
+    def _apply_effect(self, effect: dict) -> None:
+        """Applique un effet simple: set_flag, offer_task, discover_task, complete_task, add_rep, toast."""
+        if not isinstance(effect, dict):
+            return
+        try:
+            if "set_flag" in effect:
+                self.flags.add(effect["set_flag"])
+                if effect["set_flag"] == "met_boss":
+                    self._intro_lock_active = False
+            elif "offer_task" in effect and self.task_manager:
+                self.task_manager.offer_task(effect["offer_task"])
+            elif "discover_task" in effect and self.task_manager:
+                self.task_manager.discover_task(effect["discover_task"])
+            elif "complete_task" in effect and self.task_manager:
+                self.task_manager.complete_task(effect["complete_task"])
+            elif "add_rep" in effect:
+                # Réputation non implémentée: placeholder
+                pass
+            elif "toast" in effect:
+                self.notification_manager.add_notification(str(effect["toast"]), 2.0)
+        except Exception:
+            pass

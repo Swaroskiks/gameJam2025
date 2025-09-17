@@ -232,7 +232,13 @@ class HUD:
             color = (128, 128, 128)  # Gris
         
         # Texte de la tâche (tronqué si nécessaire)
-        task_text = f"{icon} {task.title}"
+        # Afficher soft_due/due_by si présents
+        time_hint = ""
+        if getattr(task, "soft_due", None):
+            time_hint = f" (~{task.soft_due})"
+        if getattr(task, "due_by", None):
+            time_hint = f" ({task.due_by})"
+        task_text = f"{icon} {task.title}{time_hint}"
         if len(task_text) > 35:  # Limite pour le panneau
             task_text = task_text[:32] + "..."
         

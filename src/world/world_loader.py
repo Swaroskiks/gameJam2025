@@ -13,6 +13,7 @@ from src.world.elevator import Elevator
 from src.world.entities import EntityManager
 from src.world.tasks import TaskManager
 from src.core.utils import load_json_safe
+from src.core.assets import asset_manager
 
 logger = logging.getLogger(__name__)
 
@@ -174,6 +175,13 @@ class WorldLoader:
             # Définir l'étage initial: bureau du boss (dernier étage)
             boss_floor = self.building.get_max_floor()
             player.set_floor(boss_floor)
+            # Appliquer la géométrie d'étage (auto-scale, vitesse)
+            try:
+                floor = self.building.get_floor(boss_floor)
+                if floor is not None:
+                    player.apply_floor_geometry(getattr(floor, "geometry", {}), asset_manager)
+            except Exception:
+                pass
             
             logger.info(f"Player created at ({start_x}, {start_y}) on floor {boss_floor}")
     
@@ -249,6 +257,13 @@ class WorldLoader:
         if self.entity_manager and self.entity_manager.get_player():
             player = self.entity_manager.get_player()
             player.set_floor(new_floor)
+            # Adapter la géométrie d'étage
+            try:
+                floor = self.building.get_floor(new_floor)
+                if floor is not None:
+                    player.apply_floor_geometry(getattr(floor, "geometry", {}), asset_manager)
+            except Exception:
+                pass
             
             # Marquer l'étage comme visité
             self.building.visit_floor(new_floor)

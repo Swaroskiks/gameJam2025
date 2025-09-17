@@ -19,9 +19,14 @@ class EventBus:
             try:
                 handler(payload or {})
             except Exception:
-                pass
+                # Éviter que des erreurs de handlers cassent la boucle
+                continue
 
 
 event_bus = EventBus()
+
+# Événements standards
+TIME_TICK = "TIME_TICK"            # payload: {"time": "HH:MM"}
+TIME_REACHED = "TIME_REACHED"      # payload: {"time": "HH:MM"}
 
 

@@ -64,8 +64,23 @@ class Game:
             
             # Enregistrer les scènes
             self._register_scenes()
-            # Partager l'horloge globale avec les scènes
+            # Partager l'horloge globale et timeline avec les scènes
             self.scene_manager.context["game_clock"] = self.game_clock
+            try:
+                from src.core.timeline import TimelineController
+                self.timeline = TimelineController()
+                self.timeline.load()
+                self.scene_manager.context["timeline"] = self.timeline
+            except Exception:
+                self.timeline = None
+
+            # Interruption manager (optionnel)
+            try:
+                from src.core.interruptions import InterruptionManager
+                self.interruptions = InterruptionManager()
+                self.scene_manager.context["interruptions"] = self.interruptions
+            except Exception:
+                self.interruptions = None
             
             # Démarrer directement avec le menu (avertissement supprimé)
             if not self.scene_manager.switch_scene("menu"):
@@ -187,6 +202,12 @@ class Game:
         """Met à jour tous les systèmes."""
         # Mettre à jour l'horloge de jeu
         self.game_clock.tick(dt)
+        # Mettre à jour la timeline (basée sur TIME_TICK via EventBus ou polling)
+        try:
+            if self.timeline is not None:
+                self.timeline.update(self.game_clock)
+        except Exception:
+            pass
         
         # Mettre à jour l'input manager
         self.input_manager.update()

@@ -18,6 +18,7 @@ GAME_TITLE = "A Day at the Office"
 START_TIME = "08:30"
 END_TIME = "08:48"
 GAME_SECONDS_PER_REAL_SECOND = 5.0
+INTERRUPTION_RATE = 0.0  # Probabilité base/sec, ajustée par plages horaires
 
 # Configuration du building
 VISIBLE_FLOOR_RADIUS = 2
@@ -29,6 +30,9 @@ ELEVATOR_POSITION_X = 64
 PLAYER_WIDTH = 48
 PLAYER_HEIGHT = 72
 TILE_SIZE = 48
+WORLD_PX_PER_METER = 64.0
+WALK_SPEED_MPS = 2.8
+PLAYER_TARGET_HEIGHT_RATIO = 0.46  # proportion de floor_play_height_px
 
 # Configuration des assets
 ASSETS_PATH = Path("assets")

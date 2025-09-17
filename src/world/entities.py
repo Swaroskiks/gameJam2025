@@ -8,7 +8,10 @@ import random
 from typing import Tuple, Optional, Dict, Any, List
 from enum import Enum
 import pygame
-from src.settings import PLAYER_WIDTH, PLAYER_HEIGHT, WIDTH, HEIGHT
+from src.settings import (
+    PLAYER_WIDTH, PLAYER_HEIGHT, WIDTH, HEIGHT,
+    WORLD_PX_PER_METER, WALK_SPEED_MPS, PLAYER_TARGET_HEIGHT_RATIO
+)
 from src.core.animation import AnimationManager
 from src.core.utils import clamp, normalize_vector, distance
 
@@ -32,7 +35,8 @@ class Player:
     def __init__(self, x: float = 200.0, y: float = 300.0):
         self.x = x
         self.y = y
-        self.speed = 150.0  # Pixels par seconde
+        # Vitesse exprimée en pixels/seconde (dérivée des mètres/seconde)
+        self.speed = WALK_SPEED_MPS * WORLD_PX_PER_METER
         self.current_floor = 90  # Étage actuel
         
         # État du mouvement
@@ -47,6 +51,9 @@ class Player:
             PLAYER_WIDTH, 
             PLAYER_HEIGHT
         )
+
+        # Mise à l'échelle de rendu (ajustée par étage)
+        self.render_scale: float = 1.0
         
         # Animations
         self.animation_manager = AnimationManager()
@@ -155,6 +162,39 @@ class Player:
         """
         self.current_floor = floor
         logger.debug(f"Player moved to floor {floor}")
+
+    def apply_floor_geometry(self, floor_geometry: Dict[str, Any], asset_manager=None) -> None:
+        """
+        Adapte l'échelle visuelle et la hitbox selon la géométrie de l'étage.
+        
+        Args:
+            floor_geometry: Dictionnaire avec au minimum floor_play_height_px
+            asset_manager: Optionnel, pour mesurer la hauteur sprite actuelle
+        """
+        try:
+            play_h = int(floor_geometry.get("floor_play_height_px", 128))
+            target_h = int(play_h * PLAYER_TARGET_HEIGHT_RATIO)
+            # Mesurer la hauteur actuelle du sprite idle comme référence
+            current_h = self.rect.height
+            if asset_manager is not None:
+                try:
+                    sprite = asset_manager.get_image("player_idle")
+                    current_h = sprite.get_height()
+                except Exception:
+                    pass
+            # Calculer le scale de rendu et ajuster la hitbox à 90% de la hauteur
+            self.render_scale = max(0.25, min(3.0, (target_h / max(1, current_h))))
+            new_h = int(target_h * 0.9)
+            # Conserver la largeur proportionnelle approximative
+            aspect_ratio = self.rect.width / max(1, self.rect.height)
+            new_w = max(16, int(new_h * aspect_ratio))
+            center = self.rect.center
+            self.rect.size = (new_w, new_h)
+            self.rect.center = center
+            # Vitesse en px/s (constante monde)
+            self.speed = WALK_SPEED_MPS * WORLD_PX_PER_METER
+        except Exception as e:
+            logger.debug(f"apply_floor_geometry failed: {e}")
     
     def get_position(self) -> Tuple[float, float]:
         """Retourne la position actuelle."""

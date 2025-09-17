@@ -6,7 +6,7 @@ Gère les tâches principales et annexes, dépendances, et progression.
 import logging
 from typing import Dict, List, Optional, Any, Set
 from enum import Enum
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from src.core.utils import load_json_safe, safe_get
 
 logger = logging.getLogger(__name__)
@@ -45,6 +45,11 @@ class Task:
     dependencies: List[str] = None
     completion_message: str = ""
     allow_unassigned_completion: bool = True
+    # Extensions temporelles et métadonnées
+    due_by: Optional[str] = None
+    soft_due: Optional[str] = None
+    priority: int = 0
+    tags: List[str] = field(default_factory=list)
     
     def __post_init__(self):
         if self.dependencies is None:
@@ -151,7 +156,11 @@ class TaskManager:
                 required=required,
                 dependencies=safe_get(data, "dependencies", []),
                 completion_message=safe_get(data, "completion_message", "Tâche terminée !"),
-                allow_unassigned_completion=bool(safe_get(data, "allow_unassigned_completion", True))
+                allow_unassigned_completion=bool(safe_get(data, "allow_unassigned_completion", True)),
+                due_by=safe_get(data, "due_by"),
+                soft_due=safe_get(data, "soft_due"),
+                priority=int(safe_get(data, "priority", 0) or 0),
+                tags=list(safe_get(data, "tags", []) or [])
             )
             
             return task
