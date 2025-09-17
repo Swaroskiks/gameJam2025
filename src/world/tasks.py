@@ -550,6 +550,14 @@ class TaskManager:
         Returns:
             Dictionnaire avec les statistiques
         """
+        # Comptage par type pour les trophées par catégorie
+        completed_by_type: Dict[str, int] = {}
+        for task_id in self.completed_tasks:
+            task = self.tasks.get(task_id)
+            if task:
+                key = task.task_type.value if isinstance(task.task_type, TaskType) else str(task.task_type)
+                completed_by_type[key] = completed_by_type.get(key, 0) + 1
+
         return {
             "total_tasks": len(self.tasks),
             "completed_tasks": len(self.completed_tasks),
@@ -560,5 +568,7 @@ class TaskManager:
             "completion_percentage": self.get_completion_percentage(),
             "main_completion_percentage": self.get_main_tasks_completion_percentage(),
             "all_main_completed": self.are_all_main_tasks_completed(),
-            "all_completed": self.are_all_tasks_completed()
+            "all_completed": self.are_all_tasks_completed(),
+            "completed_task_ids": list(self.completed_tasks),
+            "completed_by_type": completed_by_type
         }

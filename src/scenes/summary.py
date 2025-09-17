@@ -91,28 +91,76 @@ class SummaryScene(Scene):
         if not self.trophies_data.get("trophies"):
             return
         
-        # Simuler quelques trophées basés sur les stats (logique simplifiée)
-        total_points = self.game_stats.get("total_points", 0)
-        completed_tasks = self.game_stats.get("completed_tasks", 0)
-        main_tasks_completed = self.game_stats.get("main_tasks_completed", 0)
-        
         for trophy_data in self.trophies_data["trophies"]:
-            earned = False
-            
-            # Logique simplifiée de trophées
-            if trophy_data["id"] == "main_verte" and "water_plant" in str(self.game_stats):
-                earned = True
-            elif trophy_data["id"] == "ranger_pro" and "organize_papers" in str(self.game_stats):
-                earned = True
-            elif trophy_data["id"] == "employe_modele" and main_tasks_completed >= 3:
-                earned = True
-            elif trophy_data["id"] == "ponctuel" and completed_tasks > 0:
-                earned = True
-            
-            if earned:
+            condition = trophy_data.get("condition", {})
+            if self._evaluate_trophy_condition(condition, self.game_stats):
                 self.earned_trophies.append(trophy_data)
         
         logger.info(f"Earned {len(self.earned_trophies)} trophies")
+
+    def _evaluate_trophy_condition(self, condition: dict, stats: dict) -> bool:
+        """Évalue une condition de trophée contre les stats collectées."""
+        try:
+            ctype = condition.get("type")
+            if not ctype:
+                return False
+            
+            tasks_stats = (stats.get("tasks") or {})
+            building_stats = (stats.get("building") or {})
+            elevator_stats = (stats.get("elevator") or {})
+            time_stats = (stats.get("time") or {})
+            entities_stats = (stats.get("entities") or {})
+            
+            if ctype == "task_completed":
+                task_id = condition.get("task_id")
+                completed_ids = set(tasks_stats.get("completed_task_ids") or [])
+                return bool(task_id) and task_id in completed_ids
+            
+            if ctype == "tasks_count":
+                task_type = condition.get("task_type")
+                min_count = int(condition.get("min_count", 0))
+                by_type = tasks_stats.get("completed_by_type") or {}
+                return by_type.get(task_type, 0) >= min_count
+            
+            if ctype == "all_main_tasks":
+                return bool(tasks_stats.get("all_main_completed"))
+            
+            if ctype == "all_tasks":
+                return bool(tasks_stats.get("all_completed"))
+            
+            if ctype == "floors_visited":
+                min_floors = int(condition.get("min_floors", 0))
+                return int(building_stats.get("visited_floors", 0)) >= min_floors
+            
+            if ctype == "time_limit":
+                max_minutes = int(condition.get("max_minutes", 0))
+                scope = condition.get("tasks", "main_tasks")
+                # Critère: toutes les tâches du scope terminées ET temps réel sous la limite
+                elapsed = float(time_stats.get("elapsed_real_seconds", 1e9))
+                if scope == "main_tasks":
+                    all_main = bool(tasks_stats.get("all_main_completed"))
+                    return all_main and elapsed <= max_minutes * 60
+                if scope == "all_tasks":
+                    all_done = bool(tasks_stats.get("all_completed"))
+                    return all_done and elapsed <= max_minutes * 60
+                return False
+            
+            if ctype == "all_npcs_talked":
+                # Non suivi précisément — retourner False par défaut
+                return False
+            
+            if ctype == "elevator_uses":
+                min_uses = int(condition.get("min_uses", 0))
+                return int(elevator_stats.get("total_uses", 0)) >= min_uses
+            
+            if ctype in ("tasks_same_floor", "task_in_final_minutes", "tasks_in_floor_order", "help_per_floor"):
+                # Non supporté pour l'instant
+                return False
+            
+            return False
+        except Exception as e:
+            logger.error(f"Error evaluating trophy condition: {e}")
+            return False
     
     def handle_event(self, event):
         """Gère les événements."""
