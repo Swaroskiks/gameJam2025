@@ -213,6 +213,54 @@
       "frame_w": 144,
       "frame_h": 72,
       "description": "Bureau"
+    },
+    "supply_closet": {
+      "path": "sprites/supply_closet.png",
+      "frame_w": 48,
+      "frame_h": 64,
+      "description": "Placard à fournitures"
+    },
+    "stapler": {
+      "path": "sprites/stapler.png",
+      "frame_w": 32,
+      "frame_h": 24,
+      "description": "Agrafeuse"
+    },
+    "cable_pile": {
+      "path": "sprites/cable_pile.png",
+      "frame_w": 40,
+      "frame_h": 16,
+      "description": "Pile de câbles"
+    },
+    "mug": {
+      "path": "sprites/mug.png",
+      "frame_w": 24,
+      "frame_h": 32,
+      "description": "Mug de café"
+    },
+    "sink": {
+      "path": "sprites/sink.png",
+      "frame_w": 48,
+      "frame_h": 40,
+      "description": "Évier"
+    },
+    "copier": {
+      "path": "sprites/copier.png",
+      "frame_w": 64,
+      "frame_h": 80,
+      "description": "Photocopieuse"
+    },
+    "air_vent": {
+      "path": "sprites/air_vent.png",
+      "frame_w": 32,
+      "frame_h": 24,
+      "description": "Bouche d'aération"
+    },
+    "whiteboard": {
+      "path": "sprites/whiteboard.png",
+      "frame_w": 96,
+      "frame_h": 64,
+      "description": "Tableau blanc"
     }
   },
   "spritesheets": {

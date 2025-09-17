@@ -430,6 +430,24 @@ class TaskManager:
                 return task
         return None
 
+    def is_task_known(self, task_id: str) -> bool:
+        """Vérifie si une tâche est connue (chargée)."""
+        return task_id in self.tasks
+
+    def is_task_available(self, task_id: str) -> bool:
+        """Vérifie si une tâche est disponible."""
+        return self.task_status.get(task_id) == TaskStatus.AVAILABLE
+
+    def offer_task(self, task_id: str) -> None:
+        """
+        Marque une tâche comme 'offerte' (utile pour les side-tasks qui ne se débloquent
+        pas automatiquement). Met à jour son statut si dépendances remplies.
+        """
+        if task_id not in self.tasks:
+            return
+        self.offered_tasks.add(task_id)
+        self._update_available_tasks()
+
     # === Extensions DSL/Story ===
     def discover_task(self, task_id: str) -> bool:
         """Marque une tâche comme découverte (sans l'offrir)."""
@@ -532,6 +550,14 @@ class TaskManager:
         Returns:
             Dictionnaire avec les statistiques
         """
+        # Comptage par type pour les trophées par catégorie
+        completed_by_type: Dict[str, int] = {}
+        for task_id in self.completed_tasks:
+            task = self.tasks.get(task_id)
+            if task:
+                key = task.task_type.value if isinstance(task.task_type, TaskType) else str(task.task_type)
+                completed_by_type[key] = completed_by_type.get(key, 0) + 1
+
         return {
             "total_tasks": len(self.tasks),
             "completed_tasks": len(self.completed_tasks),
@@ -542,5 +568,7 @@ class TaskManager:
             "completion_percentage": self.get_completion_percentage(),
             "main_completion_percentage": self.get_main_tasks_completion_percentage(),
             "all_main_completed": self.are_all_main_tasks_completed(),
-            "all_completed": self.are_all_tasks_completed()
+            "all_completed": self.are_all_tasks_completed(),
+            "completed_task_ids": list(self.completed_tasks),
+            "completed_by_type": completed_by_type
         }

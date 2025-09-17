@@ -145,6 +145,24 @@
     "ambient_subtle_2": [
       "Le ciel est parfaitement dégagé aujourd'hui.",
       "On voit loin depuis ces étages."
+    ],
+    "boss_m5": [
+      "La salle doit être prête pour 9h.",
+      "Tu peux y jeter un œil ?"
+    ],
+    "alex_copies": [
+      "La repro a tourné, récupère le dossier s'il te plaît."
+    ],
+    "maya_mugs": [
+      "Ces tasses s'accumulent... Merci !"
+    ],
+    "office_smalltalk_1": [
+      "Le ciel est d'une clarté rare ce matin.",
+      "On voit très loin d'ici."
+    ],
+    "office_smalltalk_2": [
+      "Réu à 9h, on vise large.",
+      "Pas une minute de retard."
     ]
   },
   "notifications": {
