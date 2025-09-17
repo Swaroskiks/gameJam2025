@@ -206,6 +206,10 @@ class NPC:
         self.dialogue_id = safe_get(data, "dialogue_id")
         self.talked_to = False
         
+        # Sprite spécifique pour ce NPC
+        props = safe_get(data, "props", {})
+        self.sprite_key = safe_get(props, "sprite_key", "npc_generic")
+        
         # Rectangle de collision
         self.rect = pygame.Rect(self.x - 16, self.y - 24, 32, 48)
     

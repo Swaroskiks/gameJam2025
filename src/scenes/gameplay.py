@@ -4,6 +4,7 @@ Gère le jeu complet avec building, ascenseur, tâches, etc.
 """
 
 import logging
+from typing import Optional
 import pygame
 from src.core.scene_manager import Scene
 from src.core.input import InputAction
@@ -645,7 +646,9 @@ class GameplayScene(Scene):
                 # NPCs legacy
                 for npc in self.entity_manager.npcs.values():
                     if getattr(npc, 'current_floor', current_floor) == floor_num:
-                        npc_sprite = asset_manager.get_image("npc_generic")
+                        # Utiliser le sprite_key du NPC ou npc_generic par défaut
+                        sprite_key = getattr(npc, 'sprite_key', 'npc_generic')
+                        npc_sprite = asset_manager.get_image(sprite_key)
                         npc_x = npc.x - npc_sprite.get_width() // 2
                         npc_y = screen_y + floor_height - npc_sprite.get_height() - 15
                         screen.blit(npc_sprite, (npc_x, npc_y))
@@ -677,7 +680,7 @@ class GameplayScene(Scene):
         screen_obj_x = obj_x
         
         # Choisir le sprite selon le kind
-        sprite_key = self._get_sprite_key_for_kind(kind)
+        sprite_key = self._get_sprite_key_for_kind(kind, props)
         if sprite_key:
             obj_sprite = asset_manager.get_image(sprite_key)
             
@@ -741,16 +744,21 @@ class GameplayScene(Scene):
         except:
             return None
     
-    def _get_sprite_key_for_kind(self, kind: str) -> str:
+    def _get_sprite_key_for_kind(self, kind: str, props: Optional[dict] = None) -> str:
         """
         Retourne la clé de sprite pour un type d'objet donné.
         
         Args:
             kind: Type d'objet (plant, papers, npc, etc.)
+            props: Propriétés de l'objet (peut contenir sprite_key)
             
         Returns:
             Clé de sprite dans le manifest
         """
+        # Si c'est un NPC et qu'il a un sprite_key spécifique, l'utiliser
+        if kind == "npc" and props and "sprite_key" in props:
+            return props["sprite_key"]
+        
         sprite_mapping = {
             "plant": "interactable_plant",
             "papers": "interactable_papers", 
