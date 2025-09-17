@@ -8,7 +8,7 @@
   "floors": {
     "98": {
       "name": "Direction",
-      "bg_key": "floor_98",
+      "bg_key": "floor_98_boss",
       "rooms": ["office_director", "meeting_room"],
       "objects": [
         {
@@ -26,17 +26,17 @@
           "props": {"task_id": "water_plant", "thirst": 0.8}
         },
         {
-          "id": "npc_boss",
+          "id": "boss_reed",
           "kind": "npc",
           "x": 250,
           "y": 0,
-          "props": {"name": "M. Johnson", "dialogue_key": "boss_morning"}
+          "props": {"name": "Boss Reed", "dialogue_key": "boss_reed"}
         }
       ]
     },
     "97": {
-      "name": "Comptabilité",
-      "bg_key": "floor_97",
+      "name": "Open-space",
+      "bg_key": "floor_97_open",
       "rooms": ["office_accounting", "office_small"],
       "objects": [
         {
@@ -47,11 +47,11 @@
           "props": {"task_id": "fix_printer", "jammed": true}
         },
         {
-          "id": "npc_alex",
+          "id": "alex",
           "kind": "npc",
           "x": 200,
           "y": 0,
-          "props": {"name": "Alex", "dialogue_key": "alex_morning"}
+          "props": {"name": "Alex", "dialogue_key": "alex"}
         }
       ]
     },

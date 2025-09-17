@@ -149,12 +149,18 @@ class WorldLoader:
             # Utiliser la position X de l'ascenseur du bâtiment
             self.elevator.x = self.building.elevator_x
             
-            # Définir l'étage de départ (lobby)
-            lobby_floor = self.building.get_min_floor()
-            self.elevator.current_floor = lobby_floor
-            self.elevator.display_floor = float(lobby_floor)
+            # Définir l'étage de départ: bureau du boss (dernier étage)
+            boss_floor = self.building.get_max_floor()
+            self.elevator.current_floor = boss_floor
+            self.elevator.display_floor = float(boss_floor)
+            try:
+                # Ouvrir les portes au démarrage
+                from src.world.elevator import ElevatorState
+                self.elevator.state = ElevatorState.DOORS_OPEN
+            except Exception:
+                pass
             
-            logger.debug(f"Elevator configured at x={self.elevator.x}, floor={lobby_floor}")
+            logger.debug(f"Elevator configured at x={self.elevator.x}, floor={boss_floor}")
     
     def _create_player(self) -> None:
         """Crée le joueur à la position initiale."""
@@ -165,11 +171,11 @@ class WorldLoader:
             
             player = self.entity_manager.create_player(start_x, start_y)
             
-            # Définir l'étage initial
-            lobby_floor = self.building.get_min_floor()
-            player.set_floor(lobby_floor)
+            # Définir l'étage initial: bureau du boss (dernier étage)
+            boss_floor = self.building.get_max_floor()
+            player.set_floor(boss_floor)
             
-            logger.info(f"Player created at ({start_x}, {start_y}) on floor {lobby_floor}")
+            logger.info(f"Player created at ({start_x}, {start_y}) on floor {boss_floor}")
     
     def load_floor_entities(self, floor_number: int) -> bool:
         """

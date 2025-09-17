@@ -12,6 +12,8 @@ from src.world.world_loader import WorldLoader
 from src.ui.overlay import HUD, NotificationManager
 from src.ui.dialogue import DialogueSystem
 from src.core.utils import load_json_safe
+from src.core.event_bus import event_bus
+from src.world.tasks import TaskStatus
 
 logger = logging.getLogger(__name__)
 
@@ -38,6 +40,12 @@ class GameplayScene(Scene):
         self.elevator = None
         self.entity_manager = None
         self.task_manager = None
+        self.flags = {}
+        self.dialogue_dsl = {}
+        self._intro_lock_active = True
+        self._time_events_fired = set()
+        self._object_progress = {}
+        self._printer_requirement = 2
         
         # Événement narratif étage supérieur
         self._top_floor_event_shown = False
@@ -68,6 +76,8 @@ class GameplayScene(Scene):
         
         # Charger les chaînes de localisation
         self._load_strings()
+        # Charger dialogues DSL si présent
+        self._load_dialogues_dsl()
         
         # Initialiser l'UI
         self._setup_ui()
@@ -82,7 +92,9 @@ class GameplayScene(Scene):
             if player:
                 initial_floor = player.current_floor
                 self.world_loader.change_player_floor(initial_floor)
-        
+                # Intro: pas de tâches actives explicitement avant de parler au boss
+                # On laisse le TaskManager charger, mais on n'affiche rien tant que _intro_lock_active
+                
         logger.info("Gameplay started")
     
     def _load_world(self) -> bool:
@@ -200,6 +212,9 @@ class GameplayScene(Scene):
         
         # Vérifier les conditions de fin
         self._check_game_end_conditions()
+
+        # Événements temporels
+        self._process_timeline_events()
     
     def _update_camera_for_floor(self, floor_number: int) -> None:
         """
@@ -339,12 +354,16 @@ class GameplayScene(Scene):
             # Interaction avec NPC
             name = props.get('name', 'Inconnu')
             dialogue_key = props.get('dialogue_key', '')
+            dsl_key = props.get('dsl_key', dialogue_key)
             
             if dialogue_key:
                 # Démarrer le dialogue
                 dialogue_started = self.dialogue_system.start_dialogue(dialogue_key, name)
                 if dialogue_started:
                     self.notification_manager.add_notification(f"Conversation avec {name}", 2.0)
+                    # Event + effets DSL légers
+                    event_bus.emit("DIALOGUE_SEEN", {"id": dialogue_key})
+                    self._apply_dialogue_effects(dsl_key)
                 else:
                     self.notification_manager.add_notification(f"Bonjour {name} !", 2.0)
             else:
@@ -354,6 +373,46 @@ class GameplayScene(Scene):
             # Interaction avec objet
             task_id = props.get('task_id', '')
             
+            # Cas spécial imprimante: mini-puzzle simple par appuis successifs
+            if kind == "printer":
+                obj_key = obj_id
+                progress = self._object_progress.get(obj_key, 0)
+                requirement = self._printer_requirement
+                progress += 1
+                self._object_progress[obj_key] = progress
+                if progress < requirement:
+                    self.notification_manager.add_notification("Vous tirez le papier coincé...", 1.5)
+                    return
+                else:
+                    # Progression atteinte, réinitialiser pour ce puzzle
+                    self._object_progress[obj_key] = 0
+                    # Effet sonore (si dispo)
+                    try:
+                        from src.core.assets import asset_manager
+                        sfx = asset_manager.get_sound("printer_sound")
+                        if sfx:
+                            sfx.play()
+                    except Exception:
+                        pass
+                    # Tâche liée si présente
+                    if task_id and self.task_manager:
+                        task = self.task_manager.get_task(task_id)
+                        if task and self.task_manager.is_task_available(task_id):
+                            success = self.task_manager.complete_task(task_id)
+                            if success:
+                                self.notification_manager.add_notification("Imprimante relancée", 2.0)
+                                self.notification_manager.add_notification(f"Tâche terminée : {task.title}", 3.0)
+                        else:
+                            # Comptabiliser même si non assignée
+                            self.task_manager.complete_task_unassigned_if_match(obj_id)
+                            self.notification_manager.add_notification("Imprimante relancée", 2.0)
+                            self.notification_manager.add_notification("Action utile enregistrée", 2.0)
+                    else:
+                        self.notification_manager.add_notification("Imprimante relancée", 2.0)
+                    # Émettre événement
+                    event_bus.emit("OBJECT_INTERACTED", {"id": obj_id, "kind": kind})
+                    return
+
             if task_id and self.task_manager:
                 # Vérifier si la tâche est disponible
                 task = self.task_manager.get_task(task_id)
@@ -374,7 +433,14 @@ class GameplayScene(Scene):
                     else:
                         self.notification_manager.add_notification("Tâche déjà terminée.", 2.0)
                 else:
-                    self.notification_manager.add_notification("Cette tâche n'est pas encore disponible.", 2.0)
+                    # Compter l'action même si non assignée
+                    completed_id = self.task_manager.complete_task_unassigned_if_match(obj_id)
+                    if completed_id:
+                        done_task = self.task_manager.get_task(completed_id)
+                        if done_task:
+                            self.notification_manager.add_notification(f"Tâche terminée : {done_task.title}", 3.0)
+                    else:
+                        self.notification_manager.add_notification("Action utile enregistrée.", 2.0)
             else:
                 # Interaction simple sans tâche
                 messages = {
@@ -388,6 +454,87 @@ class GameplayScene(Scene):
         else:
             # Objet inconnu
             self.notification_manager.add_notification(f"Vous examinez {obj_id}.", 2.0)
+
+        # Événement d'objet interacté
+        event_bus.emit("OBJECT_INTERACTED", {"id": obj_id, "kind": kind})
+
+    def _load_dialogues_dsl(self) -> None:
+        try:
+            dialogue_path = DATA_PATH / "dialogues.json"
+            data = load_json_safe(dialogue_path)
+            if isinstance(data, dict):
+                self.dialogue_dsl = data
+        except Exception:
+            self.dialogue_dsl = {}
+
+    def _apply_dialogue_effects(self, dsl_key: str) -> None:
+        entry = self.dialogue_dsl.get(dsl_key)
+        if not isinstance(entry, dict):
+            return
+        # Top-level effects
+        for eff in entry.get("effects", []):
+            self._apply_effect(eff)
+        # First node effects if simple start exists
+        nodes = entry.get("nodes", {})
+        # Try to find a node whose conditions are met
+        matched_node = None
+        # Priority: explicit start node if no conds elsewhere
+        for node_id, node in nodes.items():
+            conds = node.get("cond") or []
+            if self._conditions_met(conds):
+                matched_node = node
+                break
+        if not matched_node:
+            start_id = entry.get("start")
+            if start_id and start_id in nodes:
+                matched_node = nodes[start_id]
+        if matched_node:
+            for eff in matched_node.get("effects", []):
+                self._apply_effect(eff)
+
+    def _apply_effect(self, eff: dict) -> None:
+        if not isinstance(eff, dict):
+            return
+        if "set_flag" in eff:
+            self.flags[eff["set_flag"]] = True
+            if eff["set_flag"] == "met_boss":
+                # Lever le verrou d'intro
+                self._intro_lock_active = False
+        if "discover_task" in eff and self.task_manager:
+            if self.task_manager.discover_task(eff["discover_task"]):
+                self.notification_manager.add_notification("Tâche découverte", 2.0)
+        if "offer_task" in eff and self.task_manager:
+            task_id = eff["offer_task"]
+            task = self.task_manager.get_task(task_id)
+            if task:
+                self.task_manager.task_status[task_id] = TaskStatus.AVAILABLE
+                self.task_manager.available_tasks.add(task_id)
+                self.notification_manager.add_notification("Nouvel objectif disponible", 2.0)
+        if "complete_task" in eff and self.task_manager:
+            self.task_manager.complete_task(eff["complete_task"])
+        if "give_points" in eff and self.task_manager:
+            self.task_manager.add_points(int(eff["give_points"]))
+
+    def _conditions_met(self, conds: list) -> bool:
+        """Évalue une liste de conditions DSL contre l'état actuel."""
+        if not conds:
+            return True
+        for c in conds:
+            if not isinstance(c, dict):
+                continue
+            if "flag_is_true" in c:
+                if not self.flags.get(c["flag_is_true"], False):
+                    return False
+            if "flag_is_false" in c:
+                if self.flags.get(c["flag_is_false"], False):
+                    return False
+            if "task_completed" in c and self.task_manager:
+                if not self.task_manager.is_task_completed(c["task_completed"]):
+                    return False
+            if "task_available" in c and self.task_manager:
+                if not self.task_manager.is_task_available(c["task_available"]):
+                    return False
+        return True
     
     def _interact_with_npc(self, npc):
         """
@@ -485,6 +632,7 @@ class GameplayScene(Scene):
                         # Le joueur change d'étage immédiatement (simulation rapide)
                         player.current_floor = floor_number
                         logger.info(f"Player instantly moved to floor {floor_number}")
+                        event_bus.emit("ENTER_FLOOR", {"floor": floor_number})
                     else:
                         self.notification_manager.add_notification("Appelez d'abord l'ascenseur (C).", 2.0)
                 else:
@@ -502,6 +650,7 @@ class GameplayScene(Scene):
         success = self.world_loader.change_player_floor(new_floor)
         if success:
             self.notification_manager.add_notification(f"Arrivé à l'étage {new_floor}", 2.0)
+            event_bus.emit("ENTER_FLOOR", {"floor": new_floor})
         else:
             self.notification_manager.add_notification("Erreur lors du changement d'étage.", 2.0)
     
@@ -791,7 +940,12 @@ class GameplayScene(Scene):
             self.hud.draw_clock(screen, current_time, progress)
             
             # Tâches
-            available_tasks = self.task_manager.get_available_tasks()
+            if self._intro_lock_active:
+                available_tasks = []
+            else:
+                all_available = self.task_manager.get_available_tasks()
+                # Ne montrer que les tâches principales et celles offertes
+                available_tasks = [t for t in all_available if t.required or (hasattr(self.task_manager, 'offered_tasks') and t.id in self.task_manager.offered_tasks)]
             task_statuses = {task.id: self.task_manager.get_task_status(task.id) 
                            for task in self.task_manager.tasks.values()}
             self.hud.draw_tasks(screen, available_tasks, task_statuses)
@@ -914,6 +1068,25 @@ class GameplayScene(Scene):
                 ]
                 self.dialogue_system.start_custom_dialogue(create_conversation(lines, auto_continue=True))
             self._top_floor_event_shown = True
+
+    def _process_timeline_events(self) -> None:
+        """Émet des événements temporels clés et applique des effets simples."""
+        if not self.game_clock:
+            return
+        t = self.game_clock.get_time_str()
+        schedule = [
+            "08:31", "08:33", "08:35", "08:37", "08:40", "08:42", "08:45", "08:47"
+        ]
+        for ts in schedule:
+            if t >= ts and ts not in self._time_events_fired:
+                self._time_events_fired.add(ts)
+                event_bus.emit("TIME_REACHED", {"time": ts})
+                # Effets notables
+                if ts == "08:31":
+                    self.notification_manager.add_notification("La machine à café bourdonne au loin...", 2.5)
+                if ts == "08:37":
+                    self._printer_requirement = 3
+                    self.notification_manager.add_notification("La panne imprimante s'aggrave.", 2.5)
     
     
     def exit(self):

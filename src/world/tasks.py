@@ -44,6 +44,7 @@ class Task:
     required: bool = False
     dependencies: List[str] = None
     completion_message: str = ""
+    allow_unassigned_completion: bool = True
     
     def __post_init__(self):
         if self.dependencies is None:
@@ -60,6 +61,9 @@ class TaskManager:
         self.task_status: Dict[str, TaskStatus] = {}
         self.completed_tasks: Set[str] = set()
         self.available_tasks: Set[str] = set()
+        self.discovered_tasks: Set[str] = set()
+        self.offered_tasks: Set[str] = set()
+        self.silent_completions: Set[str] = set()
         
         # Statistiques
         self.total_points = 0
@@ -146,7 +150,8 @@ class TaskManager:
                 reward_points=safe_get(data, "reward_points", 0),
                 required=required,
                 dependencies=safe_get(data, "dependencies", []),
-                completion_message=safe_get(data, "completion_message", "Tâche terminée !")
+                completion_message=safe_get(data, "completion_message", "Tâche terminée !"),
+                allow_unassigned_completion=bool(safe_get(data, "allow_unassigned_completion", True))
             )
             
             return task
@@ -165,7 +170,7 @@ class TaskManager:
         self.tasks[task.id] = task
         
         # Déterminer le statut initial
-        if self._are_dependencies_met(task):
+        if self._are_dependencies_met(task) and (task.required or task.id in self.offered_tasks):
             self.task_status[task.id] = TaskStatus.AVAILABLE
             self.available_tasks.add(task.id)
         else:
@@ -212,6 +217,42 @@ class TaskManager:
         
         logger.info(f"Task completed: {task.title} (+{task.reward_points} points)")
         return True
+
+    def complete_task_unassigned_if_match(self, interactable_or_obj_id: str) -> Optional[str]:
+        """
+        Marque une tâche comme terminée de façon silencieuse si une action
+        correspond à son interactable, même si la tâche n'a pas été offerte.
+        
+        Args:
+            interactable_or_obj_id: ID de l'interactable ou de l'objet du monde
+        
+        Returns:
+            L'ID de la tâche complétée, ou None pour signaler une complétion silencieuse
+        """
+        # Chercher une tâche correspondante (priorité: interactable_id)
+        for task in self.tasks.values():
+            if task.interactable_id and task.interactable_id == interactable_or_obj_id:
+                if task.id in self.completed_tasks:
+                    return None
+                if not task.allow_unassigned_completion:
+                    return None
+                # Compléter silencieusement
+                self.completed_tasks.add(task.id)
+                self.task_status[task.id] = TaskStatus.COMPLETED
+                self.available_tasks.discard(task.id)
+                self.silent_completions.add(task.id)
+                # Récompenser
+                self.total_points += task.reward_points
+                if task.required:
+                    self.main_tasks_completed += 1
+                else:
+                    self.side_tasks_completed += 1
+                # Débloquer les dépendantes
+                self._update_available_tasks()
+                logger.info(f"Task silently completed via unassigned action: {task.id}")
+                # Retourner None pour laisser l'UI afficher un toast discret
+                return None
+        return None
     
     def _are_dependencies_met(self, task: Task) -> bool:
         """
@@ -231,14 +272,16 @@ class TaskManager:
     def _update_available_tasks(self) -> None:
         """Met à jour la liste des tâches disponibles."""
         for task_id, task in self.tasks.items():
-            current_status = self.task_status[task_id]
-            
-            if current_status == TaskStatus.LOCKED:
-                # Vérifier si on peut déverrouiller
-                if self._are_dependencies_met(task):
-                    self.task_status[task_id] = TaskStatus.AVAILABLE
-                    self.available_tasks.add(task_id)
-                    logger.debug(f"Task unlocked: {task.title}")
+            current_status = self.task_status.get(task_id, TaskStatus.LOCKED)
+            # Une tâche devient disponible si dépendances OK ET (principale OU offerte)
+            should_be_available = self._are_dependencies_met(task) and (task.required or task_id in self.offered_tasks)
+            if should_be_available and current_status in [TaskStatus.LOCKED, None]:
+                self.task_status[task_id] = TaskStatus.AVAILABLE
+                self.available_tasks.add(task_id)
+                logger.debug(f"Task unlocked: {task.title}")
+            elif not should_be_available and current_status == TaskStatus.AVAILABLE:
+                self.available_tasks.discard(task_id)
+                self.task_status[task_id] = TaskStatus.LOCKED
     
     def get_task(self, task_id: str) -> Optional[Task]:
         """
@@ -369,6 +412,36 @@ class TaskManager:
             if task.npc_id == npc_id:
                 return task
         return None
+
+    # === Extensions DSL/Story ===
+    def discover_task(self, task_id: str) -> bool:
+        """Marque une tâche comme découverte (sans l'offrir)."""
+        if task_id not in self.tasks:
+            return False
+        if task_id in self.discovered_tasks:
+            return False
+        self.discovered_tasks.add(task_id)
+        logger.debug(f"Task discovered: {task_id}")
+        return True
+
+    def offer_task(self, task_id: str) -> bool:
+        """
+        Offre une tâche (la rend éligible à devenir AVAILABLE si dépendances ok).
+        """
+        if task_id not in self.tasks:
+            return False
+        self.offered_tasks.add(task_id)
+        # Réévaluer la disponibilité
+        self._update_available_tasks()
+        logger.debug(f"Task offered: {task_id}")
+        return True
+
+    def add_points(self, amount: int) -> None:
+        """Ajoute des points au score total."""
+        try:
+            self.total_points += int(amount)
+        except Exception:
+            pass
     
     def are_all_main_tasks_completed(self) -> bool:
         """
@@ -418,13 +491,16 @@ class TaskManager:
         """Remet le gestionnaire de tâches à zéro."""
         self.completed_tasks.clear()
         self.available_tasks.clear()
+        self.discovered_tasks.clear()
+        self.offered_tasks.clear()
+        self.silent_completions.clear()
         self.total_points = 0
         self.main_tasks_completed = 0
         self.side_tasks_completed = 0
         
         # Recalculer les statuts
         for task_id, task in self.tasks.items():
-            if self._are_dependencies_met(task):
+            if self._are_dependencies_met(task) and (task.required or task_id in self.offered_tasks):
                 self.task_status[task_id] = TaskStatus.AVAILABLE
                 self.available_tasks.add(task_id)
             else:
