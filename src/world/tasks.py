@@ -180,9 +180,10 @@ class TaskManager:
         
         # Déterminer le statut initial
         # Les tâches principales sont toujours disponibles si leurs dépendances sont remplies
-        # Les tâches annexes sont disponibles si leurs dépendances sont remplies ET qu'elles n'ont pas de dépendances OU qu'elles sont offertes
+        # Les tâches annexes ne deviennent disponibles QUE si (dépendances OK) ET (offertes) OU tag "auto"
+        auto = ("auto" in (task.tags or []))
         if self._are_dependencies_met(task):
-            if task.required or task.id in self.offered_tasks or not task.dependencies:
+            if task.required or task.id in self.offered_tasks or auto:
                 self.task_status[task.id] = TaskStatus.AVAILABLE
                 self.available_tasks.add(task.id)
             else:
@@ -407,10 +408,12 @@ class TaskManager:
         Returns:
             Tâche trouvée ou None
         """
-        for task in self.get_available_tasks():
-            if task.interactable_id == interactable_id:
-                return task
-        return None
+        cands = [t for t in self.get_available_tasks() if t.interactable_id == interactable_id]
+        if not cands:
+            return None
+        # priorité : required desc, puis priority (plus grand d'abord), puis id
+        cands.sort(key=lambda t: (not t.required, -t.priority, t.id))
+        return cands[0]
     
     def get_task_for_npc(self, npc_id: str) -> Optional[Task]:
         """

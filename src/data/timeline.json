@@ -2,8 +2,10 @@
   "events": [
     {"at": "08:31", "emit": "COFFEE_MACHINE_NOISE"},
     {"at": "08:33", "emit": "RECEPTION_BADGE_CALL"},
+    {"at": "08:36", "type": "ambient", "floor": 97, "bubble": "ambient_subtle_1", "npc": "maya"},
     {"at": "08:37", "emit": "PRINTER_ESCALATE_IF_NOT_FIXED"},
     {"at": "08:40", "emit": "MEETING_REMINDER"},
+    {"at": "08:41:30", "type": "ambient", "floor": 98, "bubble": "ambient_subtle_2", "npc": "boss_reed"},
     {"at": "08:45", "emit": "LIGHT_FLICKER"},
     {"at": "08:47", "emit": "TAKE_MESSAGE"}
   ]

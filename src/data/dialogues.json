@@ -10,7 +10,7 @@
       },
       "n1": {
         "say": "Au fait, pense à vérifier la plante du couloir.",
-        "effects": [{"discover_task": "water_plant"}],
+        "effects": [{"discover_task": "water_plants"}],
         "end": true
       }
     },
@@ -22,11 +22,11 @@
       "a0": {
         "cond": [{"flag_is_true": "met_boss"}],
         "say": "Parfait que tu sois là. L'imprimante est encore bloquée...",
-        "effects": [{"offer_task": "fix_printer"}],
+        "effects": [{"offer_task": "M3"}],
         "end": true
       },
       "a1": {
-        "cond": [{"task_completed": "fix_printer"}],
+        "cond": [{"task_completed": "M3"}],
         "say": "Nickel, la compta te remercie.",
         "effects": [{"give_points": 2}],
         "end": true

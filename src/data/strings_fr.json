@@ -116,6 +116,35 @@
       "Bonjour ! Comment puis-je vous aider aujourd'hui ?",
       "Le boss vous attend dans son bureau.",
       "N'hésitez pas si vous avez besoin d'assistance."
+    ],
+    "boss_reed_after_M1": [
+      "Passe voir Alex à l'open-space.",
+      "Il a un souci urgent à régler."
+    ],
+    "boss_reed_after_M3": [
+      "Impeccable pour l'imprimante.",
+      "On sera prêts pour 9h pile."
+    ],
+    "alex_offer_M3": [
+      "Salut ! L'imprimante n'a plus de toner et bloque tout.",
+      "Tu peux t'en occuper ?"
+    ],
+    "maya_coffee": [
+      "Merci pour le café ☕.",
+      "On dirait qu'il y a plus de vols ce matin...",
+      "Ou c'est moi ?"
+    ],
+    "guard_badge": [
+      "Merci d'avoir ramené ce badge.",
+      "J'ai cru l'entendre tomber près des ascenseurs."
+    ],
+    "ambient_subtle_1": [
+      "J'ai reçu un mail pour une conf-call à 9h10.",
+      "On va essayer d'être à l'heure, pour une fois."
+    ],
+    "ambient_subtle_2": [
+      "Le ciel est parfaitement dégagé aujourd'hui.",
+      "On voit loin depuis ces étages."
     ]
   },
   "notifications": {

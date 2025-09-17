@@ -455,9 +455,32 @@ class GameplayScene(Scene):
                         self.notification_manager.add_notification(f"Tâche terminée : {task.title}", 3.0)
                         self.speech_bubbles.add_bubble("Parfait. On compte sur toi.", npc_obj, 2.5, (200, 255, 200))
                         self._play_sound("ui_click")
+
+                        # CHAÎNAGE : si c'est le boss et qu'on vient de finir M1,
+                        # proposer "Aller voir Alex" (chat_with_alex) pour guider le joueur.
+                        if npc_id == "boss_reed" and task.id == "M1" and self.task_manager:
+                            self.task_manager.offer_task("chat_with_alex")
                         return
 
-            # Bulle depuis strings_fr.json (boss_reed → lines)
+            # Dialogues conditionnels selon l'état des tâches
+            if npc_id == "boss_reed" and self.task_manager:
+                if not self.task_manager.is_task_completed("M1"):
+                    # première rencontre
+                    self.speech_bubbles.speak_from_dict(self.strings, ["dialogues", "boss_reed"], npc_obj, color=(200, 200, 255))
+                elif not self.task_manager.is_task_completed("M3"):
+                    # M1 fait, M3 pas encore
+                    self.speech_bubbles.speak_from_dict(self.strings, ["dialogues", "boss_reed_after_M1"], npc_obj, color=(200, 200, 255))
+                else:
+                    # M3 fait → nouveau texte de félicitations
+                    self.speech_bubbles.speak_from_dict(self.strings, ["dialogues", "boss_reed_after_M3"], npc_obj, color=(200, 255, 200))
+                return
+
+            # PNJ Alex : petit retour après M3
+            if npc_id == "alex" and self.task_manager and self.task_manager.is_task_completed("M3"):
+                self.speech_bubbles.add_bubble("Nickel, la compta te remercie.", npc_obj, 2.5, (200, 255, 200))
+                return
+
+            # Fallback: dialogues JSON classiques
             key = dialogue_key or self._infer_dialogue_key_from_name(name)
             if key and "dialogues" in self.strings and key in self.strings["dialogues"]:
                 self.speech_bubbles.speak_from_dict(self.strings, ["dialogues", key], npc_obj, color=(200, 200, 255))
@@ -466,54 +489,119 @@ class GameplayScene(Scene):
                 self.speech_bubbles.add_bubble(phrase, npc_obj, 3.0, (200, 200, 255))
             return
                 
-        elif kind in ["plant", "papers", "printer", "reception", "coffee", "water", "receptionist", "desk"]:
-            # Interaction avec objet
-            # Utiliser l'ID de l'objet pour trouver la tâche associée
+        elif kind in ["plant", "papers", "printer", "reception", "coffee", "water", "receptionist", "desk", "trash", "pickup", "meeting", "window"]:
+            # Interaction avec objet - nouveau système avec actions
             interactable_id = obj_id
             
             if interactable_id and self.task_manager:
                 # Vérifier si la tâche est disponible pour cet objet
                 task = self.task_manager.get_task_for_interactable(interactable_id)
                 if task and self.task_manager.is_task_available(task.id):
-                    success = self.task_manager.complete_task(task.id)
-                    if success:
+                    # Récupérer l'action depuis les propriétés de la tâche
+                    action = getattr(task, 'action', 'interact')
+                    
+                    # Traiter selon l'action
+                    if action == "collect":
+                        if hasattr(task, 'gives_flag') and task.gives_flag:
+                            self.flags.add(task.gives_flag)
+                            self.speech_bubbles.add_bubble("C'est bon.", self.entity_manager.get_player(), 1.8, (200, 255, 200))
+                        self.task_manager.complete_task(task.id)
                         self.notification_manager.add_notification(f"Tâche terminée : {task.title}", 3.0)
-                        
-                        # Messages spécifiques selon le type avec sons et bulles
-                        if kind == "plant":
-                            self.notification_manager.add_notification("Plante arrosée !", 2.0)
-                            self._bubble_player("*glou glou*", 1.5, (100, 255, 100))
-                            self._play_sound("water_plant")
-                        elif kind == "papers":
-                            self.notification_manager.add_notification("Papiers rangés !", 2.0)
-                            self._bubble_player("Tout bien rangé !", 2.0, (255, 255, 100))
-                            self._play_sound("paper_pickup")
-                        elif kind == "printer":
-                            self.notification_manager.add_notification("Imprimante réparée !", 2.0)
-                            self._bubble_player("*vrrrr* Ça marche !", 2.0, (100, 200, 255))
-                            self._play_sound("printer_sound")
-                        elif kind == "reception":
-                            self.notification_manager.add_notification("Badge récupéré !", 2.0)
-                            self._bubble_player("Badge en poche !", 2.0, (255, 200, 100))
-                            self._play_sound("ui_click")
-                        elif kind == "coffee":
-                            self.notification_manager.add_notification("Café pris !", 2.0)
-                            self._bubble_player("Mmmh, délicieux !", 2.0, (139, 69, 19))
-                            self._play_sound("coffee_sip")
-                        elif kind == "water":
-                            self.notification_manager.add_notification("Plantes arrosées !", 2.0)
-                            self._bubble_player("Toutes les plantes sont hydratées !", 2.5, (100, 255, 100))
-                            self._play_sound("water_plant")
-                        elif kind == "receptionist":
-                            self.notification_manager.add_notification("Accueil aidé !", 2.0)
-                            self._bubble_player("Service rendu !", 2.0, (255, 150, 255))
-                            self._play_sound("ui_click")
-                        elif kind == "desk":
-                            self.notification_manager.add_notification("Bureau organisé !", 2.0)
-                            self._bubble_player("Bureau impeccable !", 2.0, (200, 200, 200))
-                            self._play_sound("paper_pickup")
+                        return
+                    
+                    elif action == "collect_multi":
+                        # Gérer la collecte multiple (papers_97_*)
+                        if hasattr(self.task_manager, 'increment_counter'):
+                            self.task_manager.increment_counter(task.id, 1)
+                        else:
+                            # Fallback simple
+                            pass
+                        self.speech_bubbles.add_bubble("Encore quelques pages...", self.entity_manager.get_player(), 1.6, (220, 220, 255))
+                        if hasattr(self.task_manager, 'is_goal_reached') and self.task_manager.is_goal_reached(task.id):
+                            if hasattr(task, 'gives_flag') and task.gives_flag:
+                                self.flags.add(task.gives_flag)
+                            self.notification_manager.add_notification("Papiers ramassés", 2.0)
+                            self.task_manager.complete_task(task.id)
+                        return
+                    
+                    elif action == "deliver":
+                        if hasattr(task, 'needs_flag') and task.needs_flag and task.needs_flag not in self.flags:
+                            self.speech_bubbles.add_bubble("Il me manque quelque chose...", self.entity_manager.get_player(), 1.8, (255, 200, 200))
+                            return
+                        if hasattr(task, 'clears_flag') and task.clears_flag:
+                            self.flags.discard(task.clears_flag)
+                        self.task_manager.complete_task(task.id)
+                        self.speech_bubbles.add_bubble("Parfait.", self.entity_manager.get_player(), 1.8, (200, 255, 200))
+                        self.notification_manager.add_notification(f"Tâche terminée : {task.title}", 3.0)
+                        return
+                    
+                    elif action == "interact" and hasattr(task, 'needs_flag'):
+                        if task.needs_flag and task.needs_flag not in self.flags:
+                            self.speech_bubbles.add_bubble("Je dois d'abord prendre de l'eau.", self.entity_manager.get_player(), 2.0, (255, 200, 200))
+                            return
+                        # Consommer l'eau pour arroser
+                        if hasattr(task, 'needs_flag') and task.needs_flag:
+                            self.flags.discard(task.needs_flag)
+                        self.task_manager.complete_task(task.id)
+                        self.speech_bubbles.add_bubble("Ça fait du bien aux feuilles.", self._get_runtime_npc("alex") or self.entity_manager.get_player(), 2.0, (200, 255, 200))
+                        self.notification_manager.add_notification(f"Tâche terminée : {task.title}", 3.0)
+                        return
+                    
+                    elif action == "inspect":
+                        self.task_manager.complete_task(task.id)
+                        self.speech_bubbles.add_bubble("Tout semble en ordre.", self.entity_manager.get_player(), 2.0, (200, 200, 255))
+                        self.notification_manager.add_notification(f"Tâche terminée : {task.title}", 3.0)
+                        return
+                    
+                    elif action == "linger":
+                        # Action spéciale pour prendre du temps à la fenêtre
+                        linger_seconds = getattr(task, 'linger_seconds', 10)
+                        self.task_manager.complete_task(task.id)
+                        self.speech_bubbles.add_bubble(f"Un moment de détente... ({linger_seconds}s)", self.entity_manager.get_player(), linger_seconds, (150, 200, 255))
+                        self.notification_manager.add_notification(f"Tâche terminée : {task.title}", 3.0)
+                        return
+                    
                     else:
-                        self.notification_manager.add_notification("Tâche déjà terminée.", 2.0)
+                        # Action par défaut (interact)
+                        success = self.task_manager.complete_task(task.id)
+                        if success:
+                            self.notification_manager.add_notification(f"Tâche terminée : {task.title}", 3.0)
+                            
+                            # Messages spécifiques selon le type avec sons et bulles
+                            if kind == "plant":
+                                self.notification_manager.add_notification("Plante arrosée !", 2.0)
+                                self._bubble_player("*glou glou*", 1.5, (100, 255, 100))
+                                self._play_sound("water_plant")
+                            elif kind == "papers":
+                                self.notification_manager.add_notification("Papiers rangés !", 2.0)
+                                self._bubble_player("Tout bien rangé !", 2.0, (255, 255, 100))
+                                self._play_sound("paper_pickup")
+                            elif kind == "printer":
+                                self.notification_manager.add_notification("Imprimante réparée !", 2.0)
+                                self._bubble_player("*vrrrr* Ça marche !", 2.0, (100, 200, 255))
+                                self._play_sound("printer_sound")
+                            elif kind == "reception":
+                                self.notification_manager.add_notification("Badge récupéré !", 2.0)
+                                self._bubble_player("Badge en poche !", 2.0, (255, 200, 100))
+                                self._play_sound("ui_click")
+                            elif kind == "coffee":
+                                self.notification_manager.add_notification("Café pris !", 2.0)
+                                self._bubble_player("Mmmh, délicieux !", 2.0, (139, 69, 19))
+                                self._play_sound("coffee_sip")
+                            elif kind == "water":
+                                self.notification_manager.add_notification("Plantes arrosées !", 2.0)
+                                self._bubble_player("Toutes les plantes sont hydratées !", 2.5, (100, 255, 100))
+                                self._play_sound("water_plant")
+                            elif kind == "receptionist":
+                                self.notification_manager.add_notification("Accueil aidé !", 2.0)
+                                self._bubble_player("Service rendu !", 2.0, (255, 150, 255))
+                                self._play_sound("ui_click")
+                            elif kind == "desk":
+                                self.notification_manager.add_notification("Bureau organisé !", 2.0)
+                                self._bubble_player("Bureau impeccable !", 2.0, (200, 200, 200))
+                                self._play_sound("paper_pickup")
+                        else:
+                            self.notification_manager.add_notification("Tâche déjà terminée.", 2.0)
                 else:
                     self.notification_manager.add_notification("Cette tâche n'est pas encore disponible.", 2.0)
             else:
@@ -524,9 +612,13 @@ class GameplayScene(Scene):
                     "printer": "L'imprimante ronronne.",
                     "reception": "Le bureau d'accueil.",
                     "coffee": "Une machine à café.",
-                    "water": "Un arrosoir.",
+                    "water": "Un distributeur d'eau.",
                     "receptionist": "La réceptionniste.",
-                    "desk": "Votre bureau."
+                    "desk": "Votre bureau.",
+                    "trash": "Une poubelle.",
+                    "pickup": "Un objet au sol.",
+                    "meeting": "Une salle de réunion.",
+                    "window": "Une belle vue."
                 }
                 message = messages.get(kind, f"Vous examinez {kind}.")
                 self.notification_manager.add_notification(message, 2.0)

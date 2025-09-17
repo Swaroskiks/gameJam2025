@@ -106,6 +106,54 @@
       "frame_h": 144,
       "description": "Boss Reed"
     },
+    "water_dispenser": {
+      "path": "sprites/water_dispenser.png",
+      "frame_w": 48,
+      "frame_h": 64,
+      "description": "Distributeur d'eau"
+    },
+    "plant_pot": {
+      "path": "sprites/plant_pot.png",
+      "frame_w": 48,
+      "frame_h": 64,
+      "description": "Pot de plante"
+    },
+    "papers_stack": {
+      "path": "sprites/papers_stack.png",
+      "frame_w": 32,
+      "frame_h": 32,
+      "description": "Pile de papiers"
+    },
+    "trash_bin_red": {
+      "path": "sprites/trash_bin_red.png",
+      "frame_w": 48,
+      "frame_h": 64,
+      "description": "Poubelle rouge"
+    },
+    "coffee_machine": {
+      "path": "sprites/coffee_machine.png",
+      "frame_w": 64,
+      "frame_h": 80,
+      "description": "Machine à café"
+    },
+    "window_marker": {
+      "path": "sprites/window_marker.png",
+      "frame_w": 32,
+      "frame_h": 32,
+      "description": "Marqueur de fenêtre"
+    },
+    "badge": {
+      "path": "sprites/badge.png",
+      "frame_w": 24,
+      "frame_h": 24,
+      "description": "Badge d'accès"
+    },
+    "npc_guard": {
+      "path": "sprites/npc_guard.png",
+      "frame_w": 32,
+      "frame_h": 48,
+      "description": "Agent de sécurité"
+    },
     "interactable_plant": {
       "path": "sprites/plant.png",
       "frame_w": 48,

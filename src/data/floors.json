@@ -45,6 +45,13 @@
           "x": 600,
           "y": 0,
           "props": {"task_id": "desk_organization"}
+        },
+        {
+          "id": "meeting_98",
+          "kind": "meeting",
+          "x": 600,
+          "y": 0,
+          "props": {"sprite_key": "meeting_room"}
         }
       ]
     },
@@ -87,6 +94,69 @@
           "x": 650,
           "y": 0,
           "props": {"name": "Thomas", "dialogue_key": "thomas", "sprite_key": "employee_4"}
+        },
+        {
+          "id": "water_97",
+          "kind": "water",
+          "x": 460,
+          "y": 0,
+          "props": {"sprite_key": "water_dispenser"}
+        },
+        {
+          "id": "plant_97",
+          "kind": "plant",
+          "x": 720,
+          "y": 0,
+          "props": {"sprite_key": "plant_pot"}
+        },
+        {
+          "id": "papers_97_1",
+          "kind": "papers",
+          "x": 610,
+          "y": 0,
+          "props": {"sprite_key": "papers_stack"}
+        },
+        {
+          "id": "papers_97_2",
+          "kind": "papers",
+          "x": 780,
+          "y": 0,
+          "props": {"sprite_key": "papers_stack"}
+        },
+        {
+          "id": "papers_97_3",
+          "kind": "papers",
+          "x": 910,
+          "y": 0,
+          "props": {"sprite_key": "papers_stack"}
+        },
+        {
+          "id": "trash_97",
+          "kind": "trash",
+          "x": 820,
+          "y": 0,
+          "props": {"sprite_key": "trash_bin_red"}
+        },
+        {
+          "id": "coffee_97",
+          "kind": "coffee",
+          "x": 520,
+          "y": 0,
+          "props": {"sprite_key": "coffee_machine"}
+        },
+        {
+          "id": "window_97",
+          "kind": "window",
+          "x": 1040,
+          "y": 0,
+          "props": {"sprite_key": "window_marker"}
+        },
+        {
+          "id": "maya",
+          "kind": "npc",
+          "x": 800,
+          "y": 0,
+          "props": {"name": "Maya", "dialogue_key": "maya_coffee", "sprite_key": "employee_5"}
         }
       ]
     },
@@ -178,6 +248,20 @@
           "x": 200,
           "y": 0,
           "props": {"name": "Garde", "dialogue_key": "guard_morning"}
+        },
+        {
+          "id": "badge_90",
+          "kind": "pickup",
+          "x": 540,
+          "y": 0,
+          "props": {"sprite_key": "badge"}
+        },
+        {
+          "id": "guard",
+          "kind": "npc",
+          "x": 720,
+          "y": 0,
+          "props": {"npc_id": "guard", "name": "Sécurité", "sprite_key": "npc_guard"}
         },
         {
           "id": "plant_lobby1",
