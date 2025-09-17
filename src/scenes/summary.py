@@ -283,12 +283,14 @@ class SummaryScene(Scene):
                                  text_color, (WIDTH // 2, y_offset))
         y_offset += 35
         
-        # Stats
+        # Stats - récupérer depuis les stats des tâches
+        tasks_stats = self.game_stats.get("tasks", {})
         stats_to_show = [
-            ("Tâches terminées", self.game_stats.get("completed_tasks", 0)),
-            ("Points obtenus", self.game_stats.get("total_points", 0)),
-            ("Tâches principales", self.game_stats.get("main_tasks_completed", 0)),
-            ("Tâches annexes", self.game_stats.get("side_tasks_completed", 0)),
+            ("Tâches terminées", tasks_stats.get("completed_tasks", 0)),
+            ("Points obtenus", tasks_stats.get("total_points", 0)),
+            ("Tâches principales", tasks_stats.get("main_tasks_completed", 0)),
+            ("Tâches annexes", tasks_stats.get("side_tasks_completed", 0)),
+            ("Progression générale", f"{int(tasks_stats.get('completion_percentage', 0) * 100)}%"),
         ]
         
         for label, value in stats_to_show:
