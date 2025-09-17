@@ -39,6 +39,10 @@ class GameplayScene(Scene):
         self.entity_manager = None
         self.task_manager = None
         
+        # Événement narratif étage supérieur
+        self._top_floor_event_shown = False
+        self._top_floor_proximity_time = 0.0
+
         # État de l'interface
         self.paused = False
         
@@ -53,10 +57,8 @@ class GameplayScene(Scene):
         """Appelé en entrant dans la scène."""
         super().enter(**kwargs)
         
-        # Créer l'horloge de jeu pour cette session
-        from src.core.timer import GameClock
-        from src.settings import START_TIME, END_TIME, GAME_SECONDS_PER_REAL_SECOND
-        self.game_clock = GameClock(START_TIME, END_TIME, GAME_SECONDS_PER_REAL_SECOND)
+        # Utiliser l'horloge globale fournie par l'app
+        self.game_clock = self.scene_manager.context.get("game_clock")
         
         # Charger le monde
         if not self._load_world():
@@ -70,8 +72,8 @@ class GameplayScene(Scene):
         # Initialiser l'UI
         self._setup_ui()
         
-        # Démarrer l'horloge de jeu
-        if self.game_clock:
+        # Démarrer l'horloge de jeu (si pas déjà en route)
+        if self.game_clock and not self.game_clock.is_running:
             self.game_clock.start()
         
         # Charger l'étage initial
@@ -166,12 +168,15 @@ class GameplayScene(Scene):
                     if player:
                         self._handle_elevator_call(player)
                 return
-            elif pygame.K_0 <= event.key <= pygame.K_9:
-                # Sélection d'étage
-                floor_number = 90 + (event.key - pygame.K_0)
-                self._handle_floor_selection(floor_number)
+            elif event.key == pygame.K_UP:
+                # Changer d'étage vers le haut avec la flèche
+                self._handle_arrow_floor_change(+1)
                 return
-        
+            elif event.key == pygame.K_DOWN:
+                # Changer d'étage vers le bas avec la flèche
+                self._handle_arrow_floor_change(-1)
+                return
+
         # Pour l'instant, gérer les entrées directement
         # TODO: Intégrer avec l'InputManager quand disponible
         pass
@@ -237,6 +242,9 @@ class GameplayScene(Scene):
                         player.current_floor = self.elevator.current_floor
                         logger.info(f"Player moved to floor {self.elevator.current_floor}")
         
+        # Avancer l'horloge globale ici si jamais l'app n'est pas le pilote (sécurité)
+        if self.game_clock:
+            self.game_clock.tick(dt)
         # Plus besoin de mise à jour caméra avec vue 3 étages fixe
     
     def _update_ui_systems(self, dt):
@@ -308,17 +316,16 @@ class GameplayScene(Scene):
         world_x = 120  # Offset de la zone de jeu
         player_x = player_pos[0]
         
+        nearest = None
+        nearest_dist = 1e9
+        threshold = 64  # plus tolérant pour fiabilité, surtout au 1er étage
         for obj_data in objects_list:
             obj_x = world_x + obj_data.get('x', 0)
-            
-            # Calculer la distance horizontale (plus simple et plus fiable)
-            distance = abs(player_x - obj_x)
-            
-            # Zone d'interaction élargie
-            if distance < 100:  # Distance d'interaction plus généreuse
-                return obj_data
-        
-        return None
+            d = abs(player_x - obj_x)
+            if d < threshold and d < nearest_dist:
+                nearest = obj_data
+                nearest_dist = d
+        return nearest
     
     def _interact_with_floor_object(self, obj_data):
         """
@@ -444,7 +451,7 @@ class GameplayScene(Scene):
         
         # Vérifier si le joueur est proche de l'ascenseur (zone plus large)
         distance = abs(player.x - elevator_x)
-        if distance < 60:  # Zone d'interaction plus large
+        if distance < 48:  # Un peu plus tolérant
             if self.elevator.current_floor == player.current_floor:
                 # L'ascenseur est déjà à cet étage
                 self.notification_manager.add_notification("Entrez dans l'ascenseur et choisissez un étage (0-9).", 3.0)
@@ -472,17 +479,8 @@ class GameplayScene(Scene):
                 elevator_x = 30 + 40  # Centre de l'ascenseur
                 distance = abs(player.x - elevator_x)
                 
-                if distance < 60:  # Zone d'interaction
-                    if self.elevator.current_floor == player.current_floor:
-                        # Le joueur peut utiliser l'ascenseur
-                        self.elevator.go_to(floor_number)
-                        self.notification_manager.add_notification(f"Direction étage {floor_number}", 2.0)
-                        
-                        # Le joueur change d'étage immédiatement (simulation rapide)
-                        player.current_floor = floor_number
-                        logger.info(f"Player instantly moved to floor {floor_number}")
-                    else:
-                        self.notification_manager.add_notification("Appelez d'abord l'ascenseur (C).", 2.0)
+                if distance < 48:  # Zone d'interaction
+                    self._change_player_floor(floor_number)
                 else:
                     self.notification_manager.add_notification("Approchez-vous de l'ascenseur.", 2.0)
         else:
@@ -503,12 +501,9 @@ class GameplayScene(Scene):
     
     def _check_game_end_conditions(self):
         """Vérifie les conditions de fin de jeu."""
-        # TODO: Fix 'bool' object is not callable error
-        # if self.game_clock and self.game_clock.is_deadline():
-        #     # Temps écoulé - aller au résumé
-        #     logger.info("Game deadline reached, going to summary")
-        #     self.switch_to("summary")
-        pass
+        if self.game_clock and self.game_clock.is_deadline():
+            logger.info("Game deadline reached, going to summary")
+            self.switch_to("summary")
     
     def draw(self, screen):
         """Dessine la scène."""
@@ -719,11 +714,7 @@ class GameplayScene(Scene):
                 screen.blit(tinted_sprite, (final_x, final_y))
             else:
                 screen.blit(obj_sprite, (final_x, final_y))
-            
-            # Debug visuel : zone d'interaction (temporaire)
-            if kind != "decoration":  # Seulement pour les objets interactifs
-                pygame.draw.circle(screen, (255, 0, 0, 50), (int(screen_obj_x), int(final_y + obj_sprite.get_height()//2)), 100, 2)
-    
+
     def _get_sprite_key_for_kind(self, kind: str) -> str:
         """
         Retourne la clé de sprite pour un type d'objet donné.
@@ -868,13 +859,48 @@ class GameplayScene(Scene):
             if self.elevator:
                 elevator_x = 30 + 40  # Centre de l'ascenseur
                 distance = abs(player.x - elevator_x)
-                if distance < 60:
-                    if self.elevator.current_floor == player.current_floor:
-                        self.hud.show_interaction_hint("0-9 : Choisir étage")
-                    else:
-                        self.hud.show_interaction_hint("C : Appeler ascenseur")
+                if distance < 48:
+                    self.hud.show_interaction_hint("↑/↓ : Changer d'étage")
                 else:
                     self.hud.hide_interaction_hint()
+
+    def _handle_arrow_floor_change(self, direction: int) -> None:
+        """
+        Change d'un étage dans la direction donnée si le joueur est près de l'ascenseur.
+
+        Args:
+            direction: +1 pour monter, -1 pour descendre
+        """
+        if not self.building or not self.entity_manager:
+            return
+        player = self.entity_manager.get_player()
+        if not player:
+            return
+        # Vérifier proximité ascenseur
+        elevator_x = 30 + 40
+        if abs(player.x - elevator_x) >= 60:
+            self.notification_manager.add_notification("Approchez-vous de l'ascenseur.", 1.5)
+            return
+
+        # Calculer nouvel étage borné aux étages existants
+        current = player.current_floor
+        all_floors = self.building.get_all_floors()
+        if not all_floors:
+            return
+        if current not in all_floors:
+            current = all_floors[0]
+        try:
+            idx = all_floors.index(current)
+        except ValueError:
+            idx = 0
+        new_idx = max(0, min(len(all_floors) - 1, idx + (1 if direction > 0 else -1)))
+        new_floor = all_floors[new_idx]
+
+        if new_floor != current:
+            self._change_player_floor(new_floor)
+        else:
+            # Déjà au bord
+            self.notification_manager.add_notification("Pas d'autre étage dans cette direction.", 1.5)
     
     
     def exit(self):

@@ -4,6 +4,7 @@ Gère les mouvements, collisions, et interactions.
 """
 
 import logging
+import random
 from typing import Tuple, Optional, Dict, Any, List
 from enum import Enum
 import pygame
@@ -228,6 +229,14 @@ class GameNPC:
         self.talked_to = False
         self.conversation_count = 0
         
+        # Mouvement simple (patrouille horizontale / flânerie)
+        self.speed = 40.0  # pixels/seconde
+        self.move_direction = 1  # 1 vers la droite, -1 vers la gauche
+        self.move_min_x = x - 80
+        self.move_max_x = x + 80
+        self.pause_time = 0.0
+        self._pick_next_pause()
+        
         # Rectangle de collision
         self.rect = pygame.Rect(
             int(x - PLAYER_WIDTH // 2),
@@ -250,6 +259,11 @@ class GameNPC:
         except Exception as e:
             logger.debug(f"Could not setup NPC animations for {self.id}: {e}")
     
+    def _pick_next_pause(self) -> None:
+        """Choisit aléatoirement une courte pause pour humaniser le mouvement."""
+        # Courtes pauses occasionnelles
+        self.pause_time = random.uniform(0.3, 1.2)
+    
     def update(self, dt: float) -> None:
         """
         Met à jour le NPC.
@@ -257,9 +271,29 @@ class GameNPC:
         Args:
             dt: Temps écoulé
         """
+        # Mouvement horizontal léger avec pauses
+        if self.pause_time > 0.0:
+            self.pause_time -= dt
+        else:
+            self.x += self.speed * self.move_direction * dt
+            # Changement de direction aux bornes
+            if self.x <= self.move_min_x:
+                self.x = self.move_min_x
+                self.move_direction = 1
+                self._pick_next_pause()
+            elif self.x >= self.move_max_x:
+                self.x = self.move_max_x
+                self.move_direction = -1
+                self._pick_next_pause()
+        
+        # Mettre à jour la hitbox
+        self.rect.centerx = int(self.x)
+        self.rect.centery = int(self.y)
+        
+        # Animations (placeholder: idle loop)
         self.animation_manager.update(dt)
     
-    def can_talk_to(self, player_pos: Tuple[float, float], max_distance: float = 60.0) -> bool:
+    def can_talk_to(self, player_pos: Tuple[float, float], max_distance: float = 36.0) -> bool:
         """
         Vérifie si le joueur peut parler à ce NPC.
         
@@ -325,7 +359,7 @@ class InteractableObject:
         # Sprite (basé sur le type)
         self.sprite_key = f"interactable_{obj_type}"
     
-    def can_interact_with(self, player_pos: Tuple[float, float], max_distance: float = 40.0) -> bool:
+    def can_interact_with(self, player_pos: Tuple[float, float], max_distance: float = 28.0) -> bool:
         """
         Vérifie si le joueur peut interagir avec cet objet.
         
@@ -451,7 +485,7 @@ class EntityManager:
         for npc in self.npcs.values():
             npc.update(dt)
     
-    def get_nearby_interactables(self, position: Tuple[float, float], radius: float = 50.0) -> List[InteractableObject]:
+    def get_nearby_interactables(self, position: Tuple[float, float], radius: float = 30.0) -> List[InteractableObject]:
         """
         Trouve les objets interactifs proches d'une position.
         
@@ -468,7 +502,7 @@ class EntityManager:
                 nearby.append(obj)
         return nearby
     
-    def get_nearby_npcs(self, position: Tuple[float, float], radius: float = 60.0) -> List[GameNPC]:
+    def get_nearby_npcs(self, position: Tuple[float, float], radius: float = 36.0) -> List[GameNPC]:
         """
         Trouve les NPCs proches d'une position.
         

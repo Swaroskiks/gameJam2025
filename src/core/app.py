@@ -64,6 +64,8 @@ class Game:
             
             # Enregistrer les scènes
             self._register_scenes()
+            # Partager l'horloge globale avec les scènes
+            self.scene_manager.context["game_clock"] = self.game_clock
             
             # Démarrer directement avec le menu (avertissement supprimé)
             if not self.scene_manager.switch_scene("menu"):
