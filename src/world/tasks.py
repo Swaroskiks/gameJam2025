@@ -430,6 +430,24 @@ class TaskManager:
                 return task
         return None
 
+    def is_task_known(self, task_id: str) -> bool:
+        """Vérifie si une tâche est connue (chargée)."""
+        return task_id in self.tasks
+
+    def is_task_available(self, task_id: str) -> bool:
+        """Vérifie si une tâche est disponible."""
+        return self.task_status.get(task_id) == TaskStatus.AVAILABLE
+
+    def offer_task(self, task_id: str) -> None:
+        """
+        Marque une tâche comme 'offerte' (utile pour les side-tasks qui ne se débloquent
+        pas automatiquement). Met à jour son statut si dépendances remplies.
+        """
+        if task_id not in self.tasks:
+            return
+        self.offered_tasks.add(task_id)
+        self._update_available_tasks()
+
     # === Extensions DSL/Story ===
     def discover_task(self, task_id: str) -> bool:
         """Marque une tâche comme découverte (sans l'offrir)."""

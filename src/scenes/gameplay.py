@@ -453,13 +453,17 @@ class GameplayScene(Scene):
                 if task and self.task_manager.is_task_available(task.id):
                     if self.task_manager.complete_task(task.id):
                         self.notification_manager.add_notification(f"Tâche terminée : {task.title}", 3.0)
-                        self.speech_bubbles.add_bubble("Parfait. On compte sur toi.", npc_obj, 2.5, (200, 255, 200))
                         self._play_sound("ui_click")
 
-                        # CHAÎNAGE : si c'est le boss et qu'on vient de finir M1,
-                        # proposer "Aller voir Alex" (chat_with_alex) pour guider le joueur.
-                        if npc_id == "boss_reed" and task.id == "M1" and self.task_manager:
+                        # CHAÎNAGE boss: après M1 -> offrir "chat_with_alex"
+                        if npc_id == "boss_reed" and task.id == "M1":
                             self.task_manager.offer_task("chat_with_alex")
+                        return
+                    
+                    # CHAÎNAGE boss: après M4 -> offrir M5 "Salle prête pour 9h"
+                    if npc_id == "boss_reed" and task.id == "M4":
+                        self.task_manager.offer_task("M5")
+                        self.speech_bubbles.speak_from_dict(self.strings, ["dialogues", "boss_m5"], npc_obj, color=(200, 200, 255))
                         return
 
             # Dialogues conditionnels selon l'état des tâches
@@ -479,6 +483,31 @@ class GameplayScene(Scene):
             if npc_id == "alex" and self.task_manager and self.task_manager.is_task_completed("M3"):
                 self.speech_bubbles.add_bubble("Nickel, la compta te remercie.", npc_obj, 2.5, (200, 255, 200))
                 return
+            
+            # PNJ Alex : offrir S17 "Photocopies express" si pas encore offerte
+            if npc_id == "alex" and self.task_manager and not self.task_manager.is_task_known("S17"):
+                self.task_manager.offer_task("S17")
+                self.speech_bubbles.speak_from_dict(self.strings, ["dialogues", "alex_copies"], npc_obj, color=(200, 200, 255))
+                return
+
+            # Agent de sécurité : logique badge cohérente
+            if npc_id == "guard" and self.task_manager:
+                # 1) offrir la collecte du badge si pas encore offerte
+                if not self.task_manager.is_task_known("S6"):
+                    self.task_manager.offer_task("S6")  # "Badge perdu" (ramasser)
+                # 2) si le joueur porte déjà le badge, offrir la remise
+                if "has_badge" in self.flags and not self.task_manager.is_task_known("S6b"):
+                    self.task_manager.offer_task("S6b")  # "Remettre le badge"
+                # 3) petite bulle
+                self.speech_bubbles.speak_from_dict(self.strings, ["dialogues", "guard_badge"], npc_obj, color=(200, 200, 255))
+                return
+            
+            # PNJ Maya : dialogue spécial pour les tasses
+            if npc_id == "maya" and self.task_manager:
+                # Si le joueur a des tasses à livrer (S15)
+                if "mugs_collected" in self.flags:
+                    self.speech_bubbles.speak_from_dict(self.strings, ["dialogues", "maya_mugs"], npc_obj, color=(200, 200, 255))
+                    return
 
             # Fallback: dialogues JSON classiques
             key = dialogue_key or self._infer_dialogue_key_from_name(name)
@@ -489,7 +518,7 @@ class GameplayScene(Scene):
                 self.speech_bubbles.add_bubble(phrase, npc_obj, 3.0, (200, 200, 255))
             return
                 
-        elif kind in ["plant", "papers", "printer", "reception", "coffee", "water", "receptionist", "desk", "trash", "pickup", "meeting", "window"]:
+        elif kind in ["plant", "papers", "printer", "reception", "coffee", "water", "receptionist", "desk", "trash", "pickup", "meeting", "window", "supply", "stapler", "cables", "mug", "sink", "copier", "vents", "whiteboard"]:
             # Interaction avec objet - nouveau système avec actions
             interactable_id = obj_id
             
@@ -603,7 +632,45 @@ class GameplayScene(Scene):
                         else:
                             self.notification_manager.add_notification("Tâche déjà terminée.", 2.0)
                 else:
-                    self.notification_manager.add_notification("Cette tâche n'est pas encore disponible.", 2.0)
+                    # Tâche non disponible : bloquer l'action et donner un indice contextuel
+                    hint = None
+                    if kind == "plant":
+                        # si la tâche arrosage (S1) est lock, c'est qu'il faut de l'eau
+                        hint = "Je devrais d'abord remplir une bouteille."
+                    elif kind in ("trash",):
+                        hint = "Je n'ai rien à déposer."
+                    elif kind in ("printer",):
+                        hint = "Alex doit d'abord me briefer."
+                    elif kind in ("coffee",):
+                        hint = "Pas le moment."
+                    elif kind in ("papers",):
+                        hint = "On me demandera peut-être de les trier."
+                    elif kind in ("pickup",):
+                        hint = "Pas maintenant."
+                    elif kind in ("supply",):
+                        hint = "Je devrais voir si quelqu'un a demandé quelque chose."
+                    elif kind in ("stapler",):
+                        hint = "Il me faut des agrafes."
+                    elif kind in ("copier",):
+                        hint = "On m'a demandé un dossier ?"
+                    elif kind in ("vents",):
+                        hint = "Juste un coup d'œil."
+                    elif kind in ("whiteboard",):
+                        hint = "Je peux le nettoyer rapidement."
+                    elif kind in ("mug",):
+                        hint = "Ces tasses s'accumulent..."
+                    elif kind in ("sink",):
+                        hint = "Je n'ai rien à laver."
+                    elif kind in ("cables",):
+                        hint = "Ces câbles traînent."
+                    else:
+                        hint = None
+
+                    if hint:
+                        # bulle au joueur plutôt qu'un toast "tâche indisponible"
+                        self.speech_bubbles.add_bubble(hint, self.entity_manager.get_player(), 1.8, (220, 220, 220))
+                    # on ne déclenche rien
+                    return
             else:
                 # Interaction simple sans tâche
                 messages = {

@@ -52,6 +52,13 @@
           "x": 600,
           "y": 0,
           "props": {"sprite_key": "meeting_room"}
+        },
+        {
+          "id": "whiteboard_98",
+          "kind": "whiteboard",
+          "x": 640,
+          "y": 0,
+          "props": {"sprite_key": "whiteboard"}
         }
       ]
     },
@@ -157,6 +164,69 @@
           "x": 800,
           "y": 0,
           "props": {"name": "Maya", "dialogue_key": "maya_coffee", "sprite_key": "employee_5"}
+        },
+        {
+          "id": "supply_97",
+          "kind": "supply",
+          "x": 480,
+          "y": 0,
+          "props": {"sprite_key": "supply_closet"}
+        },
+        {
+          "id": "stapler_97",
+          "kind": "stapler",
+          "x": 760,
+          "y": 0,
+          "props": {"sprite_key": "stapler"}
+        },
+        {
+          "id": "cables_97",
+          "kind": "cables",
+          "x": 700,
+          "y": 0,
+          "props": {"sprite_key": "cable_pile"}
+        },
+        {
+          "id": "mug_97_1",
+          "kind": "mug",
+          "x": 620,
+          "y": 0,
+          "props": {"sprite_key": "mug"}
+        },
+        {
+          "id": "mug_97_2",
+          "kind": "mug",
+          "x": 845,
+          "y": 0,
+          "props": {"sprite_key": "mug"}
+        },
+        {
+          "id": "mug_97_3",
+          "kind": "mug",
+          "x": 960,
+          "y": 0,
+          "props": {"sprite_key": "mug"}
+        },
+        {
+          "id": "sink_97",
+          "kind": "sink",
+          "x": 530,
+          "y": 0,
+          "props": {"sprite_key": "sink"}
+        },
+        {
+          "id": "copier_97",
+          "kind": "copier",
+          "x": 640,
+          "y": 0,
+          "props": {"sprite_key": "copier"}
+        },
+        {
+          "id": "vents_97",
+          "kind": "vents",
+          "x": 900,
+          "y": 0,
+          "props": {"sprite_key": "air_vent"}
         }
       ]
     },
