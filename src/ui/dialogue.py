@@ -10,6 +10,7 @@ import pygame
 from src.settings import WIDTH, HEIGHT, UI_PANEL, UI_TEXT
 from src.core.assets import asset_manager
 from src.core.utils import create_text_surface, load_json_safe
+from src.core.event_bus import event_bus
 
 logger = logging.getLogger(__name__)
 
@@ -344,6 +345,10 @@ class DialogueSystem:
         self.dialogue_queue.clear()
         self.revealed_text = ""
         self.full_text = ""
+        try:
+            event_bus.emit("DIALOGUE_SEEN", {})
+        except Exception:
+            pass
         logger.debug("Dialogue closed")
     
     def draw(self, surface: pygame.Surface) -> None:

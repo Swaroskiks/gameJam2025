@@ -94,6 +94,14 @@
       "Elle fait encore des siennes ce matin.",
       "Si tu pouvais y jeter un œil, ce serait génial."
     ],
+    "boss_reed": [
+      "Bonjour. On a une matinée chargée.",
+      "Passe voir Alex à l'open-space, il a une tâche."
+    ],
+    "alex": [
+      "Parfait que tu sois là. L'imprimante est encore bloquée...",
+      "Tu peux t'en occuper ?"
+    ],
     "maya_morning": [
       "Bonjour ! Belle journée n'est-ce pas ?",
       "J'adore cette vue depuis les étages élevés.",

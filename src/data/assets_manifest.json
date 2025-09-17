@@ -118,13 +118,13 @@
       "path": "backgrounds/floor_96.png",
       "description": "Fond étage 96 - Bureaux"
     },
-    "floor_97": {
+    "floor_97_open": {
       "path": "backgrounds/floor_97.png",
-      "description": "Fond étage 97 - Bureaux"
+      "description": "Fond étage 97 - Open-space"
     },
-    "floor_98": {
+    "floor_98_boss": {
       "path": "backgrounds/floor_98.png",
-      "description": "Fond étage 98 - Direction"
+      "description": "Fond étage 98 - Bureau du boss"
     },
     "floor_default": {
       "path": "backgrounds/floor_default.png",

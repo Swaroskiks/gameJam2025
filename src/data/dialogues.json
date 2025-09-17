@@ -1,0 +1,37 @@
+{
+  "boss_reed": {
+    "start": "n0",
+    "nodes": {
+      "n0": {
+        "say": "Bonjour. On a une matinée chargée. Passe voir Alex à l'open-space, il a une tâche.",
+        "choices": [
+          {"text": "D'accord.", "goto": "n1", "effects": [{"set_flag": "met_boss"}]}
+        ]
+      },
+      "n1": {
+        "say": "Au fait, pense à vérifier la plante du couloir.",
+        "effects": [{"discover_task": "water_plant"}],
+        "end": true
+      }
+    },
+    "effects": [{"offer_task": "chat_with_alex"}]
+  },
+  "alex": {
+    "start": "a0",
+    "nodes": {
+      "a0": {
+        "cond": [{"flag_is_true": "met_boss"}],
+        "say": "Parfait que tu sois là. L'imprimante est encore bloquée...",
+        "effects": [{"offer_task": "fix_printer"}],
+        "end": true
+      },
+      "a1": {
+        "cond": [{"task_completed": "fix_printer"}],
+        "say": "Nickel, la compta te remercie.",
+        "effects": [{"give_points": 2}],
+        "end": true
+      }
+    }
+  }
+}
+
