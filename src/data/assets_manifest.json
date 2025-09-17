@@ -10,14 +10,32 @@
     },
     "elevator": {
       "path": "sprites/elevator.png",
-      "frame_w": 64,
-      "frame_h": 120,
+      "frame_w": 96,
+      "frame_h": 180,
       "description": "Cabine d'ascenseur"
+    },
+    "elevator_open": {
+      "path": "sprites/elevator_open.png",
+      "frame_w": 96,
+      "frame_h": 180,
+      "description": "Ascenseur ouvert"
+    },
+    "elevator_close": {
+      "path": "sprites/elevator_close.png",
+      "frame_w": 96,
+      "frame_h": 180,
+      "description": "Ascenseur fermé"
+    },
+    "elevator_used": {
+      "path": "sprites/elevator_used.png",
+      "frame_w": 96,
+      "frame_h": 180,
+      "description": "Ascenseur en cours d'utilisation"
     },
     "elevator_doors": {
       "path": "sprites/elevator_doors.png",
-      "frame_w": 64,
-      "frame_h": 120,
+      "frame_w": 96,
+      "frame_h": 180,
       "description": "Portes d'ascenseur"
     },
     "ui_panel": {
@@ -27,7 +45,7 @@
       "description": "Panneau UI générique"
     },
     "ui_task_icon": {
-      "path": "ui/task_icon.png",
+      "path": "sprites/task_icon.png",
       "frame_w": 32,
       "frame_h": 32,
       "description": "Icône des tâches cliquable"
@@ -42,8 +60,8 @@
     },
     "npc_generic": {
       "path": "sprites/npc_generic.png",
-      "frame_w": 192,
-      "frame_h": 288,
+      "frame_w": 96,
+      "frame_h": 144,
       "description": "NPC générique"
     },
     "employee_1": {
@@ -200,16 +218,16 @@
   "spritesheets": {
     "player_walk": {
       "path": "sprites/player_walk.png",
-      "frame_w": 384,
-      "frame_h": 576,
+      "frame_w": 96,
+      "frame_h": 144,
       "fps": 8,
       "frames": 4,
       "description": "Animation marche du joueur"
     },
     "elevator_animation": {
       "path": "sprites/elevator_anim.png",
-      "frame_w": 64,
-      "frame_h": 120,
+      "frame_w": 96,
+      "frame_h": 180,
       "fps": 2,
       "frames": 2,
       "description": "Animation ascenseur"

@@ -28,7 +28,7 @@
         {
           "id": "boss_reed",
           "kind": "npc",
-          "x": 250,
+          "x": 800,
           "y": 0,
           "props": {"name": "Boss Reed", "dialogue_key": "boss_reed", "sprite_key": "boss"}
         },

@@ -192,19 +192,37 @@ class GameplayScene(Scene):
                         self._handle_interact(player)
                 return
             elif event.key == pygame.K_c:
-                # Appel ascenseur
+                # Gestion ascenseur (entrée/sortie)
                 if self.entity_manager:
                     player = self.entity_manager.get_player()
                     if player:
-                        self._handle_elevator_call(player)
+                        self._handle_elevator_interaction(player)
                 return
             elif event.key == pygame.K_UP:
                 # Changer d'étage vers le haut avec la flèche
-                self._handle_arrow_floor_change(+1)
+                if self.entity_manager:
+                    player = self.entity_manager.get_player()
+                    if player and getattr(player, 'in_elevator', False):
+                        # Dans l'ascenseur : changer d'étage
+                        self._handle_arrow_floor_change(+1)
+                    else:
+                        # Pas dans l'ascenseur : mouvement normal
+                        pass
                 return
             elif event.key == pygame.K_DOWN:
                 # Changer d'étage vers le bas avec la flèche
-                self._handle_arrow_floor_change(-1)
+                if self.entity_manager:
+                    player = self.entity_manager.get_player()
+                    if player and getattr(player, 'in_elevator', False):
+                        # Dans l'ascenseur : changer d'étage
+                        self._handle_arrow_floor_change(-1)
+                    else:
+                        # Pas dans l'ascenseur : mouvement normal
+                        pass
+                return
+            elif event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
+                # Mouvement normal du joueur (pas de sortie d'ascenseur)
+                pass
                 return
             # La sélection 0-9 n'est plus utilisée pour l'ascenseur
         
@@ -670,9 +688,9 @@ class GameplayScene(Scene):
         else:
             self.notification_manager.add_notification("Impossible d'interagir.", 2.0)
     
-    def _handle_elevator_call(self, player):
+    def _handle_elevator_interaction(self, player):
         """
-        Gère l'appel de l'ascenseur.
+        Gère l'interaction avec l'ascenseur (entrée/sortie).
         
         Args:
             player: Le joueur
@@ -680,21 +698,27 @@ class GameplayScene(Scene):
         if not self.elevator or not self.building:
             return
         
-        # Position de l'ascenseur (fixe à gauche)
-        elevator_x = 30 + 40  # Centre de l'ascenseur
+        # Position de l'ascenseur (décalé vers la droite)
+        elevator_x = 30 + 40 + 20  # Centre de l'ascenseur (décalé de 20px vers la droite)
         
-        # Vérifier si le joueur est proche de l'ascenseur (zone plus large)
+        # Vérifier si le joueur est proche de l'ascenseur (zone réduite)
         distance = abs(player.x - elevator_x)
-        if distance < 60:  # Zone d'interaction plus large
-            if self.elevator.current_floor == player.current_floor:
-                # L'ascenseur est déjà à cet étage
-                self.notification_manager.add_notification("Entrez dans l'ascenseur et choisissez un étage (0-9).", 3.0)
+        if distance < 32:  # Zone d'interaction augmentée de 1.2 (27 * 1.2 = 32)
+            if not getattr(player, 'in_elevator', False):
+                # Faire entrer le joueur dans l'ascenseur
+                player.in_elevator = True
             else:
-                # Appeler l'ascenseur
-                self.elevator.call(player.current_floor)
-                self.notification_manager.add_notification(f"Ascenseur appelé à l'étage {player.current_floor}.", 2.0)
-        else:
-            self.notification_manager.add_notification("Approchez-vous de l'ascenseur.", 2.0)
+                # Faire sortir le joueur de l'ascenseur
+                player.in_elevator = False
+    
+    def _handle_elevator_call(self, player):
+        """
+        Gère l'appel de l'ascenseur (méthode legacy, maintenant redirigée).
+        
+        Args:
+            player: Le joueur
+        """
+        self._handle_elevator_interaction(player)
     
     def _handle_floor_selection(self, floor_number):
         """
@@ -709,17 +733,17 @@ class GameplayScene(Scene):
         if self.building.has_floor(floor_number):
             player = self.entity_manager.get_player()
             if player:
-                # Position de l'ascenseur (fixe à gauche)
-                elevator_x = 30 + 40  # Centre de l'ascenseur
+                # Position de l'ascenseur (décalé vers la droite)
+                elevator_x = 30 + 40 + 20  # Centre de l'ascenseur (décalé de 20px vers la droite)
                 distance = abs(player.x - elevator_x)
                 
-                if distance < 60:  # Zone d'interaction
+                if distance < 32:  # Zone d'interaction augmentée de 1.2 (27 * 1.2 = 32)
                     # Ne nécessite plus que l'ascenseur soit au même étage
                     self._change_player_floor(floor_number)
                 else:
-                    self.notification_manager.add_notification("Approchez-vous de l'ascenseur.", 2.0)
+                    pass
         else:
-            self.notification_manager.add_notification(f"Étage {floor_number} inexistant.", 2.0)
+            pass
     
     def _change_player_floor(self, new_floor):
         """
@@ -729,10 +753,6 @@ class GameplayScene(Scene):
             new_floor: Nouvel étage
         """
         success = self.world_loader.change_player_floor(new_floor)
-        if success:
-            self.notification_manager.add_notification(f"Arrivé à l'étage {new_floor}", 2.0)
-        else:
-            self.notification_manager.add_notification("Erreur lors du changement d'étage.", 2.0)
     
     def _check_game_end_conditions(self):
         """Vérifie les conditions de fin de jeu."""
@@ -907,31 +927,26 @@ class GameplayScene(Scene):
                 color = (240, 240, 240) if floor_num == current_floor else (200, 200, 200)
                 pygame.draw.rect(screen, color, floor_rect)
             
-            # Numéro d'étage (seulement si c'est l'étage actuel)
-            if floor_num == current_floor:
-                font = pygame.font.SysFont(None, 28)
-                floor_text = f"Étage {floor_num} - {floor.name}"
-                text_surface = font.render(floor_text, True, (255, 255, 255))
-                # Fond semi-transparent pour le texte
-                text_bg = pygame.Surface((text_surface.get_width() + 10, text_surface.get_height() + 4))
-                text_bg.fill((0, 0, 0))
-                text_bg.set_alpha(150)
-                screen.blit(text_bg, (5, screen_y + 5))
-                screen.blit(text_surface, (10, screen_y + 7))
+            # Texte d'étage supprimé
             
-            # 2. Dessiner les objets de l'étage (nouveau système)
+            # 2. Dessiner l'ascenseur sur tous les étages visibles
+            if self.elevator:
+                self._draw_elevator(screen, screen_y, floor_height, floor_num, current_floor)
+            
+            # 3. Dessiner les objets de l'étage (nouveau système)
             for obj_data in floor.objects:
                 self._draw_floor_object(screen, obj_data, screen_y, floor_height)
             
-            # 3. Dessiner le joueur s'il est sur cet étage
+            # 4. Dessiner le joueur s'il est sur cet étage et pas dans l'ascenseur
             if floor_num == current_floor and self.entity_manager:
                 player = self.entity_manager.get_player()
-                if player:
+                if player and not getattr(player, 'in_elevator', False):
                     player_sprite = asset_manager.get_image("player_idle")
                     # Utiliser la taille définie dans le manifest (pas de redimensionnement automatique)
                     # Le sprite est déjà redimensionné par l'AssetManager selon assets_manifest.json
                     player_x = player.x - player_sprite.get_width() // 2
                     # Positionner le joueur au sol avec baseline cohérente
+                    # Le joueur est posé sur le plancher de l'étage
                     baseline_y = screen_y + floor_height - 1
                     player_y = baseline_y - player_sprite.get_height()
                     screen.blit(player_sprite, (player_x, player_y))
@@ -1227,11 +1242,15 @@ class GameplayScene(Scene):
         else:
             # Vérifier si proche de l'ascenseur
             if self.elevator:
-                elevator_x = 30 + 40  # Centre de l'ascenseur
+                elevator_x = 30 + 40 + 20  # Centre de l'ascenseur (décalé de 20px vers la droite)
                 distance = abs(player.x - elevator_x)
-                if distance < 60:
-                    # Utiliser les flèches pour changer d'étage
-                    self.hud.show_interaction_hint("↑/↓ : Changer d'étage")
+                if distance < 32:  # Zone d'interaction augmentée de 1.2 (27 * 1.2 = 32)
+                    if getattr(player, 'in_elevator', False):
+                        # Dans l'ascenseur : contrôles verticaux
+                        self.hud.show_interaction_hint("^/v : Changer d'étage | C : Sortir")
+                    else:
+                        # Pas dans l'ascenseur : entrer
+                        self.hud.show_interaction_hint("C : Entrer dans l'ascenseur")
                 else:
                     self.hud.hide_interaction_hint()
 
@@ -1247,10 +1266,8 @@ class GameplayScene(Scene):
         player = self.entity_manager.get_player()
         if not player:
             return
-        # Vérifier proximité ascenseur
-        elevator_x = 30 + 40
-        if abs(player.x - elevator_x) >= 60:
-            self.notification_manager.add_notification("Approchez-vous de l'ascenseur.", 1.5)
+        # Vérifier que le joueur est dans l'ascenseur
+        if not getattr(player, 'in_elevator', False):
             return
 
         # Calculer nouvel étage borné aux étages existants
@@ -1258,6 +1275,9 @@ class GameplayScene(Scene):
         all_floors = self.building.get_all_floors()
         if not all_floors:
             return
+        
+        # Debug : afficher les étages disponibles
+        logger.debug(f"Available floors: {all_floors}, current: {current}")
         if current not in all_floors:
             current = all_floors[0]
         try:
@@ -1269,9 +1289,6 @@ class GameplayScene(Scene):
 
         if new_floor != current:
             self._change_player_floor(new_floor)
-        else:
-            # Déjà au bord
-            self.notification_manager.add_notification("Pas d'autre étage dans cette direction.", 1.5)
     
     
     def exit(self):
@@ -1428,3 +1445,71 @@ class GameplayScene(Scene):
                 self.notification_manager.add_notification(str(effect["toast"]), 2.0)
         except Exception:
             pass
+    
+    def _draw_elevator(self, screen, screen_y: int, floor_height: int, floor_num: int, current_floor: int) -> None:
+        """
+        Dessine l'ascenseur sur tous les étages visibles.
+        L'ascenseur s'ouvre seulement sur l'étage actuel du joueur.
+        
+        Args:
+            screen: Surface de rendu
+            screen_y: Position Y de l'étage à l'écran
+            floor_height: Hauteur d'un étage
+            floor_num: Numéro de l'étage en cours de rendu
+            current_floor: Étage actuel du joueur
+        """
+        from src.core.assets import asset_manager
+        
+        if not self.entity_manager or not self.elevator:
+            return
+        
+        player = self.entity_manager.get_player()
+        if not player:
+            return
+        
+        # Position de l'ascenseur (décalé vers la droite)
+        elevator_x = 30 + 40 + 20  # Centre de l'ascenseur (décalé de 20px vers la droite)
+        
+        # Déterminer l'état de l'ascenseur
+        is_near_elevator = False
+        is_player_in_elevator = getattr(player, 'in_elevator', False)
+        
+        # Choisir le sprite selon l'état du joueur et la proximité
+        if floor_num == current_floor:
+            # Seulement sur l'étage actuel du joueur
+            if is_player_in_elevator:
+                # Le joueur est dans l'ascenseur : utiliser le sprite "utilisé"
+                elevator_sprite = asset_manager.get_image("elevator_used")
+            else:
+                # Vérifier si le joueur est proche de l'ascenseur
+                distance = abs(player.x - elevator_x)
+                is_near_elevator = distance < 32  # Zone de détection augmentée de 1.2 (27 * 1.2 = 32)
+                
+                if is_near_elevator:
+                    # Le joueur est proche mais pas dans l'ascenseur : ouvert
+                    elevator_sprite = asset_manager.get_image("elevator_open")
+                else:
+                    # Le joueur n'est pas proche : fermé
+                    elevator_sprite = asset_manager.get_image("elevator_close")
+        else:
+            # Sur les autres étages : toujours fermé
+            elevator_sprite = asset_manager.get_image("elevator_close")
+        
+        # Redimensionner l'ascenseur pour s'adapter exactement à la hauteur de l'étage
+        # Conserver les proportions originales
+        original_height = elevator_sprite.get_height()
+        original_width = elevator_sprite.get_width()
+        
+        # Calculer la nouvelle largeur en gardant les proportions
+        aspect_ratio = original_width / original_height
+        new_height = floor_height
+        new_width = int(new_height * aspect_ratio)
+        
+        # Redimensionner le sprite
+        elevator_scaled = pygame.transform.scale(elevator_sprite, (new_width, new_height))
+        
+        # Positionner l'ascenseur au sol (hauteur complète de l'étage)
+        elevator_y = screen_y
+        
+        # Dessiner l'ascenseur centré horizontalement sur sa position
+        screen.blit(elevator_scaled, (elevator_x - new_width // 2, elevator_y))

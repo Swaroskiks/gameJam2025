@@ -38,12 +38,12 @@ class HUD:
         
         # Nouveau système d'icône des tâches
         self.task_icon = IconButton(
-            WIDTH - 60, 80, 40, "ui_task_icon",
+            WIDTH - 120, 100, 60, "ui_task_icon",
             callback=self._toggle_tasks_panel,
             tooltip="Afficher les tâches (T)"
         )
         self.tasks_panel = Panel(
-            WIDTH - 350, 120, 300, 400,
+            WIDTH - 390, 140, 300, 400,
             title="Tâches"
         )
         
@@ -317,8 +317,9 @@ class HUD:
         # Bordure
         pygame.draw.rect(surface, UI_TEXT, panel_rect, 1)
         
-        # Texte
-        draw_text_centered(surface, floor_text, self.font_ui, UI_TEXT, self.floor_pos)
+        # Texte centré dans le panneau
+        text_center = (panel_rect.centerx, panel_rect.centery)
+        draw_text_centered(surface, floor_text, self.font_ui, UI_TEXT, text_center)
     
     def draw_interaction_hint(self, surface: pygame.Surface) -> None:
         """
@@ -327,13 +328,13 @@ class HUD:
         Args:
             surface: Surface de destination
         """
-        if not self.visible or not self.show_interaction_hint_flag or not self.font_small:
+        if not self.visible or not self.show_interaction_hint_flag or not self.font_ui:
             return
         
         text = self.interaction_hint_text or "E : Interagir"
         
         # Fond semi-transparent
-        text_width = self.font_small.size(text)[0]
+        text_width = self.font_ui.size(text)[0]
         panel_width = text_width + 20
         panel_height = 30
         
@@ -352,7 +353,7 @@ class HUD:
         pygame.draw.rect(surface, UI_TEXT, panel_rect, 2)
         
         # Texte
-        draw_text_centered(surface, text, self.font_small, UI_TEXT, self.interaction_hint_pos)
+        draw_text_centered(surface, text, self.font_ui, UI_TEXT, self.interaction_hint_pos)
     
     def show_interaction_hint(self, text: str = "E : Interagir") -> None:
         """

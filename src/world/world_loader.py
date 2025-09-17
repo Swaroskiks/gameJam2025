@@ -236,7 +236,7 @@ class WorldLoader:
         if self.entity_manager and self.building:
             # Position initiale près de l'ascenseur au lobby
             start_x = self.building.elevator_x + 100  # Un peu à droite de l'ascenseur
-            start_y = 300  # Centre vertical approximatif
+            start_y = 0.0  # Position Y du monde (baseline gérée par le rendu)
             
             player = self.entity_manager.create_player(start_x, start_y)
             
