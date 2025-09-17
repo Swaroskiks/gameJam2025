@@ -30,6 +30,11 @@ PLAYER_WIDTH = 48
 PLAYER_HEIGHT = 72
 TILE_SIZE = 48
 
+# Constantes de physique et mouvement
+WORLD_PX_PER_METER = 100  # Conversion pixels/mètres
+WALK_SPEED_MPS = 2.0     # Vitesse de marche en mètres/seconde
+PLAYER_TARGET_HEIGHT_RATIO = 0.8  # Ratio de hauteur cible du joueur
+
 # Configuration des assets
 ASSETS_PATH = Path("assets")
 ALT_ASSETS_PATH = Path("aassets")  # Dossier alternatif si présent

@@ -18,9 +18,14 @@ from src.settings import DATA_PATH
 
 import os
 import time
-import moviepy as mpy
-
 logger = logging.getLogger(__name__)
+
+try:
+    import moviepy as mpy
+    MOVIEPY_AVAILABLE = True
+except ImportError:
+    MOVIEPY_AVAILABLE = False
+    logger.warning("MoviePy not available, final video will be skipped")
 
 
 class GameplayScene(Scene):
@@ -519,60 +524,86 @@ class GameplayScene(Scene):
     def _check_game_end_conditions(self):
         """Vérifie les conditions de fin de jeu."""
         if self.game_clock and self.game_clock.is_deadline():
-            logger.info("Game deadline reached, shaking then fade up then playing final video then going to summary")
-            screen = pygame.display.get_surface()
-            if screen:
-                self.shake_screen(screen, duration=1.5, intensity=15)
-                self._fade_up(screen, duration_ms=1200, color=(0, 0, 0))
-                self.play_final_video(screen)
-            self.switch_to("summary")
+            logger.info("Game deadline reached, transitioning to summary")
+            try:
+                screen = pygame.display.get_surface()
+                if screen:
+                    # Effet de shake simplifié
+                    self.shake_screen(screen, duration=0.5, intensity=8)
+                    # Transition fade simple
+                    self._fade_up(screen, duration_ms=800, color=(0, 0, 0))
+                    # Vidéo finale si disponible
+                    if MOVIEPY_AVAILABLE:
+                        self.play_final_video(screen)
+            except Exception as e:
+                logger.error(f"Error during end transition: {e}")
+            finally:
+                # Toujours passer au résumé même en cas d'erreur
+                self.switch_to("summary")
     
     def _fade_up(self, screen, duration_ms=900, color=(0, 0, 0)):
         """Transition fade up (noir qui monte du bas vers le haut)."""
-        W, H = screen.get_size()
-        clock = pygame.time.Clock()
-        t0 = pygame.time.get_ticks()
-        running = True
-        while running:
-            t = (pygame.time.get_ticks() - t0) / duration_ms
-            if t >= 1.0:
-                t = 1.0
-                running = False
-            h = int(H * t)
-            overlay = pygame.Surface((W, h))
-            overlay.fill(color)
-            screen.blit(overlay, (0, H - h))
-            pygame.display.flip()
-            clock.tick(60)
+        try:
+            W, H = screen.get_size()
+            clock = pygame.time.Clock()
+            t0 = pygame.time.get_ticks()
+            running = True
+            while running:
+                t = (pygame.time.get_ticks() - t0) / duration_ms
+                if t >= 1.0:
+                    t = 1.0
+                    running = False
+                h = int(H * t)
+                overlay = pygame.Surface((W, h))
+                overlay.fill(color)
+                screen.blit(overlay, (0, H - h))
+                pygame.display.flip()
+                clock.tick(60)
+        except Exception as e:
+            logger.error(f"Error during fade transition: {e}")
 
     def shake_screen(self, screen, duration=0.7, intensity=12):
         """Effet de tremblement sur tout l'écran avant la vidéo de fin."""
-        clock = pygame.time.Clock()
-        start = time.time()
-        original = screen.copy()
-        while time.time() - start < duration:
-            offset_x = int((pygame.time.get_ticks() % intensity) - intensity // 2)
-            offset_y = int((pygame.time.get_ticks() * 1.5 % intensity) - intensity // 2)
-            screen.fill((0, 0, 0))
-            screen.blit(original, (offset_x, offset_y))
-            pygame.display.flip()
-            clock.tick(60)
+        try:
+            clock = pygame.time.Clock()
+            start = time.time()
+            original = screen.copy()
+            while time.time() - start < duration:
+                offset_x = int((pygame.time.get_ticks() % intensity) - intensity // 2)
+                offset_y = int((pygame.time.get_ticks() * 1.5 % intensity) - intensity // 2)
+                screen.fill((0, 0, 0))
+                screen.blit(original, (offset_x, offset_y))
+                pygame.display.flip()
+                clock.tick(60)
+        except Exception as e:
+            logger.error(f"Error during screen shake: {e}")
 
     def play_final_video(self, screen):
         """Joue la vidéo finale avant le résumé."""
-        video_path = os.path.join("assets", "final.mp4")
-        clip = mpy.VideoFileClip(video_path)
-        for frame in clip.iter_frames(fps=24, dtype="uint8"):
-            surf = pygame.surfarray.make_surface(frame.swapaxes(0, 1))
-            surf = pygame.transform.scale(surf, (WIDTH, HEIGHT))
-            screen.blit(surf, (0, 0))
-            pygame.display.flip()
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    return
-            time.sleep(1 / 24)
-        clip.close()
+        if not MOVIEPY_AVAILABLE:
+            logger.warning("MoviePy not available, skipping final video")
+            return
+            
+        try:
+            video_path = os.path.join("assets", "final.mp4")
+            if not os.path.exists(video_path):
+                logger.warning(f"Final video not found at {video_path}")
+                return
+                
+            clip = mpy.VideoFileClip(video_path)
+            for frame in clip.iter_frames(fps=24, dtype="uint8"):
+                surf = pygame.surfarray.make_surface(frame.swapaxes(0, 1))
+                surf = pygame.transform.scale(surf, (WIDTH, HEIGHT))
+                screen.blit(surf, (0, 0))
+                pygame.display.flip()
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        pygame.quit()
+                        return
+                time.sleep(1 / 24)
+            clip.close()
+        except Exception as e:
+            logger.error(f"Error playing final video: {e}")
 
     def draw(self, screen):
         """Dessine la scène."""
