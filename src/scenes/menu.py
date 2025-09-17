@@ -52,19 +52,15 @@ class MenuScene(Scene):
             except:
                 self.font = pygame.font.SysFont(None, 60)
         
-        # Charger l'arrière-plan
+        # Charger l'arrière-plan wtc.png directement
         try:
-            self.background = asset_manager.get_image("menu_bg")
+            self.background = pygame.image.load("assets/images/wtc.png").convert()
+            self.background = pygame.transform.scale(self.background, (WIDTH, HEIGHT))
         except Exception as e:
-            logger.error(f"Error loading menu background: {e}")
-            # Fallback vers l'image existante
-            try:
-                self.background = pygame.image.load("assets/images/background_.jpg").convert()
-                self.background = pygame.transform.scale(self.background, (WIDTH, HEIGHT))
-            except:
-                # Créer un fond de couleur simple
-                self.background = pygame.Surface((WIDTH, HEIGHT))
-                self.background.fill((50, 50, 100))
+            logger.error(f"Error loading wtc.png: {e}")
+            # Créer un fond de couleur simple
+            self.background = pygame.Surface((WIDTH, HEIGHT))
+            self.background.fill((50, 50, 100))
         
         # Créer les rectangles des boutons (code existant adapté)
         self._setup_buttons()
@@ -131,8 +127,7 @@ class MenuScene(Scene):
         
         elif text_lower == "quitter":
             logger.info("Quitting game")
-            pygame.quit()
-            sys.exit()
+            self.scene_manager.quit_game()
     
     def update(self, dt):
         """Met à jour la scène."""

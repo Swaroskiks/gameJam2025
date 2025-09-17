@@ -33,11 +33,11 @@
       "description": "Icône des tâches cliquable"
     },
     "office_bg": {
-      "path": "images/background.jpg",
+      "path": "images/wtc.png",
       "description": "Arrière-plan bureau (existant)"
     },
     "menu_bg": {
-      "path": "images/background_.jpg", 
+      "path": "images/wtc.png", 
       "description": "Arrière-plan menu (existant)"
     },
     "npc_generic": {
