@@ -153,7 +153,7 @@
       "id": "kelly_give_coffee",
       "title": "Apporter le café à Kelly",
       "description": "Donner le café à Kelly.",
-      "type": "dialogue",
+      "type": "deliver",
       "floor": 97,
       "npc_id": "kelly_kapoor_marketing",
       "reward_points": 2,

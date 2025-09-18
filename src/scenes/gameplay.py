@@ -581,7 +581,9 @@ class GameplayScene(Scene):
                     return
                 # Si le joueur a le café, offrir la livraison
                 elif self.task_manager.is_task_available("kelly_give_coffee"):
-                    self.task_manager.is_task_completed("kelly_give_coffee")
+                    print(2)
+                    self.task_manager.complete_task("kelly_give_coffee")
+                    print(self.strings)
                     self.speech_bubbles.speak_from_dict(self.strings, ["dialogues", "kelly_receive_coffee"], npc_obj, color=(200, 255, 200))
                     return
                 # Si la quête café est terminée, Kelly dit bonjour normalement
