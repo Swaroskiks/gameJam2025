@@ -216,8 +216,8 @@
     },
     "interactable_printer": {
       "path": "sprites/printer.png",
-      "frame_w": 180,
-      "frame_h": 120,
+      "frame_w": 300,
+      "frame_h": 150,
       "description": "Imprimante"
     },
     "coffee": {

@@ -63,6 +63,54 @@
       "priority": 85,
       "interactable_id": "boss_reed",
       "action": "talk"
+    },
+    {
+      "id": "M5",
+      "title": "Imprimer des documents",
+      "description": "Imprimer les documents demandés par le boss",
+      "required": true,
+      "priority": 80,
+      "dependencies": ["M4"],
+      "completion_message": "Les documents ont été imprimés",
+      "interactable_id": "printer_97",
+      "action": "collect",
+      "gives_flag": "has_boss_docs"
+    },
+    {
+      "id": "M6",
+      "title": "Remettre les documents au boss",
+      "description": "Apporter les documents imprimés au boss à la Direction.",
+      "type": "dialogue",
+      "floor": 99,
+      "npc_id": "boss_reed",
+      "reward_points": 5,
+      "dependencies": ["M5"],
+      "completion_message": "Le boss a reçu les documents.",
+      "allow_unassigned_completion": true,
+      "required": true,
+      "priority": 75,
+      "interactable_id": "boss_reed",
+      "action": "talk",
+      "needs_flag": "has_boss_docs",
+      "clears_flag": "has_boss_docs"
+    },
+    {
+      "id": "M7",
+      "title": "Arroser la plante du boss",
+      "description": "Le boss vous demande de veiller à sa plante. Trouvez de l'eau et arrosez-la.",
+      "type": "interaction",
+      "floor": 99,
+      "interactable_id": "plant_99",
+      "reward_points": 5,
+      "dependencies": ["M6"],
+      "completion_message": "La plante du boss est arrosée.",
+      "allow_unassigned_completion": true,
+      "required": true,
+      "priority": 70,
+      "action": "interact",
+      "needs_flag": "has_water_cup",
+      "clears_flag": "has_water_cup",
+      "gives_flag": "plant_99_watered"
     }
   ],
   "side_tasks": [
@@ -249,16 +297,6 @@
       "priority": 27,
       "action": "linger",
       "linger_seconds": 10
-    },
-    {
-      "id": "M5",
-      "title": "Salle prête pour 9h",
-      "description": "Vérifier la salle de réunion avant 9h.",
-      "required": true,
-      "priority": 80,
-      "dependencies": ["M4"],
-      "interactable_id": "meeting_99",
-      "action": "inspect"
     },
     {
       "id": "S9",

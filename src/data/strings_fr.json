@@ -96,7 +96,7 @@
     ],
     "boss_reed": [
       "Bonjour. On a une matinée chargée.",
-      "Passe voir Jim au service IT, il a une tâche."
+      "Passe voir Jim au service IT, il a besoin d'aide."
     ],
     "alex": [
       "Parfait que tu sois là. L'imprimante est encore bloquée...",
@@ -125,9 +125,13 @@
     ],
     "boss_reed_after_M3": [
       "Impeccable pour l'imprimante.",
-      "On sera prêts pour 9h pile."
+      "Pourrais-tu m'imprimer ces documents ?"
     ],
-    "alex_offer_M3": [
+    "boss_reed_after_M5": [
+      "Parfait, merci pour les documents.",
+      "J'aurais besoin que tu veilles sur les plantes de mon bureau maintenant."
+    ],
+    "jim_offer_M3": [
       "Salut ! L'imprimante n'a plus de toner et bloque tout.",
       "Tu peux t'en occuper ?"
     ],
