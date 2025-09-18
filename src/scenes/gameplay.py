@@ -64,6 +64,8 @@ class GameplayScene(Scene):
         self._intro_lock_active = True
         self._printer_requirement = 2
         self._subscriptions = []
+        # Musique
+        self._music_switch_done = False
 
         # État de l'interface
         self.paused = False
@@ -106,6 +108,31 @@ class GameplayScene(Scene):
 
         # S'abonner aux événements temporels et timeline
         self._subscribe_events()
+
+        # Musique de fond: démarrer Lobby Time et programmer un switch vers Anxiety à END_TIME - 2 minutes
+        try:
+            audio_manager = self.scene_manager.context.get("audio_manager")
+            if audio_manager and self.game_clock:
+                # Démarrer Lobby Time
+                audio_manager.set_music_volume(0.6)
+                audio_manager.play_music("lobby_time", loop=-1)
+
+                # Calculer l'heure cible (END_TIME - 2 minutes)
+                from datetime import timedelta
+                target_dt = self.game_clock.end_time - timedelta(minutes=2)
+                target_str = target_dt.strftime("%H:%M")
+
+                def _switch_to_anxiety(_payload=None):
+                    try:
+                        audio_manager.play_music("anxiety", loop=-1)
+                    except Exception:
+                        pass
+
+                from src.core.event_bus import event_bus as _bus
+                _bus.subscribe(f"TIME_REACHED:{target_str}", _switch_to_anxiety)
+                self._subscriptions.append((f"TIME_REACHED:{target_str}", _switch_to_anxiety))
+        except Exception:
+            pass
         
         # Charger l'étage initial
         if self.building and self.entity_manager:
@@ -293,6 +320,18 @@ class GameplayScene(Scene):
 
         # Gérer les interactions
         self._handle_interactions()
+        
+        # Fallback robuste: basculer la musique quand il reste <= 2 minutes in-game
+        try:
+            if self.game_clock and not self._music_switch_done:
+                remaining = self.game_clock.get_remaining_time().total_seconds()
+                if remaining <= 120:
+                    audio_manager = self.scene_manager.context.get("audio_manager")
+                    if audio_manager:
+                        audio_manager.play_music("anxiety", loop=-1)
+                        self._music_switch_done = True
+        except Exception:
+            pass
         
         # Vérifier les conditions de fin
         self._check_game_end_conditions()
@@ -974,6 +1013,14 @@ class GameplayScene(Scene):
             logger.info("Game deadline reached, shaking then fade up then playing final video then going to summary")
             screen = pygame.display.get_surface()
             if screen:
+                # Couper toute l'audio (musique et SFX) avant la séquence finale
+                try:
+                    audio_manager = self.scene_manager.context.get("audio_manager")
+                    if audio_manager:
+                        audio_manager.stop_music()
+                    pygame.mixer.stop()
+                except Exception:
+                    pass
                 self.shake_screen(screen, duration=2.5, intensity=15)
                 self._fade_up(screen, duration_ms=1200, color=(0, 0, 0))
                 self.play_final_video(screen)
@@ -1754,7 +1801,7 @@ class GameplayScene(Scene):
             # Démarrer l'ambiance sonore
             sound = asset_manager.get_sound("office_ambiance")
             if sound:
-                sound.set_volume(0.7)  # Volume augmenté pour l'ambiance
+                sound.set_volume(0.15)
                 sound.play(-1)  # Boucle infinie
                 logger.info("Office ambiance started successfully")
             else:

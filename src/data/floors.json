@@ -144,13 +144,7 @@
           "y": 0,
           "props": {"sprite_key": "trash_bin_red"}
         },
-        {
-          "id": "coffee_97",
-          "kind": "coffee",
-          "x": 520,
-          "y": 0,
-          "props": {"sprite_key": "coffee_machine"}
-        },
+        
         {
           "id": "window_97",
           "kind": "window",

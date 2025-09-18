@@ -91,19 +91,24 @@ class AudioManager:
             True si la musique a été jouée avec succès
         """
         try:
-            music_assets = self.asset_manager.get_manifest_section("music")
-            if music_id in music_assets:
-                music_path = music_assets[music_id]["path"]
-                full_path = f"assets/{music_path}"
-                pygame.mixer.music.load(full_path)
-                pygame.mixer.music.set_volume(self.music_volume)
-                pygame.mixer.music.play(loop)
-                self.music_playing = music_id
-                logger.info(f"Playing music: {music_id}")
-                return True
-            else:
+            # Utiliser l'AssetManager pour retrouver le chemin réel découvert
+            music_path = self.asset_manager.get_music_path(music_id)
+            if not music_path:
                 logger.warning(f"Music not found: {music_id}")
                 return False
+
+            # Récupérer volume défini dans le manifest (section audio.music)
+            audio_section = self.asset_manager.get_manifest_section("audio") or {}
+            music_meta = (audio_section.get("music") or {}).get(music_id, {})
+            meta_volume = float(music_meta.get("volume", 1.0))
+
+            pygame.mixer.music.load(music_path)
+            final_volume = max(0.0, min(1.0, meta_volume * self.music_volume * self.master_volume))
+            pygame.mixer.music.set_volume(final_volume)
+            pygame.mixer.music.play(loop)
+            self.music_playing = music_id
+            logger.info(f"Playing music: {music_id} (vol={final_volume:.2f})")
+            return True
         except Exception as e:
             logger.error(f"Error playing music {music_id}: {e}")
             return False

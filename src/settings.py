@@ -16,7 +16,7 @@ GAME_TITLE = "A Day at the Office"
 
 # Configuration temporelle
 START_TIME = "08:30"
-END_TIME = "08:31"
+END_TIME = "08:35"
 GAME_SECONDS_PER_REAL_SECOND = 2.5
 
 # Configuration du building

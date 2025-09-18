@@ -481,6 +481,18 @@
         "volume": 0.3,
         "loop": true,
         "description": "Musique d'ambiance Lucky Moments"
+      },
+      "lobby_time": {
+        "path": "music/Lobby Time.mp3",
+        "volume": 0.9,
+        "loop": true,
+        "description": "Musique d'ambiance Lobby Time"
+      },
+      "anxiety": {
+        "path": "music/Kevin MacLeod Anxiety.mp3",
+        "volume": 0.9,
+        "loop": true,
+        "description": "Musique de tension Anxiety"
       }
     }
   }
