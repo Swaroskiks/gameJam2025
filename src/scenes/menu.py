@@ -110,8 +110,11 @@ class MenuScene(Scene):
         """
         text_lower = button_text.lower()
         
+        
         if text_lower == "jouer":
             logger.info("Starting gameplay")
+            # Effet de zoom avant de lancer la partie
+            self._zoom_transition(pygame.display.get_surface(), duration_ms=900, start_scale=1.0, end_scale=2.5)
             self.switch_to("gameplay")
         
         elif text_lower == "options":
@@ -161,6 +164,25 @@ class MenuScene(Scene):
                 text_rect = text_surface.get_rect(center=rect.center)
                 screen.blit(text_surface, text_rect)
     
+     
+    def _zoom_transition(self, screen, duration_ms=900, start_scale=1.0, end_scale=2.5):
+        """Effet de zoom sur le background avant de lancer la partie."""
+        clock = pygame.time.Clock()
+        t0 = pygame.time.get_ticks()
+        W, H = screen.get_size()
+        running = True
+        while running:
+            t = (pygame.time.get_ticks() - t0) / duration_ms
+            if t >= 1.0:
+                t = 1.0
+                running = False
+            scale = start_scale + (end_scale - start_scale) * t
+            bg = pygame.transform.smoothscale(self.background, (int(W * scale), int(H * scale)))
+            screen.fill((0, 0, 0))
+            screen.blit(bg, ((W - bg.get_width()) // 2, (H - bg.get_height()) // 2))
+            pygame.display.flip()
+            clock.tick(60)
+
     def exit(self):
         """Appelé en quittant la scène."""
         super().exit()

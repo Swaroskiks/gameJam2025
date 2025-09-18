@@ -19,6 +19,7 @@ from src.world.npc_movement import NPCMovementManager
 from src.core.utils import load_json_safe
 from src.core.event_bus import event_bus, TIME_TICK, TIME_REACHED
 from src.settings import DATA_PATH
+import tempfile
 
 import os
 import time
@@ -27,7 +28,7 @@ from typing import Optional
 logger = logging.getLogger(__name__)
 
 try:
-    import moviepy.editor as mpy
+    import moviepy as mpy
     MOVIEPY_AVAILABLE = True
 except ImportError:
     MOVIEPY_AVAILABLE = False
@@ -63,6 +64,8 @@ class GameplayScene(Scene):
         self._intro_lock_active = True
         self._printer_requirement = 2
         self._subscriptions = []
+        # Musique
+        self._music_switch_done = False
 
         # État de l'interface
         self.paused = False
@@ -105,7 +108,32 @@ class GameplayScene(Scene):
 
         # S'abonner aux événements temporels et timeline
         self._subscribe_events()
-        
+
+        # Musique de fond: démarrer Lobby Time et programmer un switch vers Anxiety à END_TIME - 2 minutes
+        try:
+            audio_manager = self.scene_manager.context.get("audio_manager")
+            if audio_manager and self.game_clock:
+                # Démarrer Lobby Time
+                audio_manager.set_music_volume(0.6)
+                audio_manager.play_music("lobby_time", loop=-1)
+
+                # Calculer l'heure cible (END_TIME - 2 minutes)
+                from datetime import timedelta
+                target_dt = self.game_clock.end_time - timedelta(minutes=2)
+                target_str = target_dt.strftime("%H:%M")
+
+                def _switch_to_anxiety(_payload=None):
+                    try:
+                        audio_manager.play_music("anxiety", loop=-1)
+                    except Exception:
+                        pass
+
+                from src.core.event_bus import event_bus as _bus
+                _bus.subscribe(f"TIME_REACHED:{target_str}", _switch_to_anxiety)
+                self._subscriptions.append((f"TIME_REACHED:{target_str}", _switch_to_anxiety))
+        except Exception:
+            pass
+
         # Charger l'étage initial
         if self.building and self.entity_manager:
             player = self.entity_manager.get_player()
@@ -270,10 +298,17 @@ class GameplayScene(Scene):
         
         # Mettre à jour le mouvement des NPCs
         self.npc_movement_manager.update(dt)
+<<<<<<< HEAD
         
         # Mettre à jour les sons d'ambiance spécifiques au gameplay
         self._update_ambient_sounds(dt)
         
+=======
+
+        # Mettre à jour les sons d'ambiance spécifiques au gameplay
+        self._update_ambient_sounds(dt)
+
+>>>>>>> 96087c45b2a94f683a44a3a6a6c841774bc80c82
         # Générer des conversations aléatoires (seulement pour les NPCs en mouvement)
         if self.entity_manager:
             import time
@@ -293,6 +328,18 @@ class GameplayScene(Scene):
         # Gérer les interactions
         self._handle_interactions()
         
+        # Fallback robuste: basculer la musique quand il reste <= 2 minutes in-game
+        try:
+            if self.game_clock and not self._music_switch_done:
+                remaining = self.game_clock.get_remaining_time().total_seconds()
+                if remaining <= 120:
+                    audio_manager = self.scene_manager.context.get("audio_manager")
+                    if audio_manager:
+                        audio_manager.play_music("anxiety", loop=-1)
+                        self._music_switch_done = True
+        except Exception:
+            pass
+
         # Vérifier les conditions de fin
         self._check_game_end_conditions()
 
@@ -510,11 +557,9 @@ class GameplayScene(Scene):
 
             # ➊ Prendre d'abord le PNJ runtime classique
             npc_obj = self._get_runtime_npc(npc_id)
-            
             # ➋ Sinon, tenter le PNJ fixe enregistré par le manager
             if not npc_obj and hasattr(self.npc_movement_manager, "static_npcs"):
                 npc_obj = self.npc_movement_manager.static_npcs.get(npc_id)
-
             if not npc_obj:
                 if self.notification_manager:
                     self.notification_manager.add_notification("...il n'y a personne ici.", 1.5)
@@ -535,7 +580,11 @@ class GameplayScene(Scene):
                             # Jouer le son de tâche terminée
                             if hasattr(self.scene_manager, 'app') and hasattr(self.scene_manager.app, 'audio_manager'):
                                 self.scene_manager.app.audio_manager.play_sound("task_complete")
+<<<<<<< HEAD
                             
+=======
+
+>>>>>>> 96087c45b2a94f683a44a3a6a6c841774bc80c82
                             # Chaînage des tâches
                             if npc_id == "boss_reed" and task.id == "M1":
                                 self.task_manager.offer_task("chat_with_jim")
@@ -545,14 +594,29 @@ class GameplayScene(Scene):
                                 if self.task_manager.is_task_available("M5"):
                                     self.task_manager.offer_task("M5")
                                 return
-                                # Afficher le dialogue du NPC après la complétion de la tâche (sauf cas spéciaux déjà gérés)
-                            key = dialogue_key or self._infer_dialogue_key_from_name(name)
-                            if key and "dialogues" in self.strings and key in self.strings["dialogues"]:
-                                self.speech_bubbles.speak_from_dict(self.strings, ["dialogues", key], npc_obj, color=(200, 200, 255))
-                            else:
-                                phrase = random.choice(self.speech_bubbles.random_phrases)
-                                self.speech_bubbles.add_bubble(phrase, npc_obj, 3.0, (200, 200, 255))
-                            return
+                            # Ajout : compléter M6 (remettre les documents au boss) si disponible
+                            elif npc_id == "boss_reed" and task.id == "M6":
+                                # M6 est une tâche de livraison, mais on permet de la compléter ici si le flag est présent
+                                self.speech_bubbles.speak_from_dict(self.strings, ["dialogues", "boss_reed_after_M5"], npc_obj, color=(200, 200, 255))
+                                self.notification_manager.add_notification("Le boss a reçu les documents.", 3.0)
+                                # Offrir la tâche M7 (arroser la plante) si disponible
+                                if self.task_manager.is_task_available("M7"):
+                                    self.task_manager.offer_task("M7")
+                                return
+                            if npc_id == "jim_halpert_it" and task.id == "chat_with_jim":
+                                self.speech_bubbles.speak_from_dict(self.strings, ["dialogues", "jim_offer_M3"], npc_obj, color=(200, 200, 255))
+                                if self.task_manager.is_task_available("M3"):
+                                    self.task_manager.offer_task("M3")
+                                return
+
+                            # Afficher le dialogue du NPC après la complétion de la tâche (sauf cas spéciaux déjà gérés)
+                        key = dialogue_key or self._infer_dialogue_key_from_name(name)
+                        if key and "dialogues" in self.strings and key in self.strings["dialogues"]:
+                            self.speech_bubbles.speak_from_dict(self.strings, ["dialogues", key], npc_obj, color=(200, 200, 255))
+                        else:
+                            phrase = random.choice(self.speech_bubbles.random_phrases)
+                            self.speech_bubbles.add_bubble(phrase, npc_obj, 3.0, (200, 200, 255))
+                        return
 
             # PRIORITÉ 2: Dialogues contextuels selon l'état des tâches
             if npc_id == "boss_reed" and self.task_manager and self.speech_bubbles and npc_obj:
@@ -570,10 +634,8 @@ class GameplayScene(Scene):
                     self.speech_bubbles.speak_from_dict(self.strings, ["dialogues", "boss_morning"], npc_obj, color=(200, 255, 200))
                 return
 
-            print(npc_id)
             # PNJ Kelly : gestion de la quête café
             if npc_id == "kelly_kapoor_marketing" and self.task_manager:
-                print(1)
                 # Si la quête café n'est pas connue, l'offrir et afficher le bon dialogue
                 if not self.task_manager.is_task_available("kelly_coffee_quest") and not self.task_manager.is_task_completed("kelly_coffee_quest"):
                     self.task_manager.offer_task("kelly_coffee_quest")
@@ -585,9 +647,7 @@ class GameplayScene(Scene):
                     return
                 # Si le joueur a le café, offrir la livraison
                 elif self.task_manager.is_task_available("kelly_give_coffee"):
-                    print(2)
                     self.task_manager.complete_task("kelly_give_coffee")
-                    print(self.strings)
                     self.speech_bubbles.speak_from_dict(self.strings, ["dialogues", "kelly_receive_coffee"], npc_obj, color=(200, 255, 200))
                     return
                 # Si la quête café est terminée, Kelly dit bonjour normalement
@@ -595,8 +655,8 @@ class GameplayScene(Scene):
                     self.speech_bubbles.speak_from_dict(self.strings, ["dialogues", "kelly_morning"], npc_obj, color=(200, 255, 200))
                     return
 
-            # PNJ Alex : retour après M3
-            if npc_id == "alex" and self.task_manager and self.task_manager.is_task_completed("M3") and self.speech_bubbles and npc_obj:
+            # PNJ Jim : retour après M3
+            if npc_id == "jim_halpert_it" and self.task_manager and self.task_manager.is_task_completed("M3") and self.speech_bubbles and npc_obj:
                 self.speech_bubbles.add_bubble("Nickel, la compta te remercie.", npc_obj, 2.5, (200, 255, 200))
                 return
 
@@ -663,6 +723,17 @@ class GameplayScene(Scene):
                     # Donner la tâche de donner le café à Kelly
                     if not self.task_manager.is_task_available("kelly_give_coffee"):
                         self.task_manager.offer_task("kelly_give_coffee")
+                    return
+            # --- Ajout logique spéciale pour la tâche d'impression des documents du boss (M5) ---
+            if kind == "printer" and self.task_manager:
+                # Si la tâche M5 (imprimer les documents) est disponible
+                if self.task_manager.is_task_available("M5"):
+                    self.task_manager.complete_task("M5")
+                    self.flags.add("has_boss_docs")
+                    self.notification_manager.add_notification("Les documents du boss ont été imprimés.", 2.0)
+                    # Offrir la tâche M7 (remettre les documents au boss) si elle est disponible
+                    if self.task_manager.is_task_available("M6"):
+                        self.task_manager.offer_task("M6")
                     return
 
             # Interaction avec objet - nouveau système avec actions
@@ -745,7 +816,7 @@ class GameplayScene(Scene):
                         success = self.task_manager.complete_task(task.id)
                     if success:
                         self.notification_manager.add_notification(f"Tâche terminée : {task.title}", 3.0)
-                        
+
                         # Messages spécifiques selon le type avec sons et bulles
                         if kind == "plant":
                             self.notification_manager.add_notification("Plante arrosée !", 2.0)
@@ -790,7 +861,7 @@ class GameplayScene(Scene):
                     elif kind in ("trash",):
                         hint = "Je n'ai rien à déposer."
                     elif kind in ("printer",):
-                        hint = "Alex doit d'abord me briefer."
+                        hint = "C'est une imprimante."
                     elif kind in ("coffee",):
                         hint = "Pas le moment."
                     elif kind in ("papers",):
@@ -960,58 +1031,67 @@ class GameplayScene(Scene):
         # Mettre à jour la caméra pour suivre le nouvel étage
         if success:
             self._update_camera_for_floor(new_floor)
+<<<<<<< HEAD
             
+=======
+
+>>>>>>> 96087c45b2a94f683a44a3a6a6c841774bc80c82
             # Jouer les sons d'ascenseur
             if hasattr(self.scene_manager, 'app') and hasattr(self.scene_manager.app, 'audio_manager'):
                 audio_manager = self.scene_manager.app.audio_manager
                 audio_manager.play_sound("elevator_ding")  # Son d'arrivée
                 audio_manager.play_sound("elevator_door_close")  # Son de fermeture des portes
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> 96087c45b2a94f683a44a3a6a6c841774bc80c82
     def _check_game_end_conditions(self):
         """Vérifie les conditions de fin de jeu."""
         if self.game_clock and self.game_clock.is_deadline():
-            logger.info("Game deadline reached, transitioning to summary")
-            try:
-                screen = pygame.display.get_surface()
-                if screen:
-                    # Effet de shake simplifié
-                    self.shake_screen(screen, duration=0.5, intensity=8)
-                    # Transition fade simple
-                    self._fade_up(screen, duration_ms=800, color=(0, 0, 0))
-                    # Vidéo finale si disponible
-                    if MOVIEPY_AVAILABLE:
-                        self.play_final_video(screen)
-            except Exception as e:
-                logger.error(f"Error during end transition: {e}")
-            finally:
-                # Toujours passer au résumé même en cas d'erreur
-                stats = self._gather_session_stats()
-                self.switch_to("summary", stats=stats)
+            logger.info("Game deadline reached, shaking then fade up then playing final video then going to summary")
+            screen = pygame.display.get_surface()
+            if screen:
+                # Couper toute l'audio (musique et SFX) avant la séquence finale
+                try:
+                    audio_manager = self.scene_manager.context.get("audio_manager")
+                    if audio_manager:
+                        audio_manager.stop_music()
+                    pygame.mixer.stop()
+                except Exception:
+                    pass
+                self.shake_screen(screen, duration=2.5, intensity=15)
+                self._fade_up(screen, duration_ms=1200, color=(0, 0, 0))
+                self.play_final_video(screen)
+            stats = self._gather_session_stats()
+            self.switch_to("summary", stats=stats)
 
     def _fade_up(self, screen, duration_ms=900, color=(0, 0, 0)):
         """Transition fade up (noir qui monte du bas vers le haut)."""
-        try:
-            W, H = screen.get_size()
-            clock = pygame.time.Clock()
-            t0 = pygame.time.get_ticks()
-            running = True
-            while running:
-                t = (pygame.time.get_ticks() - t0) / duration_ms
-                if t >= 1.0:
-                    t = 1.0
-                    running = False
-                h = int(H * t)
-                overlay = pygame.Surface((W, h))
-                overlay.fill(color)
-                screen.blit(overlay, (0, H - h))
-                pygame.display.flip()
-                clock.tick(60)
-        except Exception as e:
-            logger.error(f"Error during fade transition: {e}")
+        W, H = screen.get_size()
+        clock = pygame.time.Clock()
+        t0 = pygame.time.get_ticks()
+        running = True
+        while running:
+            t = (pygame.time.get_ticks() - t0) / duration_ms
+            if t >= 1.0:
+                t = 1.0
+                running = False
+            h = int(H * t)
+            overlay = pygame.Surface((W, h))
+            overlay.fill(color)
+            screen.blit(overlay, (0, H - h))
+            pygame.display.flip()
+            clock.tick(60)
 
-    def shake_screen(self, screen, duration=0.7, intensity=12):
-        """Effet de tremblement sur tout l'écran avant la vidéo de fin."""
+    def shake_screen(self, screen, duration=1.5, intensity=12, sound_path="assets/sfx/tremblement.mp3"):
+        """Effet de tremblement sur tout l'écran avec un son."""
         try:
+            # Charger et jouer le son de tremblement
+            pygame.mixer.init()
+            shake_sound = pygame.mixer.Sound(sound_path)
+            shake_sound.play(-1)  # -1 pour boucle pendant la durée
+
             clock = pygame.time.Clock()
             start = time.time()
             original = screen.copy()
@@ -1022,37 +1102,41 @@ class GameplayScene(Scene):
                 screen.blit(original, (offset_x, offset_y))
                 pygame.display.flip()
                 clock.tick(60)
+            shake_sound.stop()
         except Exception as e:
             logger.error(f"Error during screen shake: {e}")
 
     def play_final_video(self, screen):
-        """Joue la vidéo finale avant le résumé."""
-        if not MOVIEPY_AVAILABLE:
-            logger.warning("MoviePy not available, skipping final video")
-            return
+        """Joue la vidéo finale avec le son avant le résumé."""
 
-        try:
-            BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
-            video_path = os.path.join(BASE_DIR, "assets", "final.mp4")
-            if not os.path.exists(video_path):
-                logger.warning(f"Final video not found at {video_path}")
-                return
+        video_path = os.path.join("assets", "final.mp4")
+        clip = mpy.VideoFileClip(video_path)
 
-            clip = mpy.VideoFileClip(video_path)
-            for frame in clip.iter_frames(fps=24, dtype="uint8"):
-                surf = pygame.surfarray.make_surface(frame.swapaxes(0, 1))
-                surf = pygame.transform.scale(surf, (WIDTH, HEIGHT))
-                screen.blit(surf, (0, 0))
-                pygame.display.flip()
-                for event in pygame.event.get():
-                    if event.type == pygame.QUIT:
-                        pygame.quit()
-                        return
-                time.sleep(1 / 24)
-            clip.close()
-        except Exception as e:
-            logger.error(f"Error playing final video: {e}")
-    
+        # Exporter l'audio dans un fichier temporaire WAV
+        with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp_audio:
+            audio_path = tmp_audio.name
+        clip.audio.write_audiofile(audio_path, fps=44100, logger=None)
+        # Charger et jouer l'audio avec pygame
+        pygame.mixer.init(frequency=44100)
+        sound = pygame.mixer.Sound(audio_path)
+        sound.play()
+
+        # Afficher la vidéo
+        for frame in clip.iter_frames(fps=24, dtype="uint8"):
+            surf = pygame.surfarray.make_surface(frame.swapaxes(0, 1))
+            surf = pygame.transform.scale(surf, (WIDTH, HEIGHT))
+            screen.blit(surf, (0, 0))
+            pygame.display.flip()
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    return
+            time.sleep(1 / 24)
+
+        clip.close()
+        sound.stop()
+        os.remove(audio_path)
+
     def draw(self, screen):
         """Dessine la scène."""
         # Fond noir
@@ -1151,7 +1235,11 @@ class GameplayScene(Scene):
             # 3. Dessiner les objets de l'étage (nouveau système)
             for obj_data in floor.objects:
                 self._draw_floor_object(screen, obj_data, screen_y, floor_height)
+<<<<<<< HEAD
             
+=======
+
+>>>>>>> 96087c45b2a94f683a44a3a6a6c841774bc80c82
             # 4. Dessiner le joueur s'il est sur cet étage et pas dans l'ascenseur
             if floor_num == current_floor and self.entity_manager:
                 player = self.entity_manager.get_player()
@@ -1165,18 +1253,26 @@ class GameplayScene(Scene):
                     baseline_y = screen_y + floor_height - 1
                     player_y = baseline_y - player_sprite.get_height()
                     screen.blit(player_sprite, (player_x, player_y))
-            
+
                     # Ancre pour les bulles (au sommet de la tête, centré)
                     player._bubble_anchor_x = player_x + player_sprite.get_width() // 2
                     player._bubble_anchor_y = player_y
+<<<<<<< HEAD
             
+=======
+
+>>>>>>> 96087c45b2a94f683a44a3a6a6c841774bc80c82
             # 4. Dessiner les objets interactifs legacy (compatibilité) - sur tous les étages
             if self.entity_manager:
                 # Objets interactifs legacy
                 for obj in self.entity_manager.interactables.values():
                     if getattr(obj, 'current_floor', current_floor) == floor_num:
                         self._draw_legacy_object(screen, obj, screen_y, floor_height)
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> 96087c45b2a94f683a44a3a6a6c841774bc80c82
             # 5. Dessiner les NPCs en mouvement (nouveau système)
             for movement in self.npc_movement_manager.npc_movements.values():
                 npc = movement.npc
@@ -1581,7 +1677,7 @@ class GameplayScene(Scene):
                 self.scene_manager.app.audio_manager.play_sound(sound_id)
         except Exception as e:
             logger.debug(f"Could not play sound {sound_id}: {e}")
-    
+
     def _update_ambient_sounds(self, dt: float):
         """Met à jour les sons d'ambiance spécifiques au gameplay."""
         try:
@@ -1593,34 +1689,34 @@ class GameplayScene(Scene):
                 self._phone_ring_timer = random.uniform(60.0, 120.0)  # 1-2 minutes au début
                 self._keyboard_timer = random.uniform(15.0, 30.0)  # 15-30 secondes au début
                 self._coffee_timer = random.uniform(60.0, 120.0)  # 1-2 minutes au début
-            
+
             # Timer général pour les sons d'ambiance
             self._ambient_timer += dt
-            
+
             # Sons de téléphone qui sonne aléatoires (toutes les 1-3 minutes)
             self._phone_ring_timer -= dt
             if self._phone_ring_timer <= 0 and random.random() < 0.15:  # 15% de chance
                 self._play_sound("phone_ring")
                 self._phone_ring_timer = random.uniform(60.0, 180.0)  # 1-3 minutes
-            
+
             # Sons de téléphone décroché aléatoires (toutes les 45 secondes - 2 minutes)
             self._phone_timer -= dt
             if self._phone_timer <= 0 and random.random() < 0.2:  # 20% de chance
                 self._play_sound("phone_pickup")
                 self._phone_timer = random.uniform(45.0, 120.0)  # 45s-2 minutes
-            
+
             # Sons de clavier aléatoires (toutes les 20-60 secondes)
             self._keyboard_timer -= dt
             if self._keyboard_timer <= 0 and random.random() < 0.4:  # 40% de chance
                 self._play_sound("keyboard_typing")
                 self._keyboard_timer = random.uniform(20.0, 60.0)  # 20-60 secondes
-            
+
             # Sons de café aléatoires (toutes les 1-3 minutes)
             self._coffee_timer -= dt
             if self._coffee_timer <= 0 and random.random() < 0.08:  # 8% de chance
                 self._play_sound("coffee_sip")
                 self._coffee_timer = random.uniform(60.0, 180.0)  # 1-3 minutes
-            
+
         except Exception as e:
             logger.debug(f"Error updating ambient sounds: {e}")
 
@@ -1705,7 +1801,7 @@ class GameplayScene(Scene):
         return self.runtime_npcs.get(npc_id)
 
     def _infer_dialogue_key_from_name(self, name: str) -> Optional[str]:
-        """Infère la clé de dialogue à partir du nom du NPC."""
+        """Infère la clé de dialogue à partir du nom du PNJ."""
         if not name:
             return None
         n = name.lower()
@@ -1757,7 +1853,7 @@ class GameplayScene(Scene):
             # Démarrer l'ambiance sonore
             sound = asset_manager.get_sound("office_ambiance")
             if sound:
-                sound.set_volume(0.7)  # Volume augmenté pour l'ambiance
+                sound.set_volume(0.15)
                 sound.play(-1)  # Boucle infinie
                 logger.info("Office ambiance started successfully")
             else:
@@ -1869,7 +1965,7 @@ class GameplayScene(Scene):
         screen.blit(elevator_scaled, (elevator_x - new_width // 2, elevator_y))
 
     def _infer_dialogue_key_from_name(self, name: str) -> str:
-        """Infère une clé de dialogue basée sur le nom du NPC."""
+        """Infère une clé de dialogue basée sur le nom du PNJ."""
         name_lower = name.lower()
 
         # Correspondances directes

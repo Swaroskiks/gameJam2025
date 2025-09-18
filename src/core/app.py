@@ -70,6 +70,8 @@ class Game:
             self._register_scenes()
             # Partager l'horloge globale et timeline avec les scènes
             self.scene_manager.context["game_clock"] = self.game_clock
+            # Exposer l'audio manager pour les scènes
+            self.scene_manager.context["audio_manager"] = self.audio_manager
             try:
                 from src.core.timeline import TimelineController
                 self.timeline = TimelineController()
