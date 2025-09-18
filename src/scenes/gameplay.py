@@ -942,7 +942,7 @@ class GameplayScene(Scene):
         visible_floors.sort()
         
         # Dessiner chaque étage visible (du plus haut au plus bas à l'écran)
-        for i, floor_num in enumerate(reversed(visible_floors)):  # Inverser pour avoir le plus haut en haut
+        for i, floor_num in enumerate(reversed(visible_floors)): # Inverser pour avoir le plus haut en haut
             floor = self.building.get_floor(floor_num)
             if not floor:
                 continue
@@ -989,32 +989,15 @@ class GameplayScene(Scene):
             # 2. Dessiner les objets de l'étage (nouveau système)
             for obj_data in floor.objects:
                 self._draw_floor_object(screen, obj_data, screen_y, floor_height)
-            
-            # 3. Dessiner le joueur s'il est sur cet étage
-            if floor_num == current_floor and self.entity_manager:
-                player = self.entity_manager.get_player()
-                if player:
-                    player_sprite = asset_manager.get_image("player_idle")
-                    # Utiliser la taille définie dans le manifest (pas de redimensionnement automatique)
-                    # Le sprite est déjà redimensionné par l'AssetManager selon assets_manifest.json
-                    player_x = player.x - player_sprite.get_width() // 2
-                    # Positionner le joueur au sol avec baseline cohérente
-                    baseline_y = screen_y + floor_height - 1
-                    player_y = baseline_y - player_sprite.get_height()
-                    screen.blit(player_sprite, (player_x, player_y))
 
-                    # Ancre pour les bulles (au sommet de la tête, centré)
-                    player._bubble_anchor_x = player_x + player_sprite.get_width() // 2
-                    player._bubble_anchor_y = player_y
-
-            # 4. Dessiner les objets interactifs legacy (compatibilité) - sur tous les étages
+            # 3. Dessiner les objets interactifs legacy (compatibilité) - sur tous les étages
             if self.entity_manager:
                 # Objets interactifs legacy
                 for obj in self.entity_manager.interactables.values():
                     if getattr(obj, 'current_floor', current_floor) == floor_num:
                         self._draw_legacy_object(screen, obj, screen_y, floor_height)
 
-            # 5. Dessiner les NPCs en mouvement (nouveau système)
+            # 4. Dessiner les NPCs en mouvement (nouveau système)
             for movement in self.npc_movement_manager.npc_movements.values():
                 npc = movement.npc
                 if hasattr(npc, 'current_floor') and npc.current_floor == floor_num:
@@ -1031,7 +1014,7 @@ class GameplayScene(Scene):
                     npc._bubble_anchor_x = npc_x + npc_sprite.get_width() // 2
                     npc._bubble_anchor_y = npc_y
 
-            # 5b. Dessiner les PNJ FIXES (boss, réception, etc.)
+            # 4b. Dessiner les PNJ FIXES (boss, réception, etc.)
             for npc in getattr(self.npc_movement_manager, "static_npcs", {}).values():
                 if hasattr(npc, 'current_floor') and npc.current_floor == floor_num:
                     sprite_key = getattr(npc, 'sprite_key', 'npc_generic')
@@ -1042,6 +1025,22 @@ class GameplayScene(Scene):
                     screen.blit(npc_sprite, (npc_x, npc_y))
                     npc._bubble_anchor_x = npc_x + npc_sprite.get_width() // 2
                     npc._bubble_anchor_y = npc_y
+
+            # 5. Dessiner le joueur s'il est sur cet étage
+            if floor_num == current_floor and self.entity_manager:
+                player = self.entity_manager.get_player()
+                if player:
+                    player_sprite = asset_manager.get_image("player_idle")
+                    # Offset pour aligner les pieds du joueur avec le sol
+                    player_foot_offset = 55
+                    player_x = player.x - player_sprite.get_width() // 2
+                    baseline_y = screen_y + floor_height - 1
+                    player_y = baseline_y - player_sprite.get_height() + player_foot_offset
+                    screen.blit(player_sprite, (player_x, player_y))
+
+                    # Ancre pour les bulles (au sommet de la tête, centré)
+                    player._bubble_anchor_x = player_x + player_sprite.get_width() // 2
+                    player._bubble_anchor_y = player_y
 
     def _draw_floor_object(self, screen, obj_data: dict, screen_y: int, floor_height: int) -> None:
         """
@@ -1528,3 +1527,4 @@ class GameplayScene(Scene):
                 self.notification_manager.add_notification(str(effect["toast"]), 2.0)
         except Exception:
             pass
+
