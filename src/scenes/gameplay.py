@@ -133,6 +133,9 @@ class GameplayScene(Scene):
         # Initialiser le mouvement des NPCs
         self._setup_npc_movement()
         
+        # Démarrer l'ambiance sonore de travail
+        self._start_office_ambiance()
+        
         logger.info("Gameplay started")
     
     def _load_world(self) -> bool:
@@ -790,9 +793,11 @@ class GameplayScene(Scene):
             if not getattr(player, 'in_elevator', False):
                 # Faire entrer le joueur dans l'ascenseur
                 player.in_elevator = True
+                self._play_sound("elevator_door")  # Son de fermeture des portes en entrée
             else:
                 # Faire sortir le joueur de l'ascenseur
                 player.in_elevator = False
+                self._play_sound("elevator_bell")  # Son de cloche en sortie
     
     def _handle_elevator_call(self, player):
         """
@@ -1524,8 +1529,39 @@ class GameplayScene(Scene):
             sound = asset_manager.get_sound(sound_key)
             if sound:
                 sound.play()
+                logger.info(f"Playing sound: {sound_key}")
+            else:
+                logger.warning(f"Sound not found: {sound_key}")
         except Exception as e:
-            logger.debug(f"Could not play sound {sound_key}: {e}")
+            logger.error(f"Could not play sound {sound_key}: {e}")
+    
+    def _start_office_ambiance(self) -> None:
+        """Démarre l'ambiance sonore du bureau."""
+        try:
+            from src.core.assets import asset_manager
+            
+            # Démarrer l'ambiance sonore
+            sound = asset_manager.get_sound("office_ambiance")
+            if sound:
+                sound.set_volume(0.7)  # Volume augmenté pour l'ambiance
+                sound.play(-1)  # Boucle infinie
+                logger.info("Office ambiance started successfully")
+            else:
+                logger.warning("Office ambiance sound not found")
+            
+            # Démarrer la musique Lucky Moments en arrière-plan comme SFX
+            # Temporairement désactivé pour tester le volume
+            # bg_music = asset_manager.get_sound("lucky_moments_bg")
+            # if bg_music:
+            #     bg_music.set_volume(0.01)  # Volume très très faible (1%)
+            #     bg_music.play(-1)  # Boucle infinie
+            #     logger.info("Lucky Moments background music started at volume 0.01")
+            # else:
+            #     logger.warning("Lucky Moments background music not found")
+            logger.info("Lucky Moments background music temporarily disabled")
+                
+        except Exception as e:
+            logger.error(f"Could not start office ambiance: {e}")
 
     def _apply_effect(self, effect: dict) -> None:
         """Applique un effet simple: set_flag, offer_task, discover_task, complete_task, add_rep, toast."""
