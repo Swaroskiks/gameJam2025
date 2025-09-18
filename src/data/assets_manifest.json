@@ -4,8 +4,8 @@
   "images": {
     "player_idle": {
       "path": "sprites/player_idle.png",
-      "frame_w": 384,
-      "frame_h": 576,
+      "frame_w": 73,
+      "frame_h": 109,
       "description": "Joueur au repos"
     },
     "elevator": {
@@ -60,68 +60,98 @@
     },
     "npc_generic": {
       "path": "sprites/npc_generic.png",
-      "frame_w": 96,
-      "frame_h": 144,
+      "frame_w": 125,
+      "frame_h": 187,
       "description": "NPC générique"
     },
     "employee_1": {
       "path": "sprites/employee_1.png",
-      "frame_w": 56,
-      "frame_h": 84,
-      "description": "Employé 1"
+      "frame_w": 73,
+      "frame_h": 109,
+      "description": "Ryan Howard - IT"
     },
     "employee_2": {
       "path": "sprites/employee_2.png",
-      "frame_w": 56,
-      "frame_h": 84,
-      "description": "Employé 2"
+      "frame_w": 73,
+      "frame_h": 109,
+      "description": "Dwight Schrute - Assistant manager"
     },
     "employee_3": {
       "path": "sprites/employee_3.png",
-      "frame_w": 56,
-      "frame_h": 84,
-      "description": "Employé 3"
+      "frame_w": 73,
+      "frame_h": 109,
+      "description": "Jim Halpert - Commercial"
     },
     "employee_4": {
       "path": "sprites/employee_4.png",
-      "frame_w": 56,
-      "frame_h": 84,
-      "description": "Employé 4"
+      "frame_w": 73,
+      "frame_h": 109,
+      "description": "Sprite du joueur (Ryan Howard)"
     },
     "employee_5": {
       "path": "sprites/employee_5.png",
-      "frame_w": 56,
-      "frame_h": 84,
-      "description": "Employé 5"
+      "frame_w": 73,
+      "frame_h": 109,
+      "description": "Angela Martin - Comptable principale"
     },
     "employee_6": {
       "path": "sprites/employee_6.png",
-      "frame_w": 56,
-      "frame_h": 84,
-      "description": "Employé 6"
+      "frame_w": 73,
+      "frame_h": 109,
+      "description": "Kelly Kapoor - Service client"
     },
     "employee_7": {
       "path": "sprites/employee_7.png",
-      "frame_w": 56,
-      "frame_h": 84,
-      "description": "Employé 7"
+      "frame_w": 73,
+      "frame_h": 109,
+      "description": "Kevin Malone - Comptable"
     },
     "employee_8": {
       "path": "sprites/employee_8.png",
-      "frame_w": 56,
-      "frame_h": 84,
-      "description": "Employé 8"
+      "frame_w": 73,
+      "frame_h": 109,
+      "description": "Meredith Palmer - Marketing"
     },
     "employee_9": {
       "path": "sprites/employee_9.png",
-      "frame_w": 56,
-      "frame_h": 84,
-      "description": "Employé 9"
+      "frame_w": 73,
+      "frame_h": 109,
+      "description": "Phyllis Vance - Commerciale"
+    },
+    "employee_10": {
+      "path": "sprites/employee_10.png",
+      "frame_w": 73,
+      "frame_h": 109,
+      "description": "Creed Bratton - Comptable"
+    },
+    "employee_11": {
+      "path": "sprites/employee_11.png",
+      "frame_w": 73,
+      "frame_h": 109,
+      "description": "Toby Flenderson - RH"
+    },
+    "employee_12": {
+      "path": "sprites/employee_12.png",
+      "frame_w": 73,
+      "frame_h": 109,
+      "description": "Oscar Martinez - Comptable"
+    },
+    "employee_13": {
+      "path": "sprites/employee_13.png",
+      "frame_w": 73,
+      "frame_h": 109,
+      "description": "Employee 13 - Réceptionniste"
+    },
+    "employee_14": {
+      "path": "sprites/employee_14.png",
+      "frame_w": 73,
+      "frame_h": 109,
+      "description": "Erin Hannon - Réceptionniste"
     },
     "boss": {
       "path": "sprites/boss.png",
-      "frame_w": 160,
-      "frame_h": 240,
+      "frame_w": 208,
+      "frame_h": 312,
       "description": "Boss Reed"
     },
     "water_dispenser": {
@@ -168,8 +198,8 @@
     },
     "npc_guard": {
       "path": "sprites/npc_guard.png",
-      "frame_w": 32,
-      "frame_h": 48,
+      "frame_w": 42,
+      "frame_h": 62,
       "description": "Agent de sécurité"
     },
     "interactable_plant": {
@@ -204,8 +234,8 @@
     },
     "receptionist": {
       "path": "sprites/receptionist.png",
-      "frame_w": 72,
-      "frame_h": 108,
+      "frame_w": 226,
+      "frame_h": 336,
       "description": "Réceptionniste"
     },
     "desk": {
@@ -266,8 +296,8 @@
   "spritesheets": {
     "player_walk": {
       "path": "sprites/player_walk.png",
-      "frame_w": 96,
-      "frame_h": 144,
+      "frame_w": 73,
+      "frame_h": 109,
       "fps": 8,
       "frames": 4,
       "description": "Animation marche du joueur"

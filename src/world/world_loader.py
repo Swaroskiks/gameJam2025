@@ -35,7 +35,7 @@ class WorldLoader:
         self.is_loaded = False
         self.load_errors: list[str] = []
         
-        # Sprites d'employés disponibles pour la randomisation
+        # Sprites d'employés disponibles pour la randomisation (désactivé)
         self.available_employee_sprites = [
             "employee_1", "employee_2", "employee_3", "employee_4", "employee_5",
             "employee_6", "employee_7", "employee_8", "employee_9"
@@ -126,51 +126,55 @@ class WorldLoader:
             return
         
         try:
-            # Collecter tous les NPCs qui n'ont pas de sprite_key spécifique
-            npcs_to_randomize = []
-            for floor in self.building.floors.values():
-                # Vérifier les NPCs dans le nouveau système objects
-                for obj in floor.objects:
-                    if obj.get("kind") == "npc":
-                        props = obj.get("props", {})
-                        sprite_key = props.get("sprite_key", "npc_generic")
-                        # Si le NPC n'a pas de sprite_key spécifique, le marquer pour randomisation
-                        if sprite_key == "npc_generic":
-                            npcs_to_randomize.append(obj)
-                
-                # Vérifier aussi les NPCs legacy
-                for npc in floor.npcs:
-                    # Si le NPC n'a pas de sprite_key ou utilise npc_generic, le randomiser
-                    if not hasattr(npc, 'sprite_key') or npc.sprite_key == "npc_generic":
-                        npcs_to_randomize.append(npc)
+            # DÉSACTIVÉ: Système de randomisation des sprites d'employés
+            # Les sprites sont maintenant assignés spécifiquement dans floors.json
+            # # Collecter tous les NPCs qui n'ont pas de sprite_key spécifique
+            # npcs_to_randomize = []
+            # for floor in self.building.floors.values():
+            #     # Vérifier les NPCs dans le nouveau système objects
+            #     for obj in floor.objects:
+            #         if obj.get("kind") == "npc":
+            #             props = obj.get("props", {})
+            #             sprite_key = props.get("sprite_key", "npc_generic")
+            #             # Si le NPC n'a pas de sprite_key spécifique, le marquer pour randomisation
+            #             if sprite_key == "npc_generic":
+            #                 npcs_to_randomize.append(obj)
+            #     
+            #     # Vérifier aussi les NPCs legacy
+            #     for npc in floor.npcs:
+            #         # Si le NPC n'a pas de sprite_key ou utilise npc_generic, le randomiser
+            #         if not hasattr(npc, 'sprite_key') or npc.sprite_key == "npc_generic":
+            #             npcs_to_randomize.append(npc)
+            # 
+            # # Mélanger la liste des sprites disponibles
+            # available_sprites = self.available_employee_sprites.copy()
+            # random.shuffle(available_sprites)
+            # 
+            # # Assigner aléatoirement les sprites
+            # for i, npc in enumerate(npcs_to_randomize):
+            #     if i < len(available_sprites):
+            #         sprite = available_sprites[i]
+            #     else:
+            #         # Si on a plus de sprites que de NPCs, réutiliser les sprites
+            #         sprite_index = i % len(available_sprites)
+            #         sprite = available_sprites[sprite_index]
+            #     
+            #     # Assigner le sprite selon le type de NPC
+            #     if isinstance(npc, dict):
+            #         # Nouveau système objects
+            #         if "props" not in npc:
+            #             npc["props"] = {}
+            #         npc["props"]["sprite_key"] = sprite
+            #         npc_name = npc.get("props", {}).get("name", "Unknown")
+            #         logger.debug(f"Assigned sprite {sprite} to NPC {npc_name}")
+            #     else:
+            #         # Système legacy
+            #         npc.sprite_key = sprite
+            #         logger.debug(f"Assigned sprite {sprite} to NPC {npc.name}")
+            # 
+            # logger.info(f"Randomized sprites for {len(npcs_to_randomize)} NPCs")
             
-            # Mélanger la liste des sprites disponibles
-            available_sprites = self.available_employee_sprites.copy()
-            random.shuffle(available_sprites)
-            
-            # Assigner aléatoirement les sprites
-            for i, npc in enumerate(npcs_to_randomize):
-                if i < len(available_sprites):
-                    sprite = available_sprites[i]
-                else:
-                    # Si on a plus de sprites que de NPCs, réutiliser les sprites
-                    sprite_index = i % len(available_sprites)
-                    sprite = available_sprites[sprite_index]
-                
-                # Assigner le sprite selon le type de NPC
-                if isinstance(npc, dict):
-                    # Nouveau système objects
-                    if "props" not in npc:
-                        npc["props"] = {}
-                    npc["props"]["sprite_key"] = sprite
-                    npc_name = npc.get("props", {}).get("name", "Unknown")
-                    logger.debug(f"Assigned sprite {sprite} to NPC {npc_name}")
-                else:
-                    # Système legacy
-                    npc.sprite_key = sprite
-                    logger.debug(f"Assigned sprite {sprite} to NPC {npc.name}")
-            
-            logger.info(f"Randomized sprites for {len(npcs_to_randomize)} NPCs")
+            logger.info("Sprite randomization disabled - using specific sprites from floors.json")
             
         except Exception as e:
             logger.error(f"Error randomizing employee sprites: {e}")

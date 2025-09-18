@@ -3,7 +3,7 @@
     "start": "n0",
     "nodes": {
       "n0": {
-        "say": "Bonjour. On a une matinée chargée. Passe voir Alex à l'open-space, il a une tâche.",
+        "say": "Bonjour. On a une matinée chargée. Passe voir Jim au service IT, il a une tâche.",
         "choices": [
           {"text": "D'accord.", "goto": "n1", "effects": [{"set_flag": "met_boss"}]}
         ]
@@ -14,7 +14,7 @@
         "end": true
       }
     },
-    "effects": [{"offer_task": "chat_with_alex"}]
+    "effects": [{"offer_task": "chat_with_jim"}]
   },
   "alex": {
     "start": "a0",

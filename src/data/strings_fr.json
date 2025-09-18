@@ -96,7 +96,7 @@
     ],
     "boss_reed": [
       "Bonjour. On a une matinée chargée.",
-      "Passe voir Alex à l'open-space, il a une tâche."
+      "Passe voir Alex au service IT, il a une tâche."
     ],
     "alex": [
       "Parfait que tu sois là. L'imprimante est encore bloquée...",
@@ -104,7 +104,7 @@
     ],
     "maya_morning": [
       "Bonjour ! Belle journée n'est-ce pas ?",
-      "J'adore cette vue depuis les étages élevés.",
+      "J'adore cette vue depuis le service Marketing.",
       "Ça donne envie de bien travailler."
     ],
     "guard_morning": [
@@ -112,13 +112,15 @@
       "C'est important pour la sécurité du bâtiment.",
       "Bonne journée !"
     ],
-    "assistant": [
-      "Bonjour ! Comment puis-je vous aider aujourd'hui ?",
-      "Le boss vous attend dans son bureau.",
-      "N'hésitez pas si vous avez besoin d'assistance."
+    "dwight": [
+      "Salut ! As-tu changé ton mot de passe récemment ?",
+      "J'ai installé 3 nouveaux pare-feu cette semaine !",
+      "Jim ne comprend rien à la sécurité...",
+      "Tu sais, un hacker pourrait infiltrer notre réseau en 2 minutes !",
+      "J'ai créé un système d'alarme pour détecter les intrusions."
     ],
     "boss_reed_after_M1": [
-      "Passe voir Alex à l'open-space.",
+      "Passe voir Alex au service IT.",
       "Il a un souci urgent à régler."
     ],
     "boss_reed_after_M3": [
@@ -174,6 +176,86 @@
     "maya_receive_coffee": [
       "Merci beaucoup ! Tu es un amour.",
       "Bonne journée à toi !"
+    ],
+    "jim": [
+      "Salut ! Ton ordinateur plante encore ?",
+      "J'ai réparé 5 imprimantes cette semaine...",
+      "Dwight pense qu'il peut pirater le système de sécurité...",
+      "Tu sais, l'informatique, c'est 90% de patience et 10% de compétence !",
+      "Oscar et moi, on a créé un nouveau script pour automatiser les sauvegardes."
+    ],
+    "ryan": [
+      "Salut ! Ryan Howard, service IT.",
+      "Je m'occupe de tout ce qui est technologique ici.",
+      "Les ordinateurs, c'est mon truc !"
+    ],
+    "angela": [
+      "Bonjour ! Tu as besoin d'aide avec tes factures ?",
+      "J'ai passé toute la matinée sur ces tableaux Excel...",
+      "Creed a encore fait une erreur dans ses calculs !",
+      "Les budgets de ce trimestre sont catastrophiques...",
+      "Tu sais, la comptabilité, c'est comme un puzzle. Tout doit s'emboîter parfaitement."
+    ],
+    "kevin": [
+      "Salut ! Tu veux voir mes derniers graphiques ?",
+      "J'ai analysé les données de vente du mois dernier...",
+      "Kelly me demande toujours de vérifier ses chiffres !",
+      "Tu sais, les données, c'est comme les cookies... plus on en a, mieux c'est !",
+      "Meredith et moi, on prépare une étude de marché pour le nouveau produit."
+    ],
+    "oscar": [
+      "Salut ! Tu veux voir mon dernier code ?",
+      "J'ai passé la nuit à déboguer cette application...",
+      "Jim et moi, on travaille sur un nouveau projet ensemble.",
+      "Tu sais, programmer, c'est comme écrire de la poésie... mais en plus logique !",
+      "Dwight a encore cassé la base de données avec ses 'améliorations'..."
+    ],
+    "phyllis": [
+      "Salut ! Tu cherches un nouveau poste ?",
+      "J'ai encore 5 CV à examiner...",
+      "Tu sais, recruter, c'est comme faire du shopping... mais pour les compétences !",
+      "J'ai organisé une formation sur la gestion du stress la semaine prochaine.",
+      "Parfois j'ai l'impression d'être la psychologue de tout le monde ici !"
+    ],
+    "michael": [
+      "Salut ! Michael Scott, manager régional.",
+      "Je dirige cette équipe avec passion et humour !",
+      "C'est moi le boss ici, et j'adore ça !"
+    ],
+    "kelly": [
+      "Salut ! Tu as vu notre nouvelle campagne ?",
+      "Kevin et moi, on a créé un super concept !",
+      "J'ai posté 15 stories sur Instagram aujourd'hui...",
+      "Tu sais, le marketing, c'est 50% créativité et 50% café !",
+      "Meredith organise un événement la semaine prochaine, ça va être génial !"
+    ],
+    "meredith": [
+      "Salut ! Tu viens à notre événement vendredi ?",
+      "J'ai organisé 3 réunions cette semaine...",
+      "Kevin et moi, on travaille sur un nouveau projet !",
+      "Tu sais, organiser des événements, c'est comme diriger un orchestre !",
+      "Kelly a encore changé le design de nos flyers à la dernière minute..."
+    ],
+    "creed": [
+      "Salut ! Tu veux voir mes derniers calculs ?",
+      "Angela me fait toujours refaire mes rapports...",
+      "J'ai découvert un bug dans le système comptable !",
+      "Tu sais, j'ai travaillé dans 47 entreprises différentes...",
+      "Les chiffres, c'est comme la musique. Il faut du rythme !"
+    ],
+    "toby": [
+      "Salut ! Tu cherches des infos sur les budgets ?",
+      "J'ai encore des dossiers à classer...",
+      "Angela et moi, on se dispute toujours sur les allocations...",
+      "Tu sais, gérer l'argent des autres, c'est une grande responsabilité.",
+      "J'ai l'impression que personne ne comprend l'importance de la comptabilité !"
+    ],
+    "erin": [
+      "Salut ! Tu cherches quelque chose ?",
+      "Le boss est en réunion, mais je peux t'aider !",
+      "J'ai encore 3 rapports à taper avant ce soir...",
+      "Tu as vu la nouvelle machine à café ? Elle est géniale !",
+      "Parfois j'ai l'impression d'être la seule à faire tourner ce bureau !"
     ]
   },
   "notifications": {
@@ -184,14 +266,10 @@
     "time_warning": "Il est bientôt 08:48..."
   },
   "floors": {
-    "90": "Lobby",
-    "91": "Support Client", 
-    "92": "Ventes",
-    "93": "Marketing",
-    "94": "IT",
     "95": "Ressources Humaines",
-    "96": "Open Space",
-    "97": "Comptabilité",
-    "98": "Direction"
+    "96": "Marketing",
+    "97": "IT",
+    "98": "Finance",
+    "99": "Direction"
   }
 }
