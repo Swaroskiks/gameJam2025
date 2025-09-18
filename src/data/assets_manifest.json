@@ -438,9 +438,24 @@
         "description": "Fermeture des portes d'ascenseur"
       },
       "elevator_bell": {
-        "path": "sfx/elevator bell.mp3",
+        "path": "sfx/elevator_ding.wav",
         "volume": 0.4,
         "description": "Cloche d'ascenseur"
+      },
+      "phone_pickup": {
+        "path": "sfx/phone_pickup.wav",
+        "volume": 0.8,
+        "description": "Son de décrochage de téléphone"
+      },
+      "keyboard_typing": {
+        "path": "sfx/keyboard_typing.wav",
+        "volume": 0.7,
+        "description": "Son de frappe au clavier"
+      },
+      "phone_ring": {
+        "path": "sfx/phone_pickup.wav",
+        "volume": 0.9,
+        "description": "Son de téléphone qui sonne"
       },
       "lucky_moments_bg": {
         "path": "music/Lucky Moments (Remastered).mp3",

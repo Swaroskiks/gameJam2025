@@ -27,7 +27,7 @@ from typing import Optional
 logger = logging.getLogger(__name__)
 
 try:
-    import moviepy as mpy
+    import moviepy.editor as mpy
     MOVIEPY_AVAILABLE = True
 except ImportError:
     MOVIEPY_AVAILABLE = False
@@ -271,6 +271,9 @@ class GameplayScene(Scene):
         
         # Mettre à jour le mouvement des NPCs
         self.npc_movement_manager.update(dt)
+        
+        # Mettre à jour les sons d'ambiance spécifiques au gameplay
+        self._update_ambient_sounds(dt)
         
         # Générer des conversations aléatoires (seulement pour les NPCs en mouvement)
         if self.entity_manager:
@@ -530,8 +533,9 @@ class GameplayScene(Scene):
                                 self.notification_manager.add_notification(f"Tâche terminée : {task.title}", 3.0)
                             if self.speech_bubbles and npc_obj:
                                 self.speech_bubbles.add_bubble("Parfait. On compte sur toi.", npc_obj, 2.5, (200, 255, 200))
-                            if hasattr(self, '_play_sound'):
-                                self._play_sound("ui_click")
+                            # Jouer le son de tâche terminée
+                            if hasattr(self.scene_manager, 'app') and hasattr(self.scene_manager.app, 'audio_manager'):
+                                self.scene_manager.app.audio_manager.play_sound("task_complete")
                             
                             # Chaînage des tâches
                             if npc_id == "boss_reed" and task.id == "M1":
@@ -668,44 +672,44 @@ class GameplayScene(Scene):
                     else:
                         # Action par défaut (interact)
                         success = self.task_manager.complete_task(task.id)
-                        if success:
-                            self.notification_manager.add_notification(f"Tâche terminée : {task.title}", 3.0)
-                            
-                            # Messages spécifiques selon le type avec sons et bulles
-                            if kind == "plant":
-                                self.notification_manager.add_notification("Plante arrosée !", 2.0)
-                                self._bubble_player("*glou glou*", 1.5, (100, 255, 100))
-                                self._play_sound("water_plant")
-                            elif kind == "papers":
-                                self.notification_manager.add_notification("Papiers rangés !", 2.0)
-                                self._bubble_player("Tout bien rangé !", 2.0, (255, 255, 100))
-                                self._play_sound("paper_pickup")
-                            elif kind == "printer":
-                                self.notification_manager.add_notification("Imprimante réparée !", 2.0)
-                                self._bubble_player("*vrrrr* Ça marche !", 2.0, (100, 200, 255))
-                                self._play_sound("printer_sound")
-                            elif kind == "reception":
-                                self.notification_manager.add_notification("Badge récupéré !", 2.0)
-                                self._bubble_player("Badge en poche !", 2.0, (255, 200, 100))
-                                self._play_sound("ui_click")
-                            elif kind == "coffee":
-                                self.notification_manager.add_notification("Café pris !", 2.0)
-                                self._bubble_player("Mmmh, délicieux !", 2.0, (139, 69, 19))
-                                self._play_sound("coffee_sip")
-                            elif kind == "water":
-                                self.notification_manager.add_notification("Plantes arrosées !", 2.0)
-                                self._bubble_player("Toutes les plantes sont hydratées !", 2.5, (100, 255, 100))
-                                self._play_sound("water_plant")
-                            elif kind == "receptionist":
-                                self.notification_manager.add_notification("Accueil aidé !", 2.0)
-                                self._bubble_player("Service rendu !", 2.0, (255, 150, 255))
-                                self._play_sound("ui_click")
-                            elif kind == "desk":
-                                self.notification_manager.add_notification("Bureau organisé !", 2.0)
-                                self._bubble_player("Bureau impeccable !", 2.0, (200, 200, 200))
-                                self._play_sound("paper_pickup")
-                        else:
-                            self.notification_manager.add_notification("Tâche déjà terminée.", 2.0)
+                    if success:
+                        self.notification_manager.add_notification(f"Tâche terminée : {task.title}", 3.0)
+                        
+                        # Messages spécifiques selon le type avec sons et bulles
+                        if kind == "plant":
+                            self.notification_manager.add_notification("Plante arrosée !", 2.0)
+                            self._bubble_player("*glou glou*", 1.5, (100, 255, 100))
+                            self._play_sound("water_plant")
+                        elif kind == "papers":
+                            self.notification_manager.add_notification("Papiers rangés !", 2.0)
+                            self._bubble_player("Tout bien rangé !", 2.0, (255, 255, 100))
+                            self._play_sound("paper_pickup")
+                        elif kind == "printer":
+                            self.notification_manager.add_notification("Imprimante réparée !", 2.0)
+                            self._bubble_player("*vrrrr* Ça marche !", 2.0, (100, 200, 255))
+                            self._play_sound("printer_sound")
+                        elif kind == "reception":
+                            self.notification_manager.add_notification("Badge récupéré !", 2.0)
+                            self._bubble_player("Badge en poche !", 2.0, (255, 200, 100))
+                            self._play_sound("ui_click")
+                        elif kind == "coffee":
+                            self.notification_manager.add_notification("Café pris !", 2.0)
+                            self._bubble_player("Mmmh, délicieux !", 2.0, (139, 69, 19))
+                            self._play_sound("coffee_sip")
+                        elif kind == "water":
+                            self.notification_manager.add_notification("Plantes arrosées !", 2.0)
+                            self._bubble_player("Toutes les plantes sont hydratées !", 2.5, (100, 255, 100))
+                            self._play_sound("water_plant")
+                        elif kind == "receptionist":
+                            self.notification_manager.add_notification("Accueil aidé !", 2.0)
+                            self._bubble_player("Service rendu !", 2.0, (255, 150, 255))
+                            self._play_sound("ui_click")
+                        elif kind == "desk":
+                            self.notification_manager.add_notification("Bureau organisé !", 2.0)
+                            self._bubble_player("Bureau impeccable !", 2.0, (200, 200, 200))
+                            self._play_sound("paper_pickup")
+                    else:
+                        self.notification_manager.add_notification("Tâche déjà terminée.", 2.0)
                 else:
                     self.notification_manager.add_notification("Cette tâche n'est pas encore disponible.", 2.0)
             else:
@@ -828,10 +832,6 @@ class GameplayScene(Scene):
                 if distance < 32:  # Zone d'interaction augmentée de 1.2 (27 * 1.2 = 32)
                     # Ne nécessite plus que l'ascenseur soit au même étage
                     self._change_player_floor(floor_number)
-                else:
-                    pass
-        else:
-            pass
     
     def _change_player_floor(self, new_floor):
         """
@@ -851,6 +851,12 @@ class GameplayScene(Scene):
         # Mettre à jour la caméra pour suivre le nouvel étage
         if success:
             self._update_camera_for_floor(new_floor)
+            
+            # Jouer les sons d'ascenseur
+            if hasattr(self.scene_manager, 'app') and hasattr(self.scene_manager.app, 'audio_manager'):
+                audio_manager = self.scene_manager.app.audio_manager
+                audio_manager.play_sound("elevator_ding")  # Son d'arrivée
+                audio_manager.play_sound("elevator_door_close")  # Son de fermeture des portes
     
     def _check_game_end_conditions(self):
         """Vérifie les conditions de fin de jeu."""
@@ -935,7 +941,7 @@ class GameplayScene(Scene):
             clip.close()
         except Exception as e:
             logger.error(f"Error playing final video: {e}")
-
+    
     def draw(self, screen):
         """Dessine la scène."""
         # Fond noir
@@ -1048,7 +1054,7 @@ class GameplayScene(Scene):
                     baseline_y = screen_y + floor_height - 1
                     player_y = baseline_y - player_sprite.get_height()
                     screen.blit(player_sprite, (player_x, player_y))
-                    
+            
                     # Ancre pour les bulles (au sommet de la tête, centré)
                     player._bubble_anchor_x = player_x + player_sprite.get_width() // 2
                     player._bubble_anchor_y = player_y
@@ -1059,7 +1065,7 @@ class GameplayScene(Scene):
                 for obj in self.entity_manager.interactables.values():
                     if getattr(obj, 'current_floor', current_floor) == floor_num:
                         self._draw_legacy_object(screen, obj, screen_y, floor_height)
-            
+    
             # 5. Dessiner les NPCs en mouvement (nouveau système)
             for movement in self.npc_movement_manager.npc_movements.values():
                 npc = movement.npc
@@ -1409,6 +1415,56 @@ class GameplayScene(Scene):
                 pass
         
         logger.info("Exited GameplayScene")
+
+    def _play_sound(self, sound_id: str):
+        """Joue un effet sonore via l'audio manager."""
+        try:
+            if hasattr(self.scene_manager, 'app') and hasattr(self.scene_manager.app, 'audio_manager'):
+                self.scene_manager.app.audio_manager.play_sound(sound_id)
+        except Exception as e:
+            logger.debug(f"Could not play sound {sound_id}: {e}")
+    
+    def _update_ambient_sounds(self, dt: float):
+        """Met à jour les sons d'ambiance spécifiques au gameplay."""
+        try:
+            # Sons d'ambiance aléatoires pour le bureau
+            if not hasattr(self, '_ambient_timer'):
+                self._ambient_timer = 0.0
+                # Initialiser les timers avec des valeurs aléatoires pour éviter les sons immédiats
+                self._phone_timer = random.uniform(30.0, 60.0)  # 30s-1 minute au début
+                self._phone_ring_timer = random.uniform(60.0, 120.0)  # 1-2 minutes au début
+                self._keyboard_timer = random.uniform(15.0, 30.0)  # 15-30 secondes au début
+                self._coffee_timer = random.uniform(60.0, 120.0)  # 1-2 minutes au début
+            
+            # Timer général pour les sons d'ambiance
+            self._ambient_timer += dt
+            
+            # Sons de téléphone qui sonne aléatoires (toutes les 1-3 minutes)
+            self._phone_ring_timer -= dt
+            if self._phone_ring_timer <= 0 and random.random() < 0.15:  # 15% de chance
+                self._play_sound("phone_ring")
+                self._phone_ring_timer = random.uniform(60.0, 180.0)  # 1-3 minutes
+            
+            # Sons de téléphone décroché aléatoires (toutes les 45 secondes - 2 minutes)
+            self._phone_timer -= dt
+            if self._phone_timer <= 0 and random.random() < 0.2:  # 20% de chance
+                self._play_sound("phone_pickup")
+                self._phone_timer = random.uniform(45.0, 120.0)  # 45s-2 minutes
+            
+            # Sons de clavier aléatoires (toutes les 20-60 secondes)
+            self._keyboard_timer -= dt
+            if self._keyboard_timer <= 0 and random.random() < 0.4:  # 40% de chance
+                self._play_sound("keyboard_typing")
+                self._keyboard_timer = random.uniform(20.0, 60.0)  # 20-60 secondes
+            
+            # Sons de café aléatoires (toutes les 1-3 minutes)
+            self._coffee_timer -= dt
+            if self._coffee_timer <= 0 and random.random() < 0.08:  # 8% de chance
+                self._play_sound("coffee_sip")
+                self._coffee_timer = random.uniform(60.0, 180.0)  # 1-3 minutes
+            
+        except Exception as e:
+            logger.debug(f"Error updating ambient sounds: {e}")
 
     # === Adapters: Time & Timeline ===
     def _subscribe_events(self) -> None:

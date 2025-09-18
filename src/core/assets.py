@@ -486,6 +486,18 @@ class AssetManager:
         """Retourne l'ensemble des clés d'assets manquants."""
         return self.missing_assets.copy()
     
+    def get_manifest_section(self, section: str) -> Optional[Dict]:
+        """
+        Récupère une section du manifest.
+        
+        Args:
+            section: Nom de la section (images, spritesheets, sfx, music, etc.)
+            
+        Returns:
+            Dictionnaire de la section ou None si non trouvée
+        """
+        return self.manifest.get(section)
+    
     def get_stats(self) -> Dict[str, Any]:
         """
         Retourne des statistiques sur les assets.

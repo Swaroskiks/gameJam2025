@@ -16,6 +16,8 @@ from src.core.scene_manager import SceneManager
 from src.core.timer import GameClock
 from src.core.assets import asset_manager
 from src.core.input import InputManager
+from src.core.audio_manager import AudioManager
+from src.core.ambient_sounds import AmbientSoundManager
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +39,8 @@ class Game:
         self.scene_manager = SceneManager()
         self.game_clock = GameClock(START_TIME, END_TIME, GAME_SECONDS_PER_REAL_SECOND)
         self.input_manager = InputManager()
+        self.audio_manager = AudioManager(asset_manager)
+        self.ambient_sounds = AmbientSoundManager(self.audio_manager)
         
         # État du jeu
         self.paused = False
@@ -211,6 +215,9 @@ class Game:
         
         # Mettre à jour l'input manager
         self.input_manager.update()
+        
+        # Mettre à jour les sons d'ambiance
+        self.ambient_sounds.update(dt)
         
         # Mettre à jour la scène actuelle
         self.scene_manager.update(dt)
