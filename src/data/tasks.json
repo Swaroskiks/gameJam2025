@@ -134,30 +134,48 @@
       "clears_flag": "papers_collected"
     },
     {
-      "id": "S4",
+      "id": "maya_coffee_quest",
       "title": "Un café pour Maya",
-      "description": "Servir un café à Maya.",
+      "description": "Maya vous demande un café pour bien commencer la journée.",
       "type": "interaction",
       "floor": 97,
       "interactable_id": "coffee_97",
       "reward_points": 2,
       "dependencies": [],
-      "completion_message": "Café préparé.",
+      "completion_message": "Vous avez pris un café pour Maya.",
       "allow_unassigned_completion": true,
       "required": false,
-      "priority": 32,
+      "priority": 31,
       "action": "collect",
-      "gives_flag": "has_coffee"
+      "gives_flag": "has_coffee_for_maya"
     },
     {
-      "id": "S5",
+      "id": "maya_give_coffee",
+      "title": "Apporter le café à Maya",
+      "description": "Donner le café à Maya.",
+      "type": "dialogue",
+      "floor": 97,
+      "npc_id": "maya",
+      "reward_points": 2,
+      "dependencies": ["maya_coffee_quest"],
+      "completion_message": "Maya a reçu son café.",
+      "allow_unassigned_completion": true,
+      "required": false,
+      "priority": 30,
+      "interactable_id": "maya",
+      "action": "deliver",
+      "needs_flag": "has_coffee_for_maya",
+      "clears_flag": "has_coffee_for_maya"
+    },
+    {
+      "id": "break_with_maya",
       "title": "Pause avec Maya",
       "description": "Apporter le café à Maya.",
       "type": "dialogue",
       "floor": 97,
       "npc_id": "maya",
       "reward_points": 3,
-      "dependencies": ["S4"],
+      "dependencies": ["maya_give_coffee"],
       "completion_message": "Maya apprécie le café.",
       "allow_unassigned_completion": true,
       "required": false,
@@ -391,5 +409,5 @@
       "action": "deliver",
       "needs_flag": "cups_filled"
     }
-]
+  ]
 }

@@ -163,6 +163,17 @@
     "office_smalltalk_2": [
       "Réu à 9h, on vise large.",
       "Pas une minute de retard."
+    ],
+    "maya_offer_coffee": [
+      "Oh, salut ! Tu pourrais me rendre un service ?",
+      "J'aurais bien besoin d'un café pour démarrer la journée..."
+    ],
+    "maya_wait_coffee": [
+      "Tu as pu trouver un café ? J'en aurais bien besoin !"
+    ],
+    "maya_receive_coffee": [
+      "Merci beaucoup ! Tu es un amour.",
+      "Bonne journée à toi !"
     ]
   },
   "notifications": {
