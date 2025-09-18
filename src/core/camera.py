@@ -17,20 +17,23 @@ class Camera:
     l'effet de "rester sur place" lors des déplacements d'ascenseur.
     """
     
-    def __init__(self, initial_y: float = 500.0, speed: float = 200.0):
+    def __init__(self, initial_y: float = 500.0, speed: float = 400.0):
         """
         Initialise la caméra.
         
         Args:
             initial_y: Position Y initiale
-            speed: Vitesse d'interpolation en pixels/seconde
+            speed: Vitesse maximale d'interpolation en pixels/seconde
         """
         self.y = initial_y
         self.target_y = initial_y
-        self.speed = speed
+        self.max_speed = speed  # Vitesse maximale
+        self.min_speed = 50.0   # Vitesse minimale pour éviter l'arrêt complet
         self.is_moving = False
+        self.min_y = None  # Limite minimale Y
+        self.max_y = None  # Limite maximale Y
         
-        logger.debug(f"Camera initialized at y={initial_y}, speed={speed}")
+        logger.debug(f"Camera initialized at y={initial_y}, max_speed={speed}")
     
     def set_target(self, target_y: float) -> None:
         """
@@ -39,6 +42,12 @@ class Camera:
         Args:
             target_y: Position Y cible
         """
+        # Appliquer les limites si elles sont définies
+        if self.min_y is not None:
+            target_y = max(self.min_y, target_y)
+        if self.max_y is not None:
+            target_y = min(self.max_y, target_y)
+        
         if abs(target_y - self.target_y) > 1.0:  # Éviter les micro-ajustements
             self.target_y = target_y
             self.is_moving = True
@@ -46,7 +55,7 @@ class Camera:
     
     def update(self, dt: float) -> None:
         """
-        Met à jour la position de la caméra avec interpolation.
+        Met à jour la position de la caméra avec interpolation et ralentissement progressif.
         
         Args:
             dt: Temps écoulé depuis la dernière frame en secondes
@@ -57,22 +66,27 @@ class Camera:
         # Distance à parcourir
         distance = self.target_y - self.y
         
-        # Vérifier si on est arrivé (seuil de 1 pixel)
-        if abs(distance) <= 1.0:
+        # Vérifier si on est arrivé (seuil de 0.5 pixel pour plus de précision)
+        if abs(distance) <= 0.5:
             self.y = self.target_y
             self.is_moving = False
             logger.debug(f"Camera reached target y={self.target_y}")
             return
         
-        # Interpolation linéaire avec vitesse constante
-        move_distance = self.speed * dt
+        # Calculer la vitesse variable basée sur la distance restante
+        # Plus on est proche, plus on ralentit
+        distance_ratio = min(abs(distance) / 200.0, 1.0)  # Normaliser sur 200 pixels
+        current_speed = self.min_speed + (self.max_speed - self.min_speed) * distance_ratio
+        
+        # Interpolation avec vitesse variable
+        move_distance = current_speed * dt
         if abs(distance) < move_distance:
             # Éviter le dépassement
             self.y = self.target_y
             self.is_moving = False
             logger.debug(f"Camera reached target y={self.target_y}")
         else:
-            # Déplacement vers la cible
+            # Déplacement vers la cible avec vitesse variable
             direction = 1.0 if distance > 0 else -1.0
             self.y += move_distance * direction
     
@@ -145,3 +159,47 @@ class Camera:
             Position Y cible
         """
         return self.target_y
+    
+    def set_bounds(self, min_y: float, max_y: float) -> None:
+        """
+        Définit les limites de la caméra.
+        
+        Args:
+            min_y: Position Y minimale
+            max_y: Position Y maximale
+        """
+        self.min_y = min_y
+        self.max_y = max_y
+        logger.debug(f"Camera bounds set: min_y={min_y}, max_y={max_y}")
+    
+    def calculate_bounds(self, floor_count: int, floor_height: int, screen_height: int) -> None:
+        """
+        Calcule automatiquement les limites basées sur les étages.
+        
+        Args:
+            floor_count: Nombre d'étages
+            floor_height: Hauteur d'un étage
+            screen_height: Hauteur de l'écran
+        """
+        # Le premier étage est à y=0, le dernier à y=(floor_count-1)*floor_height
+        min_y = 0
+        max_y = (floor_count - 1) * floor_height
+        
+        # Ajuster pour que le dernier étage soit visible
+        max_y = max_y - (screen_height - floor_height)
+        
+        self.set_bounds(min_y, max_y)
+        logger.debug(f"Camera bounds calculated: min_y={min_y}, max_y={max_y}")
+    
+    def set_speed(self, max_speed: float, min_speed: float = None) -> None:
+        """
+        Ajuste la vitesse de la caméra.
+        
+        Args:
+            max_speed: Vitesse maximale en pixels/seconde
+            min_speed: Vitesse minimale en pixels/seconde (optionnel)
+        """
+        self.max_speed = max_speed
+        if min_speed is not None:
+            self.min_speed = min_speed
+        logger.debug(f"Camera speed updated: max={max_speed}, min={self.min_speed}")

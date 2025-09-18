@@ -144,6 +144,9 @@ class TaskManager:
                 logger.warning(f"Unknown task type '{task_type_str}', using INTERACTION")
                 task_type = TaskType.INTERACTION
             
+            # Utiliser la valeur required du JSON si elle existe, sinon utiliser le paramètre
+            task_required = safe_get(data, "required", required)
+            
             task = Task(
                 id=task_id,
                 title=safe_get(data, "title", "Tâche sans nom"),
@@ -153,7 +156,7 @@ class TaskManager:
                 interactable_id=safe_get(data, "interactable_id"),
                 npc_id=safe_get(data, "npc_id"),
                 reward_points=safe_get(data, "reward_points", 0),
-                required=required,
+                required=task_required,
                 dependencies=safe_get(data, "dependencies", []),
                 completion_message=safe_get(data, "completion_message", "Tâche terminée !"),
                 allow_unassigned_completion=bool(safe_get(data, "allow_unassigned_completion", True)),
@@ -290,10 +293,13 @@ class TaskManager:
             current_status = self.task_status.get(task_id, TaskStatus.LOCKED)
             # Une tâche devient disponible si dépendances OK ET (principale OU offerte)
             should_be_available = self._are_dependencies_met(task) and (task.required or task_id in self.offered_tasks)
+            
+            logger.debug(f"Task {task_id}: required={task.required}, deps_met={self._are_dependencies_met(task)}, offered={task_id in self.offered_tasks}, should_be_available={should_be_available}")
+            
             if should_be_available and current_status in [TaskStatus.LOCKED, None]:
                 self.task_status[task_id] = TaskStatus.AVAILABLE
                 self.available_tasks.add(task_id)
-                logger.debug(f"Task unlocked: {task.title}")
+                logger.info(f"Task unlocked: {task.title}")
             elif not should_be_available and current_status == TaskStatus.AVAILABLE:
                 self.available_tasks.discard(task_id)
                 self.task_status[task_id] = TaskStatus.LOCKED
@@ -437,16 +443,6 @@ class TaskManager:
     def is_task_available(self, task_id: str) -> bool:
         """Vérifie si une tâche est disponible."""
         return self.task_status.get(task_id) == TaskStatus.AVAILABLE
-
-    def offer_task(self, task_id: str) -> None:
-        """
-        Marque une tâche comme 'offerte' (utile pour les side-tasks qui ne se débloquent
-        pas automatiquement). Met à jour son statut si dépendances remplies.
-        """
-        if task_id not in self.tasks:
-            return
-        self.offered_tasks.add(task_id)
-        self._update_available_tasks()
 
     # === Extensions DSL/Story ===
     def discover_task(self, task_id: str) -> bool:

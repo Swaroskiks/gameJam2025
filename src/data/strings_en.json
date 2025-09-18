@@ -103,6 +103,93 @@
       "Good morning! Don't forget to clock in at reception.",
       "It's important for building security.",
       "Have a good day!"
+    ],
+    "jim": [
+      "Hey! Is your computer crashing again?",
+      "I've fixed 5 printers this week...",
+      "Dwight thinks he can hack the security system...",
+      "You know, IT is 90% patience and 10% skill!",
+      "Oscar and I created a new script to automate backups."
+    ],
+    "dwight": [
+      "Hey! Have you changed your password recently?",
+      "I've installed 3 new firewalls this week!",
+      "Jim doesn't understand anything about security...",
+      "You know, a hacker could infiltrate our network in 2 minutes!",
+      "I've created an alarm system to detect intrusions."
+    ],
+    "ryan": [
+      "Hey! Ryan Howard, IT department.",
+      "I handle everything technological here.",
+      "Computers are my thing!"
+    ],
+    "angela": [
+      "Hello! Need help with your invoices?",
+      "I've spent all morning on these Excel spreadsheets...",
+      "Creed made another mistake in his calculations!",
+      "This quarter's budgets are a disaster...",
+      "You know, accounting is like a puzzle. Everything has to fit perfectly."
+    ],
+    "kevin": [
+      "Hey! Want to see my latest charts?",
+      "I analyzed last month's sales data...",
+      "Kelly always asks me to check her numbers!",
+      "You know, data is like cookies... the more you have, the better!",
+      "Meredith and I are preparing a market study for the new product."
+    ],
+    "oscar": [
+      "Hey! Want to see my latest code?",
+      "I spent the night debugging this application...",
+      "Jim and I are working on a new project together.",
+      "You know, programming is like writing poetry... but more logical!",
+      "Dwight broke the database again with his 'improvements'..."
+    ],
+    "phyllis": [
+      "Hey! Looking for a new position?",
+      "I still have 5 CVs to review...",
+      "You know, recruiting is like shopping... but for skills!",
+      "I've organized a stress management training next week.",
+      "Sometimes I feel like I'm everyone's psychologist here!"
+    ],
+    "michael": [
+      "Hey! Michael Scott, regional manager.",
+      "I lead this team with passion and humor!",
+      "I'm the boss here, and I love it!"
+    ],
+    "kelly": [
+      "Hey! Did you see our new campaign?",
+      "Kevin and I created an awesome concept!",
+      "I posted 15 stories on Instagram today...",
+      "You know, marketing is 50% creativity and 50% coffee!",
+      "Meredith is organizing an event next week, it's going to be great!"
+    ],
+    "meredith": [
+      "Hey! Are you coming to our event on Friday?",
+      "I've organized 3 meetings this week...",
+      "Kevin and I are working on a new project!",
+      "You know, organizing events is like conducting an orchestra!",
+      "Kelly changed our flyer design again at the last minute..."
+    ],
+    "creed": [
+      "Hey! Want to see my latest calculations?",
+      "Angela always makes me redo my reports...",
+      "I found a bug in the accounting system!",
+      "You know, I've worked in 47 different companies...",
+      "Numbers are like music. You need rhythm!"
+    ],
+    "toby": [
+      "Hey! Looking for budget information?",
+      "I still have files to organize...",
+      "Angela and I always argue about allocations...",
+      "You know, managing other people's money is a big responsibility.",
+      "I feel like nobody understands the importance of accounting!"
+    ],
+    "erin": [
+      "Hey! Looking for something?",
+      "The boss is in a meeting, but I can help you!",
+      "I still have 3 reports to type before tonight...",
+      "Have you seen the new coffee machine? It's amazing!",
+      "Sometimes I feel like I'm the only one keeping this office running!"
     ]
   },
   "notifications": {
@@ -113,14 +200,10 @@
     "time_warning": "It's almost 08:48..."
   },
   "floors": {
-    "90": "Lobby",
-    "91": "Customer Support",
-    "92": "Sales",
-    "93": "Marketing",
-    "94": "IT",
-    "95": "Human Resources", 
-    "96": "Open Space",
-    "97": "Accounting",
-    "98": "Management"
+    "95": "Human Resources",
+    "96": "Marketing",
+    "97": "IT",
+    "98": "Finance",
+    "99": "Management"
   }
 }

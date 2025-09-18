@@ -1,12 +1,12 @@
 {
   "description": "Configuration des étages du building avec fonds et objets positionnés",
-  "min_floor": 90,
-  "max_floor": 98,
+  "min_floor": 95,
+  "max_floor": 99,
   "elevator_position_x": 64,
   "floor_height": 150,
   "default_bg_key": "floor_default",
   "floors": {
-    "98": {
+    "99": {
       "name": "Direction",
       "bg_key": "floor_98_boss",
       "rooms": ["office_director", "meeting_room"],
@@ -33,11 +33,11 @@
           "props": {"name": "Boss Reed", "dialogue_key": "boss_reed", "sprite_key": "boss"}
         },
         {
-          "id": "assistant_sarah",
+          "id": "erin_hannon_direction",
           "kind": "npc",
-          "x": 450,
+          "x": 650,
           "y": 0,
-          "props": {"name": "Sarah", "dialogue_key": "assistant", "sprite_key": "employee_2"}
+          "props": {"name": "Erin", "dialogue_key": "erin", "sprite_key": "employee_14"}
         },
         {
           "id": "desk_98",
@@ -62,10 +62,10 @@
         }
       ]
     },
-    "97": {
-      "name": "Open-space",
-      "bg_key": "floor_97_open",
-      "rooms": ["office_accounting", "office_small"],
+    "98": {
+      "name": "Finance",
+      "bg_key": "floor_95",
+      "rooms": ["office_hr", "archive_room"],
       "objects": [
         {
           "id": "printer_97",
@@ -75,20 +75,6 @@
           "props": {"task_id": "fix_printer", "jammed": true}
         },
         {
-          "id": "alex",
-          "kind": "npc",
-          "x": 200,
-          "y": 0,
-          "props": {"name": "Alex", "dialogue_key": "alex", "sprite_key": "employee_1"}
-        },
-        {
-          "id": "marie_accounting",
-          "kind": "npc",
-          "x": 300,
-          "y": 0,
-          "props": {"name": "Marie", "dialogue_key": "marie", "sprite_key": "employee_3"}
-        },
-        {
           "id": "coffee_machine_97",
           "kind": "coffee",
           "x": 550,
@@ -96,18 +82,32 @@
           "props": {"task_id": "coffee_break"}
         },
         {
-          "id": "thomas_dev",
-          "kind": "npc",
-          "x": 650,
-          "y": 0,
-          "props": {"name": "Thomas", "dialogue_key": "thomas", "sprite_key": "employee_4"}
-        },
-        {
           "id": "water_97",
           "kind": "water",
           "x": 460,
           "y": 0,
           "props": {"sprite_key": "water_dispenser"}
+        },
+        {
+          "id": "angela_martin",
+          "kind": "npc",
+          "x": 200,
+          "y": 0,
+          "props": {"name": "Angela", "dialogue_key": "angela", "sprite_key": "employee_5"}
+        },
+        {
+          "id": "creed_bratton",
+          "kind": "npc",
+          "x": 400,
+          "y": 0,
+          "props": {"name": "Creed", "dialogue_key": "creed", "sprite_key": "employee_10"}
+        },
+        {
+          "id": "toby_flenderson_finance",
+          "kind": "npc",
+          "x": 600,
+          "y": 0,
+          "props": {"name": "Toby", "dialogue_key": "toby", "sprite_key": "employee_11"}
         },
         {
           "id": "plant_97",
@@ -157,13 +157,6 @@
           "x": 1040,
           "y": 0,
           "props": {"sprite_key": "window_marker"}
-        },
-        {
-          "id": "maya",
-          "kind": "npc",
-          "x": 800,
-          "y": 0,
-          "props": {"name": "Maya", "dialogue_key": "maya_coffee", "sprite_key": "employee_5"}
         },
         {
           "id": "supply_97",
@@ -230,8 +223,8 @@
         }
       ]
     },
-    "96": {
-      "name": "Open Space",
+    "97": {
+      "name": "IT",
       "bg_key": "floor_96",
       "rooms": ["hallway", "office_open"],
       "objects": [
@@ -243,13 +236,6 @@
           "props": {"task_id": "change_lightbulb"}
         },
         {
-          "id": "npc_maya",
-          "kind": "npc",
-          "x": 300,
-          "y": 0,
-          "props": {"name": "Maya", "dialogue_key": "maya_morning", "sprite_key": "employee_5"}
-        },
-        {
           "id": "water_96",
           "kind": "water",
           "x": 500,
@@ -257,18 +243,32 @@
           "props": {"task_id": "water_plants"}
         },
         {
-          "id": "julien_hr",
+          "id": "jim_halpert_it",
           "kind": "npc",
-          "x": 650,
+          "x": 300,
           "y": 0,
-          "props": {"name": "Julien", "dialogue_key": "julien", "sprite_key": "employee_6"}
+          "props": {"name": "Jim", "dialogue_key": "jim", "sprite_key": "employee_3"}
+        },
+        {
+          "id": "dwight_schrute_it",
+          "kind": "npc",
+          "x": 500,
+          "y": 0,
+          "props": {"name": "Dwight", "dialogue_key": "dwight", "sprite_key": "employee_2"}
+        },
+        {
+          "id": "oscar_martinez_it",
+          "kind": "npc",
+          "x": 700,
+          "y": 0,
+          "props": {"name": "Oscar", "dialogue_key": "oscar", "sprite_key": "employee_12"}
         }
       ]
     },
-    "95": {
-      "name": "Ressources Humaines",
-      "bg_key": "floor_95",
-      "rooms": ["office_hr", "archive_room"],
+    "96": {
+      "name": "Marketing",
+      "bg_key": "floor_97_open",
+      "rooms": ["office_accounting", "office_small"],
       "objects": [
         {
           "id": "plant_95",
@@ -278,30 +278,30 @@
           "props": {"thirst": 0.3}
         },
         {
-          "id": "receptionist_95",
-          "kind": "receptionist",
-          "x": 350,
+          "id": "kelly_kapoor_marketing",
+          "kind": "npc",
+          "x": 200,
           "y": 0,
-          "props": {"task_id": "reception_duty"}
+          "props": {"name": "Kelly", "dialogue_key": "kelly", "sprite_key": "employee_6"}
         },
         {
-          "id": "claire_rh",
+          "id": "kevin_malone_marketing",
           "kind": "npc",
-          "x": 500,
+          "x": 400,
           "y": 0,
-          "props": {"name": "Claire", "dialogue_key": "claire", "sprite_key": "employee_7"}
+          "props": {"name": "Kevin", "dialogue_key": "kevin", "sprite_key": "employee_7"}
         },
         {
-          "id": "paul_manager",
+          "id": "meredith_palmer_marketing",
           "kind": "npc",
-          "x": 650,
+          "x": 600,
           "y": 0,
-          "props": {"name": "Paul", "dialogue_key": "paul", "sprite_key": "employee_8"}
+          "props": {"name": "Meredith", "dialogue_key": "meredith", "sprite_key": "employee_8"}
         }
       ]
     },
-    "90": {
-      "name": "Lobby",
+    "95": {
+      "name": "Ressources Humaines",
       "bg_key": "floor_90",
       "rooms": ["lobby", "reception"],
       "objects": [
@@ -313,11 +313,18 @@
           "props": {"task_id": "badge_checkin"}
         },
         {
-          "id": "npc_guard",
-          "kind": "npc",
-          "x": 200,
+          "id": "receptionist_95",
+          "kind": "receptionist",
+          "x": 450,
           "y": 0,
-          "props": {"name": "Garde", "dialogue_key": "guard_morning"}
+          "props": {"task_id": "reception_duty"}
+        },
+        {
+          "id": "phyllis_vance",
+          "kind": "npc",
+          "x": 300,
+          "y": 0,
+          "props": {"name": "Phyllis", "dialogue_key": "phyllis", "sprite_key": "employee_9"}
         },
         {
           "id": "badge_90",
@@ -331,7 +338,7 @@
           "kind": "npc",
           "x": 720,
           "y": 0,
-          "props": {"npc_id": "guard", "name": "Sécurité", "sprite_key": "npc_guard"}
+          "props": {"npc_id": "guard", "name": "Sécurité", "sprite_key": "employee_1"}
         },
         {
           "id": "plant_lobby1",
