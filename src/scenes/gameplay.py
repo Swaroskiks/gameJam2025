@@ -63,7 +63,7 @@ class GameplayScene(Scene):
         self._intro_lock_active = True
         self._printer_requirement = 2
         self._subscriptions = []
-        
+
         # État de l'interface
         self.paused = False
         
@@ -74,7 +74,7 @@ class GameplayScene(Scene):
         
         # Map des PNJ runtime (source unique de vérité)
         self.runtime_npcs = {}  # id -> objet PNJ runtime (celui que déplace NPCMovement)
-        
+
         logger.info("GameplayScene initialized")
     
     def enter(self, **kwargs):
@@ -112,30 +112,30 @@ class GameplayScene(Scene):
             if player:
                 initial_floor = player.current_floor
                 self.world_loader.change_player_floor(initial_floor)
-                
+
                 # Calculer les limites de la caméra basées sur les étages disponibles
                 floor_height = HEIGHT // 3
                 all_floors = sorted(self.building.floors.keys())
                 floor_count = len(all_floors)
                 min_floor = min(all_floors)
                 max_floor = max(all_floors)
-                
+
                 # Calculer les limites pour le centrage
                 # Étage le plus haut : position minimale (centré en haut)
                 min_y = (max_floor - max_floor) * floor_height  # = 0
                 # Étage le plus bas : position maximale (centré en bas)
                 max_y = (max_floor - min_floor) * floor_height - (HEIGHT - floor_height)
                 self.camera.set_bounds(min_y, max_y)
-                
+
                 # Initialiser la caméra centrée sur l'étage initial
                 self._update_camera_for_floor(initial_floor)
-        
+
         # Initialiser le mouvement des NPCs
         self._setup_npc_movement()
-        
+
         # Démarrer l'ambiance sonore de travail
         self._start_office_ambiance()
-        
+
         logger.info("Gameplay started")
     
     def _load_world(self) -> bool:
@@ -247,8 +247,7 @@ class GameplayScene(Scene):
                 # Mouvement normal du joueur (pas de sortie d'ascenseur)
                 pass
                 return
-            # La sélection 0-9 n'est plus utilisée pour l'ascenseur
-        
+
         # Pour l'instant, gérer les entrées directement
         # TODO: Intégrer avec l'InputManager quand disponible
         pass
@@ -271,10 +270,14 @@ class GameplayScene(Scene):
         
         # Mettre à jour le mouvement des NPCs
         self.npc_movement_manager.update(dt)
+<<<<<<< HEAD
         
         # Mettre à jour les sons d'ambiance spécifiques au gameplay
         self._update_ambient_sounds(dt)
         
+=======
+
+>>>>>>> cd46cadf1bbceeadf343fe0a8974f7f6fee0c326
         # Générer des conversations aléatoires (seulement pour les NPCs en mouvement)
         if self.entity_manager:
             import time
@@ -287,10 +290,10 @@ class GameplayScene(Scene):
                     npc = movement.npc
                     if hasattr(npc, 'current_floor') and npc.current_floor == current_floor:
                         moving_npcs.append(npc)
-                
+
                 if moving_npcs:
                     self.speech_bubbles.add_random_conversation(moving_npcs, time.time())
-        
+
         # Gérer les interactions
         self._handle_interactions()
         
@@ -302,7 +305,7 @@ class GameplayScene(Scene):
 
         # Hooks interruptions (toasts simples)
         # Abonnements posés en enter; ici rien de plus
-    
+
     def _update_camera_for_floor(self, floor_number: int) -> None:
         """
         Met à jour la vue pour centrer l'étage du joueur avec caméra smooth.
@@ -311,24 +314,24 @@ class GameplayScene(Scene):
             floor_number: Numéro d'étage cible
         """
         floor_height = HEIGHT // 3
-        
+
         if not self.building:
             # Fallback si pas de building
             target_y = floor_number * floor_height
             self.camera.set_target(target_y)
             return
-        
+
         all_floors = sorted(self.building.floors.keys())
         min_floor = min(all_floors)
         max_floor = max(all_floors)
-        
+
         # Calculer la position Y de l'étage (inversé)
         floor_y = (max_floor - floor_number) * floor_height
-        
+
         # Centrer l'étage à l'écran
         # L'étage doit être centré verticalement, donc on soustrait la moitié de l'écran
         target_y = floor_y - (HEIGHT - floor_height) // 2
-        
+
         # Appliquer les limites pour éviter de sortir des étages
         # Étage le plus haut : centrer en haut
         if floor_number == max_floor:
@@ -336,7 +339,7 @@ class GameplayScene(Scene):
         # Étage le plus bas : centrer en bas
         elif floor_number == min_floor:
             target_y = floor_y - (HEIGHT - floor_height)
-        
+
         # Définir la cible de la caméra pour une transition smooth
         self.camera.set_target(target_y)
         logger.debug(f"Camera centered on floor {floor_number}, y={target_y}")
@@ -345,7 +348,7 @@ class GameplayScene(Scene):
         """Met à jour les systèmes du monde."""
         # Mettre à jour la caméra
         self.camera.update(dt)
-        
+
         # Récupérer les entrées directement de pygame pour l'instant
         keys = pygame.key.get_pressed()
         dx = (keys[pygame.K_RIGHT] or keys[pygame.K_d]) - (keys[pygame.K_LEFT] or keys[pygame.K_a])
@@ -377,7 +380,7 @@ class GameplayScene(Scene):
         self.notification_manager.update(dt)
         self.dialogue_system.update(dt)
         self.speech_bubbles.update(dt)
-    
+
     def _handle_interactions(self):
         """Gère les interactions du joueur."""
         if not self.entity_manager:
@@ -415,7 +418,7 @@ class GameplayScene(Scene):
                             if npc_id == npc.id:
                                 self._interact_with_floor_object(obj_data)
                                 return
-        
+
         # 2) Sinon chercher des objets du nouveau système sur l'étage actuel
         if self.building:
             floor = self.building.get_floor(current_floor)
@@ -457,25 +460,25 @@ class GameplayScene(Scene):
             if abs(player_x - obj_x) < 50:
                 return obj_data
         return None
-    
+
     def _find_nearby_runtime_npc(self, player, max_dist_px=50):
         """
         Trouve le PNJ runtime le plus proche du joueur sur le même étage.
-        
+
         Args:
             player: Le joueur
             max_dist_px: Distance maximale en pixels
-            
+
         Returns:
             PNJ runtime le plus proche ou None
         """
         if not hasattr(self, "runtime_npcs"):
             return None
-        
+
         floor = player.current_floor
         best = None
         best_d = 1e9
-        
+
         for npc in self.runtime_npcs.values():
             if getattr(npc, "current_floor", None) != floor:
                 continue
@@ -483,7 +486,7 @@ class GameplayScene(Scene):
             if d < best_d and d <= max_dist_px:
                 best = npc
                 best_d = d
-        
+
         return best
     
     def _interact_with_floor_object(self, obj_data):
@@ -503,7 +506,7 @@ class GameplayScene(Scene):
             player_pos = player.get_position() if player else (400, 300)
         else:
             player_pos = (400, 300)
-        
+
         if kind == "npc":
             name = props.get('name', 'Inconnu')
             dialogue_key = props.get('dialogue_key', '')
@@ -533,18 +536,33 @@ class GameplayScene(Scene):
                                 self.notification_manager.add_notification(f"Tâche terminée : {task.title}", 3.0)
                             if self.speech_bubbles and npc_obj:
                                 self.speech_bubbles.add_bubble("Parfait. On compte sur toi.", npc_obj, 2.5, (200, 255, 200))
+<<<<<<< HEAD
                             # Jouer le son de tâche terminée
                             if hasattr(self.scene_manager, 'app') and hasattr(self.scene_manager.app, 'audio_manager'):
                                 self.scene_manager.app.audio_manager.play_sound("task_complete")
                             
+=======
+                            if hasattr(self, '_play_sound'):
+                                self._play_sound("ui_click")
+
+>>>>>>> cd46cadf1bbceeadf343fe0a8974f7f6fee0c326
                             # Chaînage des tâches
                             if npc_id == "boss_reed" and task.id == "M1":
                                 self.task_manager.offer_task("chat_with_jim")
                             elif npc_id == "boss_reed" and task.id == "M4":
                                 # M4 terminé, proposer M5 si disponible
+                                self.speech_bubbles.speak_from_dict(self.strings, ["dialogues", "boss_reed_after_M3"], npc_obj, color=(200, 200, 255))
                                 if self.task_manager.is_task_available("M5"):
                                     self.task_manager.offer_task("M5")
-                    return
+                                return
+                                # Afficher le dialogue du NPC après la complétion de la tâche (sauf cas spéciaux déjà gérés)
+                            key = dialogue_key or self._infer_dialogue_key_from_name(name)
+                            if key and "dialogues" in self.strings and key in self.strings["dialogues"]:
+                                self.speech_bubbles.speak_from_dict(self.strings, ["dialogues", key], npc_obj, color=(200, 200, 255))
+                            else:
+                                phrase = random.choice(self.speech_bubbles.random_phrases)
+                                self.speech_bubbles.add_bubble(phrase, npc_obj, 3.0, (200, 200, 255))
+                            return
 
             # PRIORITÉ 2: Dialogues contextuels selon l'état des tâches
             if npc_id == "boss_reed" and self.task_manager and self.speech_bubbles and npc_obj:
@@ -558,9 +576,34 @@ class GameplayScene(Scene):
                     # M3 fait, M4 pas encore
                     self.speech_bubbles.add_bubble("Comment ça se passe avec l'imprimante ?", npc_obj, 2.5, (200, 200, 255))
                 else:
-                    # M4 fait → félicitations
-                    self.speech_bubbles.speak_from_dict(self.strings, ["dialogues", "boss_reed_after_M3"], npc_obj, color=(200, 255, 200))
+                    # Sinon, boss est détendu (dialogue du matin)
+                    self.speech_bubbles.speak_from_dict(self.strings, ["dialogues", "boss_morning"], npc_obj, color=(200, 255, 200))
                 return
+
+            print(npc_id)
+            # PNJ Kelly : gestion de la quête café
+            if npc_id == "kelly_kapoor_marketing" and self.task_manager:
+                print(1)
+                # Si la quête café n'est pas connue, l'offrir et afficher le bon dialogue
+                if not self.task_manager.is_task_available("kelly_coffee_quest") and not self.task_manager.is_task_completed("kelly_coffee_quest"):
+                    self.task_manager.offer_task("kelly_coffee_quest")
+                    self.speech_bubbles.speak_from_dict(self.strings, ["dialogues", "kelly_offer_coffee"], npc_obj, color=(200, 200, 255))
+                    return
+                # Si la quête café est en cours (pas encore café donné)
+                elif self.task_manager.is_task_available("kelly_coffee_quest"):
+                    self.speech_bubbles.speak_from_dict(self.strings, ["dialogues", "kelly_wait_coffee"], npc_obj, color=(200, 200, 255))
+                    return
+                # Si le joueur a le café, offrir la livraison
+                elif self.task_manager.is_task_available("kelly_give_coffee"):
+                    print(2)
+                    self.task_manager.complete_task("kelly_give_coffee")
+                    print(self.strings)
+                    self.speech_bubbles.speak_from_dict(self.strings, ["dialogues", "kelly_receive_coffee"], npc_obj, color=(200, 255, 200))
+                    return
+                # Si la quête café est terminée, Kelly dit bonjour normalement
+                elif self.task_manager.is_task_completed("kelly_give_coffee"):
+                    self.speech_bubbles.speak_from_dict(self.strings, ["dialogues", "kelly_morning"], npc_obj, color=(200, 255, 200))
+                    return
 
             # PNJ Alex : retour après M3
             if npc_id == "alex" and self.task_manager and self.task_manager.is_task_completed("M3") and self.speech_bubbles and npc_obj:
@@ -571,6 +614,31 @@ class GameplayScene(Scene):
             if npc_id == "jim" and self.speech_bubbles and npc_obj:
                 self.speech_bubbles.add_bubble("Salut ! Ton ordinateur plante encore ?", npc_obj, 3.0, (200, 200, 255))
                 return
+
+            # PNJ Alex : offrir S17 "Photocopies express" si pas encore offerte
+            if npc_id == "alex" and self.task_manager and not self.task_manager.is_task_known("S17"):
+                self.task_manager.offer_task("S17")
+                self.speech_bubbles.speak_from_dict(self.strings, ["dialogues", "alex_copies"], npc_obj, color=(200, 200, 255))
+                return
+
+            # Agent de sécurité : logique badge cohérente
+            if npc_id == "guard" and self.task_manager:
+                # 1) offrir la collecte du badge si pas encore offerte
+                if not self.task_manager.is_task_known("S6"):
+                    self.task_manager.offer_task("S6")  # "Badge perdu" (ramasser)
+                # 2) si le joueur porte déjà le badge, offrir la remise
+                if "has_badge" in self.flags and not self.task_manager.is_task_known("S6b"):
+                    self.task_manager.offer_task("S6b")  # "Remettre le badge"
+                # 3) petite bulle
+                self.speech_bubbles.speak_from_dict(self.strings, ["dialogues", "guard_badge"], npc_obj, color=(200, 200, 255))
+                return
+
+            # # PNJ Maya : dialogue spécial pour les tasses
+            # if npc_id == "maya" and self.task_manager:
+            #     # Si le joueur a des tasses à livrer (S15)
+            #     if "mugs_collected" in self.flags:
+            #         self.speech_bubbles.speak_from_dict(self.strings, ["dialogues", "maya_mugs"], npc_obj, color=(200, 200, 255))
+            #         return
 
             # Fallback: dialogues JSON classiques
             key = dialogue_key or self._infer_dialogue_key_from_name(name)
@@ -592,8 +660,21 @@ class GameplayScene(Scene):
                 phrase = random.choice(self.speech_bubbles.random_phrases)
                 self.speech_bubbles.add_bubble(phrase, npc_obj, 3.0, (200, 200, 255))
             return
-                
-        elif kind in ["plant", "papers", "printer", "reception", "coffee", "water", "receptionist", "desk", "trash", "pickup", "meeting", "window"]:
+
+        elif kind in ["plant", "papers", "printer", "reception", "coffee", "water", "receptionist", "desk", "trash", "pickup", "meeting", "window", "supply", "stapler", "cables", "mug", "sink", "copier", "vents", "whiteboard"]:
+            # --- Ajout logique spéciale pour la quête café de Kelly ---
+            if kind == "coffee" and self.task_manager:
+                # Si la quête café de Kelly est disponible
+                if self.task_manager.is_task_available("kelly_coffee_quest"):
+                    # Compléter la quête café
+                    self.task_manager.complete_task("kelly_coffee_quest")
+                    self.flags.add("has_coffee_for_kelly")
+                    self.notification_manager.add_notification("Vous avez pris un café pour Kelly.", 2.0)
+                    # Donner la tâche de donner le café à Kelly
+                    if not self.task_manager.is_task_available("kelly_give_coffee"):
+                        self.task_manager.offer_task("kelly_give_coffee")
+                    return
+
             # Interaction avec objet - nouveau système avec actions
             interactable_id = obj_id
             
@@ -644,11 +725,11 @@ class GameplayScene(Scene):
                         if hasattr(task, 'needs_flag') and task.needs_flag and task.needs_flag not in self.flags:
                             self.speech_bubbles.add_bubble("Je dois d'abord prendre de l'eau.", self.entity_manager.get_player(), 2.0, (255, 200, 200))
                             return
-                        
+
                         # Consommer les flags si nécessaire
                         if hasattr(task, 'needs_flag') and task.needs_flag:
                             self.flags.discard(task.needs_flag)
-                        
+
                         # Compléter la tâche
                         self.task_manager.complete_task(task.id)
                         self.speech_bubbles.add_bubble("Parfait, c'est réparé !", self.entity_manager.get_player(), 2.0, (200, 255, 200))
@@ -711,7 +792,45 @@ class GameplayScene(Scene):
                     else:
                         self.notification_manager.add_notification("Tâche déjà terminée.", 2.0)
                 else:
-                    self.notification_manager.add_notification("Cette tâche n'est pas encore disponible.", 2.0)
+                    # Tâche non disponible : bloquer l'action et donner un indice contextuel
+                    hint = None
+                    if kind == "plant":
+                        # si la tâche arrosage (S1) est lock, c'est qu'il faut de l'eau
+                        hint = "Je devrais d'abord remplir une bouteille."
+                    elif kind in ("trash",):
+                        hint = "Je n'ai rien à déposer."
+                    elif kind in ("printer",):
+                        hint = "Alex doit d'abord me briefer."
+                    elif kind in ("coffee",):
+                        hint = "Pas le moment."
+                    elif kind in ("papers",):
+                        hint = "On me demandera peut-être de les trier."
+                    elif kind in ("pickup",):
+                        hint = "Pas maintenant."
+                    elif kind in ("supply",):
+                        hint = "Je devrais voir si quelqu'un a demandé quelque chose."
+                    elif kind in ("stapler",):
+                        hint = "Il me faut des agrafes."
+                    elif kind in ("copier",):
+                        hint = "On m'a demandé un dossier ?"
+                    elif kind in ("vents",):
+                        hint = "Juste un coup d'œil."
+                    elif kind in ("whiteboard",):
+                        hint = "Je peux le nettoyer rapidement."
+                    elif kind in ("mug",):
+                        hint = "Ces tasses s'accumulent..."
+                    elif kind in ("sink",):
+                        hint = "Je n'ai rien à laver."
+                    elif kind in ("cables",):
+                        hint = "Ces câbles traînent."
+                    else:
+                        hint = None
+
+                    if hint:
+                        # bulle au joueur plutôt qu'un toast "tâche indisponible"
+                        self.speech_bubbles.add_bubble(hint, self.entity_manager.get_player(), 1.8, (220, 220, 220))
+                    # on ne déclenche rien
+                    return
             else:
                 # Interaction simple sans tâche
                 messages = {
@@ -802,7 +921,7 @@ class GameplayScene(Scene):
                 # Faire sortir le joueur de l'ascenseur
                 player.in_elevator = False
                 self._play_sound("elevator_bell")  # Son de cloche en sortie
-    
+
     def _handle_elevator_call(self, player):
         """
         Gère l'appel de l'ascenseur (méthode legacy, maintenant redirigée).
@@ -844,13 +963,14 @@ class GameplayScene(Scene):
         player = self.entity_manager.get_player()
         if player and player.current_floor == new_floor:
             return  # Pas de changement nécessaire
-        
+
         # Changer l'étage du joueur
         success = self.world_loader.change_player_floor(new_floor)
-        
+
         # Mettre à jour la caméra pour suivre le nouvel étage
         if success:
             self._update_camera_for_floor(new_floor)
+<<<<<<< HEAD
             
             # Jouer les sons d'ascenseur
             if hasattr(self.scene_manager, 'app') and hasattr(self.scene_manager.app, 'audio_manager'):
@@ -858,6 +978,9 @@ class GameplayScene(Scene):
                 audio_manager.play_sound("elevator_ding")  # Son d'arrivée
                 audio_manager.play_sound("elevator_door_close")  # Son de fermeture des portes
     
+=======
+
+>>>>>>> cd46cadf1bbceeadf343fe0a8974f7f6fee0c326
     def _check_game_end_conditions(self):
         """Vérifie les conditions de fin de jeu."""
         if self.game_clock and self.game_clock.is_deadline():
@@ -876,8 +999,9 @@ class GameplayScene(Scene):
                 logger.error(f"Error during end transition: {e}")
             finally:
                 # Toujours passer au résumé même en cas d'erreur
-                self.switch_to("summary")
-    
+                stats = self._gather_session_stats()
+                self.switch_to("summary", stats=stats)
+
     def _fade_up(self, screen, duration_ms=900, color=(0, 0, 0)):
         """Transition fade up (noir qui monte du bas vers le haut)."""
         try:
@@ -920,13 +1044,14 @@ class GameplayScene(Scene):
         if not MOVIEPY_AVAILABLE:
             logger.warning("MoviePy not available, skipping final video")
             return
-            
+
         try:
-            video_path = os.path.join("assets", "final.mp4")
+            BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+            video_path = os.path.join(BASE_DIR, "assets", "final.mp4")
             if not os.path.exists(video_path):
                 logger.warning(f"Final video not found at {video_path}")
                 return
-                
+
             clip = mpy.VideoFileClip(video_path)
             for frame in clip.iter_frames(fps=24, dtype="uint8"):
                 surf = pygame.surfarray.make_surface(frame.swapaxes(0, 1))
@@ -991,7 +1116,7 @@ class GameplayScene(Scene):
         last_floor_y = (max_floor - min_floor) * floor_height + camera_offset_y
         if last_floor_y + floor_height < HEIGHT:
             pygame.draw.rect(screen, (0, 0, 0), (0, last_floor_y + floor_height, WIDTH, HEIGHT - (last_floor_y + floor_height)))
-        
+
         # Dessiner tous les étages avec la caméra smooth
         for floor_num in all_floors:
             floor = self.building.get_floor(floor_num)
@@ -1002,7 +1127,7 @@ class GameplayScene(Scene):
             max_floor = max(all_floors)
             world_y = (max_floor - floor_num) * floor_height
             screen_y = world_y + camera_offset_y
-            
+
             # Culling : ne dessiner que les étages visibles à l'écran
             if screen_y + floor_height < 0 or screen_y > HEIGHT:
                 continue
@@ -1040,6 +1165,7 @@ class GameplayScene(Scene):
             # 3. Dessiner les objets de l'étage (nouveau système)
             for obj_data in floor.objects:
                 self._draw_floor_object(screen, obj_data, screen_y, floor_height)
+<<<<<<< HEAD
             
             # 4. Dessiner le joueur s'il est sur cet étage et pas dans l'ascenseur
             if floor_num == current_floor and self.entity_manager:
@@ -1060,13 +1186,22 @@ class GameplayScene(Scene):
                     player._bubble_anchor_y = player_y
             
             # 4. Dessiner les objets interactifs legacy (compatibilité) - sur tous les étages
+=======
+
+            # 3. Dessiner les objets interactifs legacy (compatibilité) - sur tous les étages
+>>>>>>> cd46cadf1bbceeadf343fe0a8974f7f6fee0c326
             if self.entity_manager:
                 # Objets interactifs legacy
                 for obj in self.entity_manager.interactables.values():
                     if getattr(obj, 'current_floor', current_floor) == floor_num:
                         self._draw_legacy_object(screen, obj, screen_y, floor_height)
+<<<<<<< HEAD
     
             # 5. Dessiner les NPCs en mouvement (nouveau système)
+=======
+
+            # 4. Dessiner les NPCs en mouvement (nouveau système)
+>>>>>>> cd46cadf1bbceeadf343fe0a8974f7f6fee0c326
             for movement in self.npc_movement_manager.npc_movements.values():
                 npc = movement.npc
                 if hasattr(npc, 'current_floor') and npc.current_floor == floor_num:
@@ -1078,15 +1213,15 @@ class GameplayScene(Scene):
                     baseline_y = screen_y + floor_height - 1
                     npc_y = baseline_y - npc_sprite.get_height()
                     screen.blit(npc_sprite, (npc_x, npc_y))
-                    
+
                     # Dessiner le nom du NPC au-dessus de sa tête
                     self._draw_npc_name(screen, npc, npc_x + npc_sprite.get_width() // 2, int(npc_y))
-                    
+
                     # Ancre pour les bulles (au sommet de la tête, centré)
                     npc._bubble_anchor_x = npc_x + npc_sprite.get_width() // 2
                     npc._bubble_anchor_y = npc_y
-            
-            # 5b. Dessiner les PNJ FIXES (boss, réception, etc.)
+
+            # 4b. Dessiner les PNJ FIXES (boss, réception, etc.)
             for npc in getattr(self.npc_movement_manager, "static_npcs", {}).values():
                 if hasattr(npc, 'current_floor') and npc.current_floor == floor_num:
                     sprite_key = getattr(npc, 'sprite_key', 'npc_generic')
@@ -1095,13 +1230,27 @@ class GameplayScene(Scene):
                     baseline_y = screen_y + floor_height - 1
                     npc_y = baseline_y - npc_sprite.get_height()
                     screen.blit(npc_sprite, (npc_x, npc_y))
-                    
+
                     # Dessiner le nom du NPC au-dessus de sa tête
                     self._draw_npc_name(screen, npc, npc_x + npc_sprite.get_width() // 2, int(npc_y))
-                    
+
                     npc._bubble_anchor_x = npc_x + npc_sprite.get_width() // 2
                     npc._bubble_anchor_y = npc_y
-    
+
+            # 5. Dessiner le joueur s'il est sur cet étage
+            if floor_num == current_floor and self.entity_manager:
+                player = self.entity_manager.get_player()
+                if player and not getattr(player, 'in_elevator', False):
+                    player_sprite = asset_manager.get_image("player_idle")
+                    player_x = player.x - player_sprite.get_width() // 2
+                    baseline_y = screen_y + floor_height - 1
+                    player_y = baseline_y - player_sprite.get_height()
+                    screen.blit(player_sprite, (player_x, player_y))
+
+                    # Ancre pour les bulles (au sommet de la tête, centré)
+                    player._bubble_anchor_x = player_x + player_sprite.get_width() // 2
+                    player._bubble_anchor_y = player_y
+
     def _draw_floor_object(self, screen, obj_data: dict, screen_y: int, floor_height: int) -> None:
         """
         Dessine un objet positionné sur un étage.
@@ -1301,7 +1450,40 @@ class GameplayScene(Scene):
         
         # Bulles de conversation
         self.speech_bubbles.draw(screen)
-    
+
+    def _gather_session_stats(self) -> dict:
+        """
+        Agrège les statistiques de la session pour l'écran de résumé et les trophées.
+        """
+        stats = {}
+        try:
+            # Temps
+            if self.game_clock:
+                stats["time"] = {
+                    "current": self.game_clock.get_time_str(),
+                    "detailed": self.game_clock.get_detailed_time_str(),
+                    "progress": self.game_clock.get_progress(),
+                    "elapsed_real_seconds": self.game_clock.get_elapsed_real_time(),
+                }
+            # Tâches
+            if self.task_manager:
+                stats["tasks"] = self.task_manager.get_stats()
+            # Bâtiment
+            if self.building:
+                stats["building"] = self.building.get_stats()
+            # Ascenseur
+            if self.elevator:
+                stats["elevator"] = self.elevator.get_stats()
+            # Entités et joueur
+            if self.entity_manager:
+                stats["entities"] = self.entity_manager.get_stats()
+                player = self.entity_manager.get_player()
+                if player:
+                    stats["player"] = player.get_stats()
+        except Exception as e:
+            logger.error(f"Error gathering session stats: {e}")
+        return stats
+
     def _update_interaction_hint(self):
         """Met à jour l'indication d'interaction."""
         if not self.entity_manager:
@@ -1332,7 +1514,7 @@ class GameplayScene(Scene):
                     kind = nearby_object.get('kind', 'objet')
                     action_names = {
                         "plant": "Arroser",
-                        "papers": "Ranger", 
+                        "papers": "Ranger",
                         "printer": "Utiliser",
                         "reception": "Utiliser"
                     }
@@ -1541,7 +1723,7 @@ class GameplayScene(Scene):
         player = self.entity_manager.get_player()
         if player:
             self.speech_bubbles.add_bubble(text, player, dur, color)
-    
+
     def _get_runtime_npc(self, npc_id: str):
         """Récupère un NPC runtime par son ID."""
         return self.runtime_npcs.get(npc_id)
@@ -1590,12 +1772,12 @@ class GameplayScene(Scene):
                 logger.warning(f"Sound not found: {sound_key}")
         except Exception as e:
             logger.error(f"Could not play sound {sound_key}: {e}")
-    
+
     def _start_office_ambiance(self) -> None:
         """Démarre l'ambiance sonore du bureau."""
         try:
             from src.core.assets import asset_manager
-            
+
             # Démarrer l'ambiance sonore
             sound = asset_manager.get_sound("office_ambiance")
             if sound:
@@ -1604,7 +1786,7 @@ class GameplayScene(Scene):
                 logger.info("Office ambiance started successfully")
             else:
                 logger.warning("Office ambiance sound not found")
-            
+
             # Démarrer la musique Lucky Moments en arrière-plan comme SFX
             # Temporairement désactivé pour tester le volume
             # bg_music = asset_manager.get_sound("lucky_moments_bg")
@@ -1615,7 +1797,7 @@ class GameplayScene(Scene):
             # else:
             #     logger.warning("Lucky Moments background music not found")
             logger.info("Lucky Moments background music temporarily disabled")
-                
+
         except Exception as e:
             logger.error(f"Could not start office ambiance: {e}")
 
@@ -1709,11 +1891,11 @@ class GameplayScene(Scene):
         
         # Dessiner l'ascenseur centré horizontalement sur sa position
         screen.blit(elevator_scaled, (elevator_x - new_width // 2, elevator_y))
-    
+
     def _infer_dialogue_key_from_name(self, name: str) -> str:
         """Infère une clé de dialogue basée sur le nom du NPC."""
         name_lower = name.lower()
-        
+
         # Correspondances directes
         if "boss" in name_lower or "reed" in name_lower:
             return "boss_reed"
@@ -1723,21 +1905,21 @@ class GameplayScene(Scene):
             return "maya"
         elif "guard" in name_lower or "sécurité" in name_lower:
             return "guard_morning"
-        
+
         # Correspondances par mots-clés
         if "guard" in name_lower or "sécurité" in name_lower:
             return "guard_morning"
-        
+
         return ""
-    
+
     def _is_sequential_dialogue(self, dialogue_key: str) -> bool:
         """
         Détermine si un dialogue doit être affiché comme une séquence logique
         ou comme des phrases aléatoires.
-        
+
         Args:
             dialogue_key: Clé du dialogue à analyser
-            
+
         Returns:
             True si c'est une séquence logique, False pour aléatoire
         """
@@ -1753,28 +1935,28 @@ class GameplayScene(Scene):
             "ambient_",     # dialogues d'ambiance
             "conversation_" # conversations entre NPCs
         ]
-        
+
         # Vérifier les indicateurs
         for indicator in sequential_indicators:
             if indicator in dialogue_key:
                 return True
-        
+
         # Dialogues de personnages principaux (aléatoires)
         character_dialogues = [
-            "angela", "kevin", "oscar", "jim", "dwight", 
+            "angela", "kevin", "oscar", "jim", "dwight",
             "kelly", "meredith", "phyllis", "erin", "toby", "creed"
         ]
-        
+
         if dialogue_key in character_dialogues:
             return False
-        
+
         # Par défaut, considérer comme aléatoire
         return False
-    
+
     def _draw_npc_name(self, screen, npc, center_x: int, top_y: int) -> None:
         """
         Dessine le nom du NPC au-dessus de sa tête.
-        
+
         Args:
             screen: Surface de rendu
             npc: Objet NPC
@@ -1783,20 +1965,20 @@ class GameplayScene(Scene):
         """
         # Récupérer le nom du NPC
         npc_name = getattr(npc, 'name', 'Inconnu')
-        
+
         # Utiliser la police UI pour le nom
         from src.core.assets import asset_manager
         font = asset_manager.get_font("ui_font")
         if not font:
             return
-        
+
         # Créer le texte du nom
         name_surface = font.render(npc_name, True, (255, 255, 255))  # Blanc
-        
+
         # Position du nom (centré au-dessus de la tête)
         name_x = center_x - name_surface.get_width() // 2
         name_y = top_y - name_surface.get_height() - 5  # 5px au-dessus de la tête
-        
+
         # Dessiner un fond semi-transparent pour le nom
         padding = 4
         bg_rect = pygame.Rect(
@@ -1805,12 +1987,12 @@ class GameplayScene(Scene):
             name_surface.get_width() + padding * 2,
             name_surface.get_height() + padding * 2
         )
-        
+
         # Fond noir semi-transparent
         bg_surface = pygame.Surface((bg_rect.width, bg_rect.height))
         bg_surface.set_alpha(128)
         bg_surface.fill((0, 0, 0))
         screen.blit(bg_surface, (bg_rect.x, bg_rect.y))
-        
+
         # Dessiner le nom
         screen.blit(name_surface, (name_x, name_y))
