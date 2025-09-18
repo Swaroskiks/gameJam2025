@@ -864,7 +864,8 @@ class GameplayScene(Scene):
             return
 
         try:
-            video_path = os.path.join("assets", "final.mp4")
+            BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+            video_path = os.path.join(BASE_DIR, "assets", "final.mp4")
             if not os.path.exists(video_path):
                 logger.warning(f"Final video not found at {video_path}")
                 return
