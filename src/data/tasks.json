@@ -134,7 +134,7 @@
       "clears_flag": "papers_collected"
     },
     {
-      "id": "S4",
+      "id": "kelly_coffee_quest",
       "title": "Un café pour Kelly",
       "description": "Servir un café à Kelly.",
       "type": "interaction",
@@ -142,12 +142,30 @@
       "interactable_id": "coffee_96",
       "reward_points": 2,
       "dependencies": [],
-      "completion_message": "Café préparé.",
+      "completion_message": "Vous avez préparé un café pour Kelly.",
       "allow_unassigned_completion": true,
       "required": false,
       "priority": 32,
       "action": "collect",
-      "gives_flag": "has_coffee"
+      "gives_flag": "has_coffee_for_kelly"
+    },
+    {
+      "id": "kelly_give_coffee",
+      "title": "Apporter le café à Kelly",
+      "description": "Donner le café à Kelly.",
+      "type": "dialogue",
+      "floor": 97,
+      "npc_id": "maya",
+      "reward_points": 2,
+      "dependencies": ["kelly_coffee_quest"],
+      "completion_message": "Kelly a reçu son café.",
+      "allow_unassigned_completion": true,
+      "required": false,
+      "priority": 30,
+      "interactable_id": "kelly",
+      "action": "deliver",
+      "needs_flag": "has_coffee_for_kelly",
+      "clears_flag": "has_coffee_for_kelly"
     },
     {
       "id": "S5",
@@ -157,7 +175,7 @@
       "floor": 96,
       "npc_id": "kelly",
       "reward_points": 3,
-      "dependencies": ["S4"],
+      "dependencies": ["kelly_give_coffee"],
       "completion_message": "Kelly apprécie le café.",
       "allow_unassigned_completion": true,
       "required": false,
@@ -391,5 +409,5 @@
       "action": "deliver",
       "needs_flag": "cups_filled"
     }
-]
+  ]
 }
