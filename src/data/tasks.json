@@ -23,14 +23,14 @@
       "description": "Rejoindre Jim au service IT.",
       "type": "dialogue",
       "floor": 97,
-      "npc_id": "jim",
+      "npc_id": "jim_halpert_it",
       "reward_points": 1,
       "dependencies": ["M1"],
       "completion_message": "Vous avez parlé à Jim.",
       "allow_unassigned_completion": true,
       "required": true,
       "priority": 95,
-      "interactable_id": "jim",
+      "interactable_id": "jim_halpert_it",
       "action": "talk"
     },
     {
