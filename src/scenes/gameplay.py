@@ -298,17 +298,10 @@ class GameplayScene(Scene):
         
         # Mettre à jour le mouvement des NPCs
         self.npc_movement_manager.update(dt)
-<<<<<<< HEAD
         
         # Mettre à jour les sons d'ambiance spécifiques au gameplay
         self._update_ambient_sounds(dt)
         
-=======
-
-        # Mettre à jour les sons d'ambiance spécifiques au gameplay
-        self._update_ambient_sounds(dt)
-
->>>>>>> 96087c45b2a94f683a44a3a6a6c841774bc80c82
         # Générer des conversations aléatoires (seulement pour les NPCs en mouvement)
         if self.entity_manager:
             import time
@@ -580,11 +573,7 @@ class GameplayScene(Scene):
                             # Jouer le son de tâche terminée
                             if hasattr(self.scene_manager, 'app') and hasattr(self.scene_manager.app, 'audio_manager'):
                                 self.scene_manager.app.audio_manager.play_sound("task_complete")
-<<<<<<< HEAD
                             
-=======
-
->>>>>>> 96087c45b2a94f683a44a3a6a6c841774bc80c82
                             # Chaînage des tâches
                             if npc_id == "boss_reed" and task.id == "M1":
                                 self.task_manager.offer_task("chat_with_jim")
@@ -1031,21 +1020,13 @@ class GameplayScene(Scene):
         # Mettre à jour la caméra pour suivre le nouvel étage
         if success:
             self._update_camera_for_floor(new_floor)
-<<<<<<< HEAD
             
-=======
-
->>>>>>> 96087c45b2a94f683a44a3a6a6c841774bc80c82
             # Jouer les sons d'ascenseur
             if hasattr(self.scene_manager, 'app') and hasattr(self.scene_manager.app, 'audio_manager'):
                 audio_manager = self.scene_manager.app.audio_manager
                 audio_manager.play_sound("elevator_ding")  # Son d'arrivée
                 audio_manager.play_sound("elevator_door_close")  # Son de fermeture des portes
-<<<<<<< HEAD
     
-=======
-
->>>>>>> 96087c45b2a94f683a44a3a6a6c841774bc80c82
     def _check_game_end_conditions(self):
         """Vérifie les conditions de fin de jeu."""
         if self.game_clock and self.game_clock.is_deadline():
@@ -1235,11 +1216,7 @@ class GameplayScene(Scene):
             # 3. Dessiner les objets de l'étage (nouveau système)
             for obj_data in floor.objects:
                 self._draw_floor_object(screen, obj_data, screen_y, floor_height)
-<<<<<<< HEAD
             
-=======
-
->>>>>>> 96087c45b2a94f683a44a3a6a6c841774bc80c82
             # 4. Dessiner le joueur s'il est sur cet étage et pas dans l'ascenseur
             if floor_num == current_floor and self.entity_manager:
                 player = self.entity_manager.get_player()
@@ -1257,22 +1234,14 @@ class GameplayScene(Scene):
                     # Ancre pour les bulles (au sommet de la tête, centré)
                     player._bubble_anchor_x = player_x + player_sprite.get_width() // 2
                     player._bubble_anchor_y = player_y
-<<<<<<< HEAD
-            
-=======
 
->>>>>>> 96087c45b2a94f683a44a3a6a6c841774bc80c82
             # 4. Dessiner les objets interactifs legacy (compatibilité) - sur tous les étages
             if self.entity_manager:
                 # Objets interactifs legacy
                 for obj in self.entity_manager.interactables.values():
                     if getattr(obj, 'current_floor', current_floor) == floor_num:
                         self._draw_legacy_object(screen, obj, screen_y, floor_height)
-<<<<<<< HEAD
     
-=======
-
->>>>>>> 96087c45b2a94f683a44a3a6a6c841774bc80c82
             # 5. Dessiner les NPCs en mouvement (nouveau système)
             for movement in self.npc_movement_manager.npc_movements.values():
                 npc = movement.npc
