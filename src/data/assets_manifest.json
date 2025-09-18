@@ -426,6 +426,26 @@
         "path": "sfx/task_complete.wav",
         "volume": 0.8,
         "description": "Tâche terminée"
+      },
+      "office_ambiance": {
+        "path": "sfx/Office ambiance - Office sound effects.mp3",
+        "volume": 0.7,
+        "description": "Ambiance sonore du bureau"
+      },
+      "elevator_door": {
+        "path": "sfx/Elevator Door Closing Sound Effect.mp3",
+        "volume": 0.3,
+        "description": "Fermeture des portes d'ascenseur"
+      },
+      "elevator_bell": {
+        "path": "sfx/elevator bell.mp3",
+        "volume": 0.4,
+        "description": "Cloche d'ascenseur"
+      },
+      "lucky_moments_bg": {
+        "path": "music/Lucky Moments (Remastered).mp3",
+        "volume": 0.01,
+        "description": "Musique d'ambiance Lucky Moments"
       }
     },
     "music": {
@@ -440,6 +460,12 @@
         "volume": 0.4,
         "loop": true,
         "description": "Musique de menu"
+      },
+      "lucky_moments": {
+        "path": "music/Lucky Moments (Remastered).mp3",
+        "volume": 0.3,
+        "loop": true,
+        "description": "Musique d'ambiance Lucky Moments"
       }
     }
   }
