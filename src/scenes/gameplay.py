@@ -534,14 +534,18 @@ class GameplayScene(Scene):
                                 self.task_manager.offer_task("chat_with_jim")
                             elif npc_id == "boss_reed" and task.id == "M4":
                                 # M4 terminé, proposer M5 si disponible
-                                self.speech_bubbles.speak_from_dict(self.strings, ["dialogues", "boss_reed_after_M3"], npc_obj, color=(200, 200, 255))
+                                self.speech_bubbles.speak_from_dict(self.strings, ["dialogues", "boss_reed_after_M3"],
+                                                                    npc_obj, color=(200,
+                                                                                    200,
+                                                                                                                                       255))
                                 if self.task_manager.is_task_available("M5"):
                                     self.task_manager.offer_task("M5")
                                 return
                                 # Afficher le dialogue du NPC après la complétion de la tâche (sauf cas spéciaux déjà gérés)
                             key = dialogue_key or self._infer_dialogue_key_from_name(name)
                             if key and "dialogues" in self.strings and key in self.strings["dialogues"]:
-                                self.speech_bubbles.speak_from_dict(self.strings, ["dialogues", key], npc_obj, color=(200, 200, 255))
+                                self.speech_bubbles.speak_from_dict(self.strings, ["dialogues", key], npc_obj,
+                                                                    color=(200, 200, 255))
                             else:
                                 phrase = random.choice(self.speech_bubbles.random_phrases)
                                 self.speech_bubbles.add_bubble(phrase, npc_obj, 3.0, (200, 200, 255))
@@ -564,26 +568,26 @@ class GameplayScene(Scene):
                 return
 
             print(npc_id)
-            # PNJ Maya : gestion de la quête café
-            if npc_id == "maya" and self.task_manager:
+            # PNJ Kelly : gestion de la quête café
+            if npc_id == "kelly_kapoor_marketing" and self.task_manager:
                 print(1)
                 # Si la quête café n'est pas connue, l'offrir et afficher le bon dialogue
-                if not self.task_manager.is_task_available("maya_coffee_quest") and not self.task_manager.is_task_completed("maya_coffee_quest"):
-                    self.task_manager.offer_task("maya_coffee_quest")
-                    self.speech_bubbles.speak_from_dict(self.strings, ["dialogues", "maya_offer_coffee"], npc_obj, color=(200, 200, 255))
+                if not self.task_manager.is_task_available("kelly_coffee_quest") and not self.task_manager.is_task_completed("kelly_coffee_quest"):
+                    self.task_manager.offer_task("kelly_coffee_quest")
+                    self.speech_bubbles.speak_from_dict(self.strings, ["dialogues", "kelly_offer_coffee"], npc_obj, color=(200, 200, 255))
                     return
                 # Si la quête café est en cours (pas encore café donné)
-                elif self.task_manager.is_task_available("maya_coffee_quest"):
-                    self.speech_bubbles.speak_from_dict(self.strings, ["dialogues", "maya_wait_coffee"], npc_obj, color=(200, 200, 255))
+                elif self.task_manager.is_task_available("kelly_coffee_quest"):
+                    self.speech_bubbles.speak_from_dict(self.strings, ["dialogues", "kelly_wait_coffee"], npc_obj, color=(200, 200, 255))
                     return
                 # Si le joueur a le café, offrir la livraison
-                elif self.task_manager.is_task_available("maya_give_coffee"):
-                    self.task_manager.offer_task("maya_give_coffee")
-                    self.speech_bubbles.speak_from_dict(self.strings, ["dialogues", "maya_receive_coffee"], npc_obj, color=(200, 255, 200))
+                elif self.task_manager.is_task_available("kelly_give_coffee"):
+                    self.task_manager.is_task_completed("kelly_give_coffee")
+                    self.speech_bubbles.speak_from_dict(self.strings, ["dialogues", "kelly_receive_coffee"], npc_obj, color=(200, 255, 200))
                     return
-                # Si la quête café est terminée, Maya dit bonjour normalement
-                elif self.task_manager.is_task_completed("maya_give_coffee"):
-                    self.speech_bubbles.speak_from_dict(self.strings, ["dialogues", "maya_morning"], npc_obj, color=(200, 255, 200))
+                # Si la quête café est terminée, Kelly dit bonjour normalement
+                elif self.task_manager.is_task_completed("kelly_give_coffee"):
+                    self.speech_bubbles.speak_from_dict(self.strings, ["dialogues", "kelly_morning"], npc_obj, color=(200, 255, 200))
                     return
 
             # PNJ Alex : retour après M3
@@ -643,17 +647,17 @@ class GameplayScene(Scene):
             return
 
         elif kind in ["plant", "papers", "printer", "reception", "coffee", "water", "receptionist", "desk", "trash", "pickup", "meeting", "window", "supply", "stapler", "cables", "mug", "sink", "copier", "vents", "whiteboard"]:
-            # --- Ajout logique spéciale pour la quête café de Maya ---
+            # --- Ajout logique spéciale pour la quête café de Kelly ---
             if kind == "coffee" and self.task_manager:
-                # Si la quête café de Maya est disponible
-                if self.task_manager.is_task_available("maya_coffee_quest"):
+                # Si la quête café de Kelly est disponible
+                if self.task_manager.is_task_available("kelly_coffee_quest"):
                     # Compléter la quête café
-                    self.task_manager.complete_task("maya_coffee_quest")
-                    self.flags.add("has_coffee_for_maya")
-                    self.notification_manager.add_notification("Vous avez pris un café pour Maya.", 2.0)
-                    # Donner la tâche de donner le café à Maya
-                    if not self.task_manager.is_task_available("maya_give_coffee"):
-                        self.task_manager.offer_task("maya_give_coffee")
+                    self.task_manager.complete_task("kelly_coffee_quest")
+                    self.flags.add("has_coffee_for_kelly")
+                    self.notification_manager.add_notification("Vous avez pris un café pour Kelly.", 2.0)
+                    # Donner la tâche de donner le café à Kelly
+                    if not self.task_manager.is_task_available("kelly_give_coffee"):
+                        self.task_manager.offer_task("kelly_give_coffee")
                     return
 
             # Interaction avec objet - nouveau système avec actions
@@ -1187,11 +1191,9 @@ class GameplayScene(Scene):
                 player = self.entity_manager.get_player()
                 if player and not getattr(player, 'in_elevator', False):
                     player_sprite = asset_manager.get_image("player_idle")
-                    # Offset pour aligner les pieds du joueur avec le sol
-                    player_foot_offset = 55
                     player_x = player.x - player_sprite.get_width() // 2
                     baseline_y = screen_y + floor_height - 1
-                    player_y = baseline_y - player_sprite.get_height() + player_foot_offset
+                    player_y = baseline_y - player_sprite.get_height()
                     screen.blit(player_sprite, (player_x, player_y))
 
                     # Ancre pour les bulles (au sommet de la tête, centré)

@@ -155,14 +155,14 @@
       "description": "Donner le café à Kelly.",
       "type": "dialogue",
       "floor": 97,
-      "npc_id": "maya",
+      "npc_id": "kelly_kapoor_marketing",
       "reward_points": 2,
       "dependencies": ["kelly_coffee_quest"],
       "completion_message": "Kelly a reçu son café.",
       "allow_unassigned_completion": true,
       "required": false,
       "priority": 30,
-      "interactable_id": "kelly",
+      "interactable_id": "kelly_kapoor_marketing",
       "action": "deliver",
       "needs_flag": "has_coffee_for_kelly",
       "clears_flag": "has_coffee_for_kelly"
@@ -405,7 +405,7 @@
       "required": false,
       "priority": 32,
       "dependencies": ["S21"],
-      "interactable_id": "kelly",
+      "interactable_id": "kelly_kapoor_marketing",
       "action": "deliver",
       "needs_flag": "cups_filled"
     }
