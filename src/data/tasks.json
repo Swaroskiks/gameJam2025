@@ -268,21 +268,6 @@
       "clears_flag": "has_badge"
     },
     {
-      "id": "S7",
-      "title": "Salle de réunion",
-      "description": "Vérifier que la salle est prête.",
-      "type": "interaction",
-      "floor": 99,
-      "interactable_id": "meeting_99",
-      "reward_points": 2,
-      "dependencies": [],
-      "completion_message": "Salle vérifiée.",
-      "allow_unassigned_completion": true,
-      "required": false,
-      "priority": 28,
-      "action": "inspect"
-    },
-    {
       "id": "S8",
       "title": "Respirer un peu",
       "description": "Prendre 10 secondes à la baie vitrée.",
@@ -299,17 +284,6 @@
       "linger_seconds": 10
     },
     {
-      "id": "S9",
-      "title": "Capsules de café",
-      "description": "Récupérer des capsules au placard à fournitures.",
-      "required": false,
-      "priority": 45,
-      "tags": ["auto"],
-      "interactable_id": "supply_97",
-      "action": "collect",
-      "gives_flag": "capsules"
-    },
-    {
       "id": "S10",
       "title": "Recharger la machine",
       "description": "Charger la machine à café en capsules.",
@@ -320,69 +294,6 @@
       "action": "deliver",
       "needs_flag": "capsules",
       "clears_flag": "capsules"
-    },
-    {
-      "id": "S11",
-      "title": "Agrafeuse vide",
-      "description": "Prendre une boîte d'agrafes au placard.",
-      "required": false,
-      "priority": 43,
-      "interactable_id": "supply_97",
-      "action": "collect",
-      "gives_flag": "staples_box"
-    },
-    {
-      "id": "S12",
-      "title": "Recharger l'agrafeuse",
-      "description": "Recharger l'agrafeuse du bureau compta.",
-      "required": false,
-      "priority": 42,
-      "dependencies": ["S11"],
-      "interactable_id": "stapler_97",
-      "action": "deliver",
-      "needs_flag": "staples_box",
-      "clears_flag": "staples_box"
-    },
-    {
-      "id": "S13",
-      "title": "Câbles au sol",
-      "description": "Ranger les câbles qui traînent.",
-      "required": false,
-      "priority": 41,
-      "interactable_id": "cables_97",
-      "action": "interact"
-    },
-    {
-      "id": "S14",
-      "title": "Tasses orphelines",
-      "description": "Ramasser 3 mugs oubliés.",
-      "required": false,
-      "priority": 40,
-      "interactable_id": "mug_97_*",
-      "action": "collect_multi",
-      "collect_goal": 3,
-      "gives_flag": "mugs_collected"
-    },
-    {
-      "id": "S15",
-      "title": "Laver les tasses",
-      "description": "Déposer les mugs dans l'évier.",
-      "required": false,
-      "priority": 39,
-      "dependencies": ["S14"],
-      "interactable_id": "sink_97",
-      "action": "deliver",
-      "needs_flag": "mugs_collected",
-      "clears_flag": "mugs_collected"
-    },
-    {
-      "id": "S16",
-      "title": "Tableau à nettoyer",
-      "description": "Effacer le tableau blanc de la salle.",
-      "required": false,
-      "priority": 38,
-      "interactable_id": "whiteboard_98",
-      "action": "interact"
     },
     {
       "id": "S17",
@@ -405,47 +316,6 @@
       "action": "deliver",
       "needs_flag": "copies_pack",
       "clears_flag": "copies_pack"
-    },
-    {
-      "id": "S19",
-      "title": "Air frais",
-      "description": "Rester quelques secondes près de la baie vitrée.",
-      "required": false,
-      "priority": 35,
-      "interactable_id": "window_97",
-      "action": "linger",
-      "linger_seconds": 6
-    },
-    {
-      "id": "S20",
-      "title": "Vérif aération",
-      "description": "Examiner la bouche d'aération.",
-      "required": false,
-      "priority": 34,
-      "interactable_id": "vents_97",
-      "action": "inspect"
-    },
-    {
-      "id": "S21",
-      "title": "Pause eau pour tous",
-      "description": "Remplir deux gobelets au distributeur.",
-      "required": false,
-      "priority": 33,
-      "interactable_id": "water_97",
-      "action": "collect_multi",
-      "collect_goal": 2,
-      "gives_flag": "cups_filled"
-    },
-    {
-      "id": "S22",
-      "title": "Offrir un verre",
-      "description": "Donner un verre d'eau à Kelly.",
-      "required": false,
-      "priority": 32,
-      "dependencies": ["S21"],
-      "interactable_id": "kelly_kapoor_marketing",
-      "action": "deliver",
-      "needs_flag": "cups_filled"
     }
   ]
 }

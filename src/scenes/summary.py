@@ -222,15 +222,15 @@ class SummaryScene(Scene):
         """
         text_color = (*UI_TEXT, alpha)
         y_offset = panel_rect.y + 30
-        
-        # Titre principal
+
+        # Titre principal (centré)
         if self.font_title and alpha > 100:
             self._draw_text_with_alpha(screen, "Résumé de votre journée", 
                                      self.font_title, text_color, 
                                      (WIDTH // 2, y_offset))
             y_offset += 60
-        
-        # Message contextuel
+
+        # Message contextuel (centré)
         if self.font_body and alpha > 150:
             context_lines = [
                 "Il est maintenant 08:48.",
@@ -239,39 +239,49 @@ class SummaryScene(Scene):
                 "Merci d'avoir pris le temps de vivre ces petits moments,",
                 "ces gestes ordinaires qui composent nos vies."
             ]
-            
             for line in context_lines:
                 if line.strip():
                     self._draw_text_with_alpha(screen, line, self.font_body, 
                                              text_color, (WIDTH // 2, y_offset))
                 y_offset += 25
-            
             y_offset += 20
-        
-        # Statistiques
+
+        # --- Affichage côte à côte des stats et trophées, recentrés ---
         if alpha > 200:
-            y_offset = self._draw_statistics(screen, y_offset, text_color)
-            y_offset += 30
-        
-        # Trophées
-        if alpha > 250:
-            y_offset = self._draw_trophies(screen, y_offset, text_color)
-        
-        # Bouton continuer
+            # Largeur totale des deux colonnes (ex: 60% du panneau)
+            total_columns_width = int(panel_rect.width * 0.6)
+            col_spacing = 32  # espace entre les deux colonnes
+            col_width = (total_columns_width - col_spacing) // 2
+            # Point de départ pour centrer le bloc
+            start_x = panel_rect.x + (panel_rect.width - total_columns_width) // 2
+            col1_x = start_x
+            col2_x = start_x + col_width + col_spacing
+            stats_y = y_offset
+            trophies_y = y_offset
+            # Dessiner stats à gauche
+            stats_max_y = self._draw_statistics(screen, col1_x, stats_y, col_width, text_color)
+            # Dessiner trophées à droite
+            trophies_max_y = self._draw_trophies(screen, col2_x, trophies_y, col_width, text_color)
+            # Prendre le plus grand y pour continuer le centrage du bouton
+            y_offset = max(stats_max_y, trophies_max_y) + 30
+
+        # Bouton continuer (centré)
         if alpha > 200:
             self._draw_continue_button(screen, alpha)
-    
-    def _draw_statistics(self, screen, y_start, text_color):
+
+    def _draw_statistics(self, screen, x_start, y_start, width, text_color):
         """
-        Dessine les statistiques de jeu.
-        
+        Dessine les statistiques de jeu dans une colonne.
+
         Args:
             screen: Surface de destination
+            x_start: Position X de départ (gauche de la colonne)
             y_start: Position Y de départ
+            width: Largeur de la colonne
             text_color: Couleur du texte
             
         Returns:
-            Nouvelle position Y
+            Nouvelle position Y (fin de la colonne)
         """
         if not self.font_subtitle or not self.font_body:
             return y_start
@@ -280,7 +290,7 @@ class SummaryScene(Scene):
         
         # Titre section
         self._draw_text_with_alpha(screen, "Statistiques", self.font_subtitle, 
-                                 text_color, (WIDTH // 2, y_offset))
+                                 text_color, (x_start + width // 2, y_offset))
         y_offset += 35
         
         # Stats - récupérer depuis les stats des tâches
@@ -296,22 +306,24 @@ class SummaryScene(Scene):
         for label, value in stats_to_show:
             stat_text = f"{label}: {value}"
             self._draw_text_with_alpha(screen, stat_text, self.font_body, 
-                                     text_color, (WIDTH // 2, y_offset))
+                                     text_color, (x_start + width // 2, y_offset))
             y_offset += 22
         
         return y_offset
-    
-    def _draw_trophies(self, screen, y_start, text_color):
+
+    def _draw_trophies(self, screen, x_start, y_start, width, text_color):
         """
-        Dessine les trophées obtenus.
-        
+        Dessine les trophées obtenus dans une colonne.
+
         Args:
             screen: Surface de destination
+            x_start: Position X de départ (gauche de la colonne)
             y_start: Position Y de départ
+            width: Largeur de la colonne
             text_color: Couleur du texte
             
         Returns:
-            Nouvelle position Y
+            Nouvelle position Y (fin de la colonne)
         """
         if not self.font_subtitle or not self.font_body:
             return y_start
@@ -322,7 +334,7 @@ class SummaryScene(Scene):
         trophy_count = len(self.earned_trophies)
         title = f"Trophées obtenus ({trophy_count})"
         self._draw_text_with_alpha(screen, title, self.font_subtitle, 
-                                 text_color, (WIDTH // 2, y_offset))
+                                 text_color, (x_start + width // 2, y_offset))
         y_offset += 35
         
         # Trophées
@@ -330,11 +342,11 @@ class SummaryScene(Scene):
             for trophy in self.earned_trophies[:5]:  # Limiter à 5 pour l'espace
                 trophy_text = f"{trophy.get('icon', '🏆')} {trophy.get('name', 'Trophée')}"
                 self._draw_text_with_alpha(screen, trophy_text, self.font_body, 
-                                         text_color, (WIDTH // 2, y_offset))
+                                         text_color, (x_start + width // 2, y_offset))
                 y_offset += 25
         else:
             self._draw_text_with_alpha(screen, "Aucun trophée obtenu cette fois.", 
-                                     self.font_body, text_color, (WIDTH // 2, y_offset))
+                                     self.font_body, text_color, (x_start + width // 2, y_offset))
             y_offset += 25
         
         return y_offset
