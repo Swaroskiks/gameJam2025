@@ -735,7 +735,15 @@ class IconButton:
         if not self.visible:
             return
         
-        # Fond du bouton
+        # Fond de menu permanent
+        menu_surface = pygame.Surface((self.rect.width, self.rect.height), pygame.SRCALPHA)
+        menu_surface.fill(UI_PANEL)
+        surface.blit(menu_surface, self.rect.topleft)
+        
+        # Bordure de menu
+        pygame.draw.rect(surface, UI_TEXT, self.rect, 1)
+        
+        # Fond du bouton (état)
         color = self.colors[self.state]
         if color[3] > 0:  # Si pas transparent
             button_surface = pygame.Surface((self.rect.width, self.rect.height), pygame.SRCALPHA)

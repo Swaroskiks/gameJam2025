@@ -32,7 +32,7 @@ class Player:
     Joueur contrôlable.
     """
     
-    def __init__(self, x: float = 200.0, y: float = 300.0):
+    def __init__(self, x: float = 500.0, y: float = 0.0):
         self.x = x
         self.y = y
         # Vitesse exprimée en pixels/seconde (dérivée des mètres/seconde)
@@ -63,6 +63,9 @@ class Player:
         self.distance_walked = 0.0
         self.interactions_count = 0
         
+        # État de l'ascenseur
+        self.in_elevator = False
+        
         logger.info(f"Player created at ({x}, {y})")
     
     def _setup_animations(self) -> None:
@@ -89,6 +92,10 @@ class Player:
             dt: Temps écoulé
             input_vector: Vecteur de mouvement (-1 à 1, -1 à 1)
         """
+        # Si le joueur est dans l'ascenseur, ne pas bouger
+        if getattr(self, 'in_elevator', False):
+            return
+        
         # Normaliser et appliquer la vitesse
         move_x, move_y = input_vector
         
@@ -125,9 +132,11 @@ class Player:
         self.x += self.velocity_x * dt
         self.y += self.velocity_y * dt
         
-        # Contraintes de mouvement (rester dans l'écran)
-        self.x = clamp(self.x, PLAYER_WIDTH // 2, WIDTH - PLAYER_WIDTH // 2)
-        self.y = clamp(self.y, PLAYER_HEIGHT // 2, HEIGHT - PLAYER_HEIGHT // 2)
+        # Contraintes de mouvement (rester dans l'écran avec marges réduites)
+        margin_x = PLAYER_WIDTH // 4  # Réduire la marge horizontale
+        margin_y = PLAYER_HEIGHT // 4  # Réduire la marge verticale
+        self.x = clamp(self.x, margin_x, WIDTH - margin_x)
+        self.y = clamp(self.y, margin_y, HEIGHT - margin_y)
         
         # Calculer la distance parcourue
         moved_distance = distance((old_x, old_y), (self.x, self.y))
@@ -460,7 +469,7 @@ class EntityManager:
         
         logger.info("EntityManager initialized")
     
-    def create_player(self, x: float = 200.0, y: float = 300.0) -> Player:
+    def create_player(self, x: float = 200.0, y: float = 0.0) -> Player:
         """
         Crée le joueur.
         
